@@ -30,8 +30,13 @@ Then enable auto-update once: `/plugin` → **Marketplaces** → `pcs-tools` →
 
 Full setup instructions for first-time users: [docs/Team-Install-SOP.md](docs/Team-Install-SOP.md).
 
-## Adding a new plugin
+## Contributing
 
-1. Create `plugins/<your-plugin-name>/` with a `.claude-plugin/plugin.json` and a `skills/` directory.
+Adding your own plugin to this marketplace? See [CONTRIBUTING.md](CONTRIBUTING.md) for the full step-by-step guide.
+
+When working in this repo with Claude Code, Claude will automatically read [CLAUDE.md](CLAUDE.md) to understand the conventions — you do not need to explain the project structure each time.
+
+### Quick version
+1. Create `plugins/<your-plugin-name>/` with a `.claude-plugin/plugin.json` and a `skills/<your-skill-name>/SKILL.md`.
 2. Add a new entry to `.claude-plugin/marketplace.json` with `"source": "./plugins/<your-plugin-name>/"`.
-3. Commit and push. Coworkers pick it up automatically on next `claude` start (if auto-update is on).
+3. Open a PR. Once merged, coworkers pick it up automatically on next `claude` start (if auto-update is on).

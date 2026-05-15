@@ -8,13 +8,13 @@
   "plugins": [
     {
       "name": "pcs-promo-parser",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "source": "./plugins/pcs-promo-parser/",
       "description": "Parse vendor promo decks (Milwaukee, DeWalt, Makita, Bosch, EGO, Flex, GearWrench, Crescent) into PCS Kit Builder Stage 1 CSVs."
     },
     {
       "name": "pcs-map-updater",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "source": "./plugins/pcs-map-updater/",
       "description": "Merge a vendor MAP sheet with a NetSuite ERP export, flag exceptions, and export a review-ready Excel workbook for the monthly MAP update workflow."
     }

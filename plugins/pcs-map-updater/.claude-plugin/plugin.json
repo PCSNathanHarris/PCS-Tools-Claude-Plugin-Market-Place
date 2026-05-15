@@ -1,6 +1,6 @@
 {
   "name": "pcs-map-updater",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Merge a vendor MAP pricing sheet with a NetSuite ERP export, flag exceptions (missing match, MAP below purchase, promo MAP below purchase, keep-price review), and export a review-ready Excel workbook for the monthly MAP update workflow.",
   "author": {
     "name": "PCS Tools"

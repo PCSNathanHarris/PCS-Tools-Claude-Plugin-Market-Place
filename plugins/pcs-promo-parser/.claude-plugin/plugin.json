@@ -1,6 +1,6 @@
 {
   "name": "pcs-promo-parser",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Parse vendor promo decks (Milwaukee, DeWalt, Makita, Bosch, EGO, Flex, GearWrench, Crescent) into PCS Kit Builder Stage 1 CSVs. Handles kit promos, NLP price drops, and exclusions including POS Redemption and ARP. v1.0.0: RSA kits/NLPs now route to dedicated RSA-Kits.csv / RSA-NLP.csv with credit amounts and `-RSA` Promo Name suffix; new-product launches are skipped; Makita rows with no extractable price route to Needs-Pricing.csv for manual fill-in; `Get N` / `Choice of N` promos now emit C(M,N) combination rows; price-label fallback rule applied across all vendors. Outputs brand-quarter-year prefixed files ready for Stage 2/3/4.",
   "author": {
     "name": "PCS Tools"

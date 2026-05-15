@@ -6,7 +6,7 @@ This repo is the single Claude Code marketplace for all internal PCS Tools plugi
 
 You should have:
 - A working Claude Code install (see [docs/Team-Install-SOP.md](docs/Team-Install-SOP.md))
-- Push access to this repo (ask Nathan Harris)
+- Push access to this repo
 - A clear, single-purpose task in mind for your plugin (one workflow per plugin)
 
 ## Repo architecture in 60 seconds

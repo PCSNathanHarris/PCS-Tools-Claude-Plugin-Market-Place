@@ -4,7 +4,7 @@
     "name": "PCS Tools",
     "email": "nathan.harris@pcstools.com"
   },
-  "description": "PCS Tools internal Claude Code plugins for the Kit Builder and MAP pricing workflows.",
+  "description": "PCS Tools internal Claude Code plugins for the Kit Builder, MAP pricing, and Jira-task-builder workflows.",
   "plugins": [
     {
       "name": "pcs-promo-parser",
@@ -17,6 +17,12 @@
       "version": "1.0.1",
       "source": "./plugins/pcs-map-updater/",
       "description": "Merge a vendor MAP sheet with a NetSuite ERP export, flag exceptions, and export a review-ready Excel workbook for the monthly MAP update workflow."
+    },
+    {
+      "name": "pcs-jira-task-builder",
+      "version": "0.1.0",
+      "source": "./plugins/pcs-jira-task-builder/",
+      "description": "Beta. Reads pcs-promo-parser Stage 1 CSVs and creates matching Jira Tasks in the PCS Promotions space. Hard PROM write-protection (literal-phrase gate), defaults to PAT, per-vendor period naming, auto-HERO detection, RSA per-row review, storefront link scaffolding."
     }
   ]
 }

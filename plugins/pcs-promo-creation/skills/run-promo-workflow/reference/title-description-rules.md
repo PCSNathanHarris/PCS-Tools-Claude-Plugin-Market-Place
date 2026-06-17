@@ -40,17 +40,19 @@ as-is). See `kit-stage.md`.
 
 **Shape:**
 ```
-{Brand} {Main SKU} {short descriptor}[, {qty} Pack] Kit[ W/ {additional(s)}]
+{Brand} {Main SKU} {short descriptor}[, {qty} Pack][ W/ {additional(s)}]
 ```
 - The **main item is the paid anchor** (highest-value paid member). Each
   additional is appended after `W/`, multiples joined with ` and `.
 - A **free** additional is prefixed `FREE`: `… W/ FREE {SKU} {descriptor}`.
-  PAID additionals get no marker. **Getting this right is one of the fixes** —
-  never label a paid item FREE or drop the FREE marker from a free good.
-- The literal word **"Kit" appears exactly once**, right after the main item
-  (after any pack suffix). If a source title already contains "Kit", don't
-  double it.
-- `qty > 1` → append `, {qty} Pack` before "Kit" (e.g. `…, 2 Pack Kit`).
+  The free SKU is mandatory; the descriptor is shown only when it fits. PAID
+  additionals get no marker. **Getting this right is one of the fixes** — never
+  label a paid item FREE or drop the FREE marker from a free good.
+- **Drop the standalone word "Kit"** everywhere — a kit is implied by the
+  "W/ FREE" structure. Remove it even when the source has it: "2-Tool Combo
+  Kit" → "2-Tool Combo", "Battery Two Pack Kit" → "Battery Two Pack",
+  "Hydraulic Driver Bare Tool Kit" → "Hydraulic Driver".
+- `qty > 1` → append `, {qty} Pack` (e.g. `…, 2 Pack`).
 
 **Brand — normalize to the canonical name (consistency fix):**
 ```
@@ -60,19 +62,24 @@ flex/flex tools→Flex  crescent/apex tool→Crescent
 ```
 Unknown brands → Title Case. Keep model numbers exactly as printed.
 
-**Length: target ≤ 75 chars, hard max 80.** When over, **shorten intelligently
-instead of truncating** (the truncation fix). Strip in this order, only as much
-as needed, and **keep every SKU as long as possible**:
-1. Always-strip cruft: `(Bare)`, `(Tool Only)`, trailing "with X battery/charger".
+**Length: target ≤ 90 chars, hard max 95 (nothing over).** When over, **shorten
+intelligently — never drop a SKU.** Every member SKU must appear in the final
+title; only descriptor text is shortened. Strip in this order, only as much as
+needed:
+1. Always-strip cruft: `(Bare)`, `(Tool Only)`, `Bare Tool`, trailing
+   "with X battery/charger", and the standalone "Kit".
 2. Platform/voltage filler: `M18 FUEL`, `M12 FUEL`, `XGT`, `LXT`, `FUEL`, `XR`,
    `ATOMIC`, `20V max`, `18V`, `Lithium-Ion`, etc.
 3. Spec/marketing filler: chuck sizes, `Brushless`, `Cordless`, `Compact`,
    `Variable Speed`, amp-hours (`5.0Ah`), weights (`3.5 lb`), parenthetical
    sizes (`(1/4")`).
-4. Sub-brand ALL-CAPS tokens (4+ chars) and a redundant trailing "Kit" on
-   additionals; cap each additional's descriptor to its product noun.
-5. **Only as a last resort** drop an additional's SKU (keep its descriptor),
-   then hard-truncate at a word boundary.
+4. Sub-brand ALL-CAPS tokens (4+ chars); cap each additional's descriptor to
+   its product noun.
+5. **Essential core (last resort):** reduce the main descriptor to its
+   product-type noun (e.g. "Impact Wrench", "Band Saw") and show free goods as
+   **SKU only** (drop their descriptors). Keep brand + paid SKU + product type
+   + every free SKU. **A SKU is never dropped, ever** — if the core is somehow
+   still over 95, flag it for review rather than cutting a SKU.
 
 **Cleanup:** remove empty parentheses (`( / )`), collapse double spaces, trim
 orphan trailing `& / , ; :` and dangling `W/`. Strip any `[PCE …]` / promo

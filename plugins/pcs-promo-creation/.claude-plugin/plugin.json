@@ -1,7 +1,7 @@
 {
   "name": "pcs-promo-creation",
-  "version": "1.2.0",
-  "description": "Guided end-to-end PCS promo pipeline: parse a vendor deck -> build NetSuite kit imports -> create Jira promotion tasks, with a Yes/No confirmation before each stage and the existing hard PROM write-protection at the Jira step. Orchestrates pcs-promo-parser and pcs-jira-task-builder and drives the Kit Builder `kb` CLI (>= 0.5.18); Claude writes each kit's Page Title and Detailed Description from the item data using the ported title/description rules. Prompts for file uploads (deck PDF, pricing cheat sheet, NetSuite Promo Kit Support export) when needed.",
+  "version": "1.3.0",
+  "description": "Guided end-to-end PCS promo pipeline: parse a vendor deck -> build NetSuite kit imports -> create Jira promotion tasks, with a Yes/No confirmation before each stage and the existing hard PROM write-protection at the Jira step. Orchestrates pcs-promo-parser and pcs-jira-task-builder and drives the Kit Builder `kb` CLI (>= 0.5.18); Claude writes each kit's Page Title (95-char cap, every member SKU kept, 'Kit' filler dropped) and Detailed Description from the item data using the ported title/description rules. Prompts for file uploads (deck PDF, pricing cheat sheet, NetSuite Promo Kit Support export) when needed.",
   "author": {
     "name": "PCS Tools"
   },

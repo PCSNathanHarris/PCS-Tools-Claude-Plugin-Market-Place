@@ -86,6 +86,7 @@ Source: `kb/deck_parser/audit.py::write_non_included` / `NON_INCLUDED_HEADERS`
 | `rsa` | Retail Sales Associate incentive program |
 | `spend-to-earn` | Buy $N in category → get reward; spend-and-earn rebates |
 | `pos-redemption` | POS / mail-in / instant rebate or redemption mechanism |
+| `e-rebate` | Online rebate-portal promo (`REDEEM AT …/e-rebate`, or `PCE = E-REBATE`) — excluded even with a free-goods table |
 | `buy-more-save-more` | BMSM, volume-tiered pricing, "Buy 5 save 10%" |
 | `promo-code-only` | Page IS a coupon code (use code XYZ at checkout) |
 | `arp` | Authorized Retailer Program — channel-restricted, not for general online |

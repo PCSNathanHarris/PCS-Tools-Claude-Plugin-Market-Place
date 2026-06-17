@@ -8,9 +8,9 @@
   "plugins": [
     {
       "name": "pcs-promo-parser",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "source": "./plugins/pcs-promo-parser/",
-      "description": "Parse vendor promo decks (Milwaukee, DeWalt, Makita, Bosch, EGO, Flex, GearWrench, Crescent) into PCS Kit Builder Stage 1 CSVs."
+      "description": "Parse vendor promo decks (Milwaukee, DeWalt, Makita, Bosch, EGO, Flex, GearWrench, Crescent) into PCS Kit Builder Stage 1 CSVs. v1.1.0: excludes e-rebate slides, pairs split slides per-group, allows duplicate free-good picks (multiset), and reads Milwaukee on-slide pricing tables."
     },
     {
       "name": "pcs-map-updater",
@@ -20,9 +20,9 @@
     },
     {
       "name": "pcs-jira-task-builder",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "source": "./plugins/pcs-jira-task-builder/",
-      "description": "Beta. Reads pcs-promo-parser Stage 1 CSVs and creates matching Jira Tasks in the PCS Promotions space. Hard PROM write-protection (literal-phrase gate), defaults to PAT, per-vendor period naming, auto-HERO detection, RSA per-row review, storefront link scaffolding."
+      "description": "Beta. Reads pcs-promo-parser Stage 1 CSVs and creates matching Jira Tasks in the PCS Promotions space. Hard PROM write-protection (literal-phrase gate), defaults to PAT, per-vendor period naming, auto-HERO detection, RSA per-row review, storefront link scaffolding. v0.1.1: auto-skips the parser's new e-rebate exclusion reason."
     },
     {
       "name": "pcs-promo-creation",

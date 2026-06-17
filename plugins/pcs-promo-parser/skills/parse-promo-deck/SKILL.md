@@ -119,6 +119,10 @@ For every page, apply the decision tree in
     `reference/page-classification.md#3a`)
 3b. **New product launch / new arrivals** → `non_included` reason
     `new-product` (skip the page entirely; v0.3.0)
+3c. **E-rebate (online rebate portal)** → `non_included` reason `e-rebate`.
+    Signal: a `REDEEM AT …/e-rebate` header OR a `PCE = E-REBATE` value.
+    Excluded even with a free-goods package + price table (overrides the 4a
+    B1G1 exception). See `reference/page-classification.md#3c`.
 4. **Spend-to-earn / rebate** → `non_included` reason `spend-to-earn`
 4a. **POS Redemption / mail-in rebate** → `non_included` reason `pos-redemption`
 5. **Buy-More-Save-More / volume-tiered** → `non_included` reason `buy-more-save-more`
@@ -154,11 +158,19 @@ Use the matched vendor's reference file as the authority.
   `Advertised Sell Through` per vendor; never use Buy-In windows.
 - Detect any **PCE / PCR / promo identifier** on the page and append it
   to `promo_name` in brackets: `"Deal Title [PCE 262776]"`.
-- **Decide row generation by title pattern**:
+- **Split slides first**: if the slide divides its qualifying items into groups
+  (a bold/black divider line or whitespace band) with **2+ free goods**, each
+  group earns only the free good on its side — generate rows **per group**, not
+  one Cartesian across the slide. Pair via an on-slide association table →
+  spatial alignment → per-group labels; if the mapping is unclear, **ask the
+  operator**. See `edge-cases.md#split-slides--qualifying-groups-with-per-group-free-goods`.
+- **Decide row generation by title pattern** (within each group):
   - If the promo title matches a "Get N" / "Choice of N" / "Choose N"
-    pattern with **N ≥ 2** and the free-good pool has M ≥ N items →
-    emit `C(M, N)` rows, each `(1 + N)` slots wide (anchor in slot 1,
-    chosen free goods sorted lexicographically in slots 2..N+1). See
+    pattern with **N ≥ 2** → emit **multiset combinations** `C(M+N-1, N)`,
+    each `(1 + N)` slots wide (anchor in slot 1, picks sorted lexicographically
+    in slots 2..N+1). **Duplicates are allowed by default** — the customer may
+    take N of the same free good (a double repeats the SKU across slots);
+    suppress only if the deck says the picks must differ. See
     `edge-cases.md#multi-pick-free-goods-get-n--choice-of-n`.
   - Otherwise (N = 1 or no multi-pick title pattern) → emit standard
     **Cartesian rows**: N paid × M free goods → N × M rows. Each row
@@ -317,10 +329,14 @@ GearWrench-Q1-2027-Parser-Audit.csv
 - **Cartesian row generation**: a deal with N paid × M free emits N × M
   rows. This is intentional — it replaces a downstream macro. Do NOT
   emit max(N,M) rows.
-- **"Get N" / "Choice of N" combinations (v0.3.0)**: when the title
-  signals customer-choice of N ≥ 2 free goods from a pool of M, emit
-  `C(M, N)` rows instead of M rows. Each row has anchor + N chosen
-  free-good SKUs (slot 1 + slots 2..N+1). See `edge-cases.md`.
+- **"Get N" / "Choice of N" combinations**: when the title signals
+  customer-choice of N ≥ 2 free goods from a pool of M, emit **multiset
+  combinations** `C(M+N-1, N)` (duplicates allowed — the customer may take N of
+  the same free good; suppress only if the deck says the picks must differ).
+  Each row has anchor + N picks (slot 1 + slots 2..N+1). See `edge-cases.md`.
+- **Split slides**: a single slide that divides qualifying items into groups
+  with a per-group free good is NOT one global Cartesian — pair within each
+  group only; ask the operator if the mapping is unclear. See `edge-cases.md`.
 - **Price label fallback**: when iterating a vendor's
   `price_label_priority`, **first non-empty tier wins**. A paid SKU
   must NOT be dropped if any later tier has a value. Drop to

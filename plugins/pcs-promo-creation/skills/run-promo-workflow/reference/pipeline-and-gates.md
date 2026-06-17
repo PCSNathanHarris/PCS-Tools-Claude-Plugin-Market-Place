@@ -5,6 +5,11 @@ You never advance without an explicit affirmative typed by the operator. `N`
 (or any non-affirmative answer) ends the run **cleanly**: keep every file
 produced so far, print the run directory, and stop.
 
+A **validation pass** (`reference/validation.md`) runs immediately before each
+gate — its `⚠️` findings are folded into that gate's prompt so the operator
+decides with full information. Validation auto-corrects only safe things and
+never answers a gate itself.
+
 ## Gate sequence
 
 | # | Where | Prompt (ask verbatim, fill the `<…>`) | On `N` |

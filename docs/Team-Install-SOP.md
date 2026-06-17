@@ -1,5 +1,5 @@
 # SOP: Installing the PCS Tools Plugins in Claude Code
-**Version:** 2.0 | **Marketplace:** `pcs-tools` | **Plugins:** `pcs-promo-parser` v1.0.0, `pcs-map-updater` v1.0.0
+**Version:** 2.1 | **Marketplace:** `pcs-tools` | **Plugins:** `pcs-promo-parser` v1.0.1, `pcs-map-updater` v1.0.1, `pcs-jira-task-builder` v0.1.0, `pcs-promo-creation` v1.0.0
 **Applies To:** All PCS team members using the Kit Builder and MAP pricing workflows
 **Maintained By:** Nathan Harris (nathan.harris@pcstools.com)
 
@@ -110,11 +110,21 @@ Wait for the confirmation message.
 ```
 Wait for the confirmation message.
 
-**4.4** Verify both plugins installed:
+**4.4** Install the Jira Task Builder and Promo Creation plugins:
+```
+/plugin install pcs-jira-task-builder
+/plugin install pcs-promo-creation
+```
+The Promo Creation plugin (`/run-promo-workflow`) orchestrates the parser and
+the Jira builder, so install all of them. Wait for each confirmation message.
+
+**4.5** Verify the plugins installed:
 ```
 /plugin
 ```
-This opens the plugin menu. You should see **pcs-promo-parser v1.0.0** AND **pcs-map-updater v1.0.0** listed under the **Installed** tab.
+This opens the plugin menu. You should see **pcs-promo-parser**,
+**pcs-map-updater**, **pcs-jira-task-builder**, and **pcs-promo-creation**
+listed under the **Installed** tab.
 
 Press `Esc` to close the menu.
 
@@ -124,6 +134,42 @@ Press `Esc` to close the menu.
 > /plugin marketplace remove pcs-map-updater
 > ```
 > Then run the steps above. This ensures you're on the unified marketplace going forward.
+
+---
+
+## Part 4.5 — Extra setup for the full Promo Creation pipeline
+
+> **Only needed if you will run `/run-promo-workflow`** (the end-to-end
+> parse → kit build → Jira pipeline). If you only parse decks or update MAP,
+> skip this part — the plugins above are all you need.
+
+The combined pipeline drives the **Kit Builder `kb` CLI** (a Python tool) and
+creates Jira tasks through the **Atlassian connector**.
+
+**4.5.1** Install Python (one time):
+```powershell
+winget install Python.Python.3.12
+```
+Close and reopen PowerShell, then verify:
+```powershell
+python --version
+```
+
+**4.5.2** Install the Kit Builder CLI:
+```powershell
+pip install --upgrade git+https://github.com/PCSNathanHarris/pcs-kit-builder-lite.git
+kb --version
+```
+You need **0.5.17 or newer**.
+- This is **separate** from the Kit Builder desktop `.exe` — the app does not
+  provide the `kb` command; this CLI does.
+- The CLI does **not** auto-update. When a new version ships, re-run the
+  `pip install --upgrade …` line above.
+
+**4.5.3** Connect Atlassian (Jira): add the **Atlassian connector** in Claude
+Code and log in to your PCS Jira account when prompted. This is what lets the
+final stage create promotion Tasks. It's only used at the Jira step, so you can
+set it up the first time you reach it.
 
 ---
 
@@ -168,6 +214,17 @@ Output files will be placed in the working directory where you started `claude`,
 /map-price-update
 ```
 Claude will ask for the manufacturer MAP sheet, the NetSuite ERP export, and which columns to use for SKU and MAP. The output is an Excel workbook with four sheets (MAP Update Review, Exceptions, All Manufacturer Rows, Summary) saved in the same directory as the manufacturer file.
+
+**6.4** Or run the full end-to-end promo pipeline by typing:
+```
+/run-promo-workflow
+```
+This walks you through the whole flow — parse the deck, build the NetSuite kit
+imports, then create the Jira tasks — pausing for a **Yes/No** confirmation
+before each stage. It will prompt you to upload the **deck PDF** and a
+**pricing cheat sheet**, then later the **NetSuite Promo Kit Support export**.
+Requires the extra setup in **Part 4.5** (the `kb` CLI and the Atlassian
+connector).
 
 ---
 
@@ -218,7 +275,17 @@ claude                                     # First launch + login
 /plugin marketplace add PCSNathanHarris/PCS-Tools-Claude-Plugin-Market-Place
 /plugin install pcs-promo-parser
 /plugin install pcs-map-updater
+/plugin install pcs-jira-task-builder
+/plugin install pcs-promo-creation
 /plugin   <-- go to Marketplaces > pcs-tools > Auto-update ON
+```
+
+```powershell
+# Extra one-time setup for the full /run-promo-workflow pipeline only
+winget install Python.Python.3.12
+pip install --upgrade git+https://github.com/PCSNathanHarris/pcs-kit-builder-lite.git
+kb --version    # need >= 0.5.17
+# plus: connect the Atlassian connector in Claude Code (for the Jira step)
 ```
 
 ```powershell
@@ -229,8 +296,9 @@ claude
 
 ```
 # Inside Claude Code (daily use)
-/parse-promo-deck    # parses a vendor promo deck PDF
-/map-price-update    # merges a vendor MAP sheet with the ERP export
+/parse-promo-deck     # parses a vendor promo deck PDF
+/map-price-update     # merges a vendor MAP sheet with the ERP export
+/run-promo-workflow   # full pipeline: parse -> kit imports -> Jira tasks (gated)
 ```
 
 ---

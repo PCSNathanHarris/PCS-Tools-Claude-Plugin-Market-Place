@@ -23,6 +23,12 @@
       "version": "0.1.0",
       "source": "./plugins/pcs-jira-task-builder/",
       "description": "Beta. Reads pcs-promo-parser Stage 1 CSVs and creates matching Jira Tasks in the PCS Promotions space. Hard PROM write-protection (literal-phrase gate), defaults to PAT, per-vendor period naming, auto-HERO detection, RSA per-row review, storefront link scaffolding."
+    },
+    {
+      "name": "pcs-promo-creation",
+      "version": "1.0.0",
+      "source": "./plugins/pcs-promo-creation/",
+      "description": "Guided end-to-end promo pipeline: parse a vendor deck -> build NetSuite kit imports -> create Jira promotion tasks, with a Yes/No confirmation before each stage and the hard PROM write-protection at the Jira step. Orchestrates pcs-promo-parser and pcs-jira-task-builder and drives the Kit Builder kb CLI (>= 0.5.17); prompts for deck, pricing cheat sheet, and NetSuite Promo Kit Support export uploads when needed."
     }
   ]
 }

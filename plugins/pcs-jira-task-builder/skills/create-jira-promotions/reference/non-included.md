@@ -17,6 +17,7 @@ a manual-review prompt before deciding.
 | `spiff` | **Auto-skip** | Internal sales-rep incentive. Override flag if PCS later wants Jira visibility. |
 | `killed` | **Auto-skip** | Cancelled deal. |
 | `strikethrough` | **Auto-skip** | Per-SKU exclusion (parser handles inline). |
+| `e-rebate` | **Auto-skip** | Online rebate-portal promo (parser v1.1.0) — redeemed at a vendor URL, not a kit/Task. No Jira footprint. |
 | `arp` | **Manual review** — prompt Y/N/Skip-all | Channel-restricted ARP deals; might need Jira tracking per case. |
 | `pos-redemption` | **Manual review** | Mail-in / POS rebate; might still warrant a Jira footprint for monitoring. |
 | `spend-to-earn` | **Manual review** | Threshold rebate; could be customer-visible online. |

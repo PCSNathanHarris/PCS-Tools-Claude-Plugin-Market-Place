@@ -262,11 +262,60 @@ separate redemption channel.
 - A page with a POS redemption badge **plus** a full B1G1 price table
   with paired free-good SKUs → classify as a **kit page** (priority #9).
   The kit structure is what matters; the POS badge is just the delivery
-  mechanism.
+  mechanism. **Carve-out:** this does NOT apply to **e-rebate** slides
+  (`REDEEM AT …/e-rebate` header or `PCE = E-REBATE`) — those are excluded
+  regardless of any free-goods table. See `E_REBATE_MARKER` above.
 - `Instant Rebate` paired with a full MAP/SKU price column may route to
   **NLP** (priority #7) instead of `pos-redemption` if a customer-facing
   shelf price is clearly extractable. Prefer NLP routing when in doubt
   and a price is visible.
+
+---
+
+## E_REBATE_MARKER → `non_included` reason `e-rebate`
+
+E-rebate promos are fulfilled through an **online rebate portal**, not as a
+kitted free good. The slide usually shows a "free goods package" and a pricing
+table, so it looks like a kit — but the customer redeems online, so we must
+NOT build a kit from it. Distinct from `pos-redemption` (mail-in / register
+rebates): e-rebate is the online-portal case identified by the redeem URL or an
+`E-REBATE` promo identifier.
+
+### Phrases (case-insensitive, vendor-agnostic)
+
+- `REDEEM AT` — especially followed by a rebate URL
+- A rebate URL containing `e-rebate` — e.g. `milwaukeetool.com/e-rebate`,
+  `.../e-rebate/ic`
+- The token `e-rebate` / `e rebate` as a badge or header
+- **PCE / promo identifier whose VALUE is `E-REBATE`** (non-numeric) — e.g. a
+  page header `PCE# E-REBATE`. This alone is decisive.
+
+### Real-world examples that should match
+
+- "BUY AN M12 FUEL PROPEX … GET FREE GOODS — REDEEM AT
+  www.milwaukeetool.com/e-rebate/ic", header `PCE# E-REBATE`
+- "BUY AN M18 SHORT THROW PRESS TOOL … GET FREE GOODS — REDEEM AT …/e-rebate",
+  `PCE# E-REBATE`
+
+### Routing + precedence (important)
+
+- Emit one `non_included` row per affected SKU (or one blank-SKU row) with
+  reason `e-rebate`. Do NOT emit kit / NLP / RSA rows for the page.
+- **Overrides the B1G1-table exception.** Unlike `pos-redemption`, an e-rebate
+  signal excludes the page **even when it shows a free-goods package and a full
+  price table** — the online-redemption mechanism is decisive, the table does
+  not rescue it. (See `page-classification.md` — e-rebate is checked before the
+  kit fallthrough.)
+- A non-numeric `PCE = E-REBATE` is the highest-confidence signal: classify
+  e-rebate regardless of other page content.
+
+### Traps
+
+- A genuine kit slide that merely *mentions* a separate rebate on a different
+  product is not e-rebate — require the `REDEEM AT …/e-rebate` header or
+  `PCE = E-REBATE` for the WHOLE deal.
+- Numeric Milwaukee PCEs (6 digits) are normal kit identifiers — only the
+  literal `E-REBATE` value triggers this marker.
 
 ---
 

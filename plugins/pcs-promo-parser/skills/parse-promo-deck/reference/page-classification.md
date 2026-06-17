@@ -74,6 +74,22 @@ Distinguish carefully from **NLP** (`New Lower Price` / case #7) —
 that's a shelf-price drop and routes to the NLP Sheet, not exclusions.
 Match NLP first.
 
+### 3c. E-rebate (online rebate portal) → `non_included` reason `e-rebate`
+
+Slides fulfilled through an **online rebate portal** are not kits, even though
+they show a "free goods package" and a price table. Identify by either signal:
+
+- A `REDEEM AT …` header with an `e-rebate` URL (e.g.
+  `milwaukeetool.com/e-rebate`), or
+- A **PCE / promo identifier whose value is `E-REBATE`** (non-numeric) — this
+  alone is decisive.
+
+Emit one `non_included` row per affected SKU with reason `e-rebate`; skip the
+page (no kit / NLP / RSA rows). **This is checked here — above the kit
+fallthrough — and is NOT subject to the "B1G1 table → kit page" exception in
+4a.** A free-goods package + price table does NOT rescue an e-rebate slide.
+See `exclusion-markers.md#e_rebate_marker`.
+
 ### 4. Spend-to-earn / rebate → `non_included` reason `spend-to-earn`
 
 The customer must spend a threshold dollar amount to earn the free good.
@@ -92,6 +108,9 @@ at register", "Rebate Form enclosed".
 
 Exception: if the page also carries a full B1G1 price table with paired
 free-good SKUs, classify as a kit page (#9) — the kit structure wins.
+**But e-rebate slides (#3c) are exempt from this exception** — an
+`E-REBATE` PCE or a `REDEEM AT …/e-rebate` header excludes the page even with
+a full free-goods table.
 
 ### 5. Buy-More-Save-More / volume-tiered → `non_included` reason `buy-more-save-more`
 
@@ -196,6 +215,11 @@ Some pages legitimately hit multiple markers (e.g. "Buy More Save More
 on Special Buy items"). Apply the **first match in priority order**
 above. So a BMSM page that's also marked Special Buy is classified as
 `buy-more-save-more` (priority #5 beats #7).
+
+E-rebate precedence: an **e-rebate signal** (a `PCE = E-REBATE` value, or a
+`REDEEM AT …/e-rebate` header) outranks the kit fallthrough (#9) **and** the 4a
+"B1G1 table → kit" exception. When present, classify `e-rebate` (#3c)
+regardless of any free-goods package or price table on the page.
 
 Exception: priority #7 (NLP routing) takes precedence over #6
 (`promo-code-only`) only when the page has a clear price column and

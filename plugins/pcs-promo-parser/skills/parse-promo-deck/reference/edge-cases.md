@@ -42,13 +42,17 @@ deal price covers the anchor PLUS the N picked free goods together.
 > "20V MAX Bare Tool Bundle — Buy DCB205-2C Get 2 Bare Tools" @ $299
 
 Anchor = `DCB205-2C` (battery starter kit). Free-good pool = 13 bare
-tools. Customer picks **any 2** of the 13. The correct emit is **every
-combination** of 2 distinct free goods, paired with the anchor — `C(13, 2) = 78`
-rows, each with **three** SKU slots filled (anchor + tool_A + tool_B).
+tools. Customer picks **any 2** of the 13 — and may pick **two of the same**
+tool. The correct emit is **every multiset** of 2 picks from the 13
+(combinations **with repetition**), paired with the anchor —
+`C(13+2-1, 2) = C(14, 2) = 91` rows (78 distinct pairs + 13 same-tool doubles),
+each with **three** SKU slots filled (anchor + pick_A + pick_B; a double simply
+repeats the SKU).
 
-**The trap**: easy to misread as a standard Cartesian (1 paid × 13 free
-= 13 two-slot rows). That undercounts every multi-tool combination the
-customer is actually entitled to.
+**The trap (two ways to get it wrong)**: (1) misreading it as a standard
+Cartesian (1 paid × 13 free = 13 two-slot rows) undercounts every multi-tool
+combination; (2) emitting only the *distinct* pairs (`C(13,2)=78`) drops the
+"two of the same free good" options the customer is actually entitled to.
 
 ### Title-pattern detection (case-insensitive)
 
@@ -60,15 +64,27 @@ Capture N from any of these patterns:
 - `\b(\d+)\s+of\s+the\s+following\b` — "2 of the following"
 - `\bany\s+(\d+)\b\s+(?:of|free|bare)` — "any 2 free tools"
 
-If N is captured and N ≥ 2 and the free-good pool has M ≥ N items,
-switch from Cartesian to **combinations**.
+If N is captured and N ≥ 2 and the free-good pool has M ≥ 1 items,
+switch from Cartesian to **combinations with repetition (multisets)** — see
+"Duplicates" below.
+
+### Duplicates (allowed by default)
+
+A choose-N free-good promo lets the customer take N of the **same** free good
+(e.g. two of `48-11-1850`), so emit **multisets** by default:
+`C(M+N-1, N)` rows, which include the N-of-the-same rows. `ANY MIX` / `any
+combination` wording confirms this. Suppress duplicates (fall back to strict
+`C(M, N)`, no repeats) **only** when the deck explicitly says the picks must
+differ — e.g. "2 **different** tools", "no duplicates", "one of each".
 
 ### Row layout
 
 - Slot 1 = paid anchor SKU (qty 1, price = deal price, credit blank).
-- Slots 2..(N+1) = the N chosen free goods, **sorted lexicographically**
-  by SKU within each row (stable diffs across re-parses). Each gets
-  qty 1, price `0.00`, credit blank.
+- Slots 2..(N+1) = the N picks, **sorted lexicographically** by SKU within each
+  row (stable diffs across re-parses). Each gets qty 1, price `0.00`, credit
+  blank. For a **double** (same free good picked twice), the SKU simply occupies
+  two of these slots — the downstream importer's qty-collapse merges them to
+  qty 2.
 - Total slots filled = `1 + N`. Remaining slots emit 4 empty cells each.
 
 ### Worked example — P-00209847 (anchor + Choose 2 of 13 free tools)
@@ -76,10 +92,17 @@ switch from Cartesian to **combinations**.
 13 tools: `DCD806B, DCF630B, DCF860B, DCF911B, DCG408B, DCH133B,
 DCS334B, DCS356B, DCS382B, DCS438B, DCS565B, DCW210B, DCW600B`.
 
-Emit `C(13, 2) = 78` rows. First row (alphabetically-sorted pair):
+Emit `C(14, 2) = 91` rows — 78 distinct pairs **plus 13 same-tool doubles**
+(the customer may take two of one tool). First row (alphabetically-sorted pair):
 
 ```csv
 20V MAX Bare Tool Bundle Buy DCB205-2C Get 2 Bare Tools [P-00209847],5/3/2026,8/3/2026,DCB205-2C,1,299.00,,DCD806B,1,0.00,,DCF630B,1,0.00,,,,,,,,,,,,,
+```
+
+A same-tool double (two of `DCD806B`):
+
+```csv
+20V MAX Bare Tool Bundle Buy DCB205-2C Get 2 Bare Tools [P-00209847],5/3/2026,8/3/2026,DCB205-2C,1,299.00,,DCD806B,1,0.00,,DCD806B,1,0.00,,,,,,,,,,,,,
 ```
 
 Last row:
@@ -88,8 +111,8 @@ Last row:
 20V MAX Bare Tool Bundle Buy DCB205-2C Get 2 Bare Tools [P-00209847],5/3/2026,8/3/2026,DCB205-2C,1,299.00,,DCS565B,1,0.00,,DCW600B,1,0.00,,,,,,,,,,,,,
 ```
 
-No two rows share the same pair of free-good SKUs. The anchor SKU and
-its price are constant across all 78 rows.
+Each row is a distinct multiset — 78 mixed pairs + 13 same-tool doubles. The
+anchor SKU and its price are constant across all 91 rows.
 
 ### N = 1 case
 
@@ -100,8 +123,56 @@ combinations path only activates for N ≥ 2.
 ### Multiple anchors with "Choose N"
 
 If the deck shows multiple anchors AND a "Choose N" pool, treat as
-nested: for each anchor, emit `C(M, N)` rows. Total rows = `(anchor count) × C(M, N)`.
-Anchor SKU goes in slot 1 of each row.
+nested: for each anchor, emit the multiset rows `C(M+N-1, N)`. Total rows =
+`(anchor count) × C(M+N-1, N)`. Anchor SKU goes in slot 1 of each row.
+
+---
+
+## Split slides — qualifying groups with per-group free goods
+
+**The trap**: one slide offers TWO (or more) free goods, and the qualifying
+items are partitioned into groups where **each group earns only one specific
+free good** — not a free choice of either. A full Cartesian across the whole
+slide is WRONG: it pairs every qualifying tool with every free good.
+
+This is common on Milwaukee battery slides. Example (PCE 263131, "BUY A SELECT
+M12 TOOL GET (1) M12 BATTERY FREE"): a **bold black divider line** splits the
+qualifying tools into a top group and a bottom group; the free goods `$79 →
+48-11-2425` and `$129 → 48-11-2450` sit stacked on the right, one aligned to
+each group. Correct: **top tools pair only with 48-11-2425; bottom tools pair
+only with 48-11-2450.** Cross-pairing (every tool × both batteries) is the bug.
+
+### How to detect a split
+
+A slide is split when BOTH hold:
+1. There are **2+ free goods**, AND
+2. The qualifying area is **partitioned** — by a bold/black divider line, a
+   clear whitespace band, or separate sub-tables/panels — with each partition
+   visually aligned to one of the free goods (same side / row / column).
+
+A divider that's "just a thin bold line" still counts — look at the image, not
+only the text layer.
+
+### How to pair
+
+Map each qualifying group to its free good(s), using this authority order:
+1. An on-slide **table that associates items with their free good** (some slides
+   print a "free goods associated" table beneath the grid) — authoritative.
+2. **Spatial alignment** — which free good sits on the same side/row as the
+   group across the divider.
+3. Per-group free-good **labels / $-values / titles** printed beside the group.
+
+Then emit rows **per group** — apply the normal Cartesian (or choose-N multiset)
+rule **within** each group against ITS free good(s) only. Never cross-pair
+across the divider. All groups share the same `promo_name` (same PCE) — the
+split only controls which (paid, free) pairs are emitted.
+
+### When the mapping is ambiguous
+
+If you detect a divider/multiple free goods but **cannot confidently** decide
+which group earns which free good (no table, unclear alignment), **stop and ask
+the operator** to confirm the group→free-good mapping before emitting. Do not
+guess, and do not silently fall back to a full Cartesian.
 
 ---
 

@@ -1,7 +1,7 @@
 {
   "name": "pcs-jira-task-builder",
-  "version": "0.1.0",
-  "description": "Beta. Reads pcs-promo-parser Stage 1 CSVs and creates corresponding Jira Tasks in the PCS Promotions space. Hard PROM write-protection: always prompts for target project, requires literal-phrase confirmation to write to production. Defaults to PAT (test). Handles kit promos, NLPs, RSAs with manual review, per-vendor period naming (Milwaukee/DeWalt/Makita/Bosch/GearWrench P1-P2, EGO H1-H2, Flex Q1-Q4), auto-HERO detection, storefront link scaffolding, and PROM-style description templates.",
+  "version": "0.1.1",
+  "description": "Beta. Reads pcs-promo-parser Stage 1 CSVs and creates corresponding Jira Tasks in the PCS Promotions space. Hard PROM write-protection: always prompts for target project, requires literal-phrase confirmation to write to production. Defaults to PAT (test). Handles kit promos, NLPs, RSAs with manual review, per-vendor period naming (Milwaukee/DeWalt/Makita/Bosch/GearWrench P1-P2, EGO H1-H2, Flex Q1-Q4), auto-HERO detection, storefront link scaffolding, and PROM-style description templates. v0.1.1: auto-skips the parser's new `e-rebate` Non-Included reason.",
   "author": {
     "name": "PCS Tools"
   },

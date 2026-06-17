@@ -45,6 +45,15 @@ value wins:
 Both labels mean "customer-facing online price." `Promo IMAP` is the
 promotional override; `IMAP` is the regular online minimum.
 
+**The on-slide pricing table is the price source — a cheat sheet should rarely
+be needed for Milwaukee.** Combo-kit and multi-tool slides print a multi-column
+table such as `ITEM # / DESCRIPTION / 50% OFF LIST / HEAVY DUTY / PROMO PRICE /
+IMAP / PROMO IMAP`. Read the table off the slide image and take **`Promo IMAP`,
+else `IMAP`**. The columns `50% OFF LIST`, `HEAVY DUTY` (/ `Heavy Duty Price`),
+and `PROMO PRICE` are **NOT** the customer price — never pick them. Only fall
+back to a cheat sheet when the slide genuinely has no readable IMAP/Promo IMAP
+column; a priced Milwaukee slide should not land in `missing-price`.
+
 ## Non-price labels (NEVER treat as price)
 
 - `Heavy Duty Price`
@@ -102,3 +111,16 @@ label AND **≥2 total** of these tokens:
   exactly 6 digits. If you see `PCE 12345` (5 digits) or `PCE 1234567`
   (7 digits) it's not a Milwaukee PCE — likely a typo or a different
   vendor's code. Don't append it.
+- **`PCE# E-REBATE` = e-rebate, exclude.** When the PCE field reads the literal
+  word `E-REBATE` (not 6 digits), the slide is an online-rebate promo — route
+  the whole page to `non_included` reason `e-rebate` and emit NO kit rows, even
+  though it shows a free-goods package + a price table. A `REDEEM AT …` header
+  with a `milwaukeetool.com/e-rebate` URL is the same signal. See
+  `reference/exclusion-markers.md#e_rebate_marker` and
+  `reference/page-classification.md` (#3c).
+- **Split battery slides (bold-line divider).** Milwaukee battery promos often
+  put two free goods (e.g. a `$79` and a `$129` battery) on one slide and split
+  the qualifying tools with a **bold black line**, each group earning only the
+  battery on its side. Do NOT Cartesian every tool against both batteries — pair
+  each group with its own free good. See
+  `reference/edge-cases.md#split-slides--qualifying-groups-with-per-group-free-goods`.

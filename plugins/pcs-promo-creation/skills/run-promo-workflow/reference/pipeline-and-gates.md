@@ -14,7 +14,7 @@ never answers a gate itself.
 
 | # | Where | Prompt (ask verbatim, fill the `<…>`) | On `N` |
 |---|-------|----------------------------------------|--------|
-| 0 | Step 0, only if `kb` must be installed/upgraded | `kb <version?> needs installing/upgrading to >= 0.5.18. Run the pip install now? (Y/N)` | Stop; show manual install steps and exit. |
+| 0 | Step 0, only if `kb` must be installed/upgraded | `kb <version?> needs installing/upgrading to >= 0.5.19. Run the pip install now? (Y/N)` | Stop; show manual install steps and exit. |
 | 4b-scale | Step 4b, only if > ~300 kits | `That's <N> kits to title — generate all, do the first <K>, or stop? (All / First N / Stop)` | Stop, or title only the first N, per the answer. |
 | 1 | Step 1, after uploads | `Parse this <vendor?> deck now? (Y/N)` | Stop; nothing parsed. |
 | 2 | Step 2, after parse + cheat-sheet fill | `Promo list looks right — continue to the Kit Builder? (Y/N)` | Stop; parser CSVs remain in the run dir. |

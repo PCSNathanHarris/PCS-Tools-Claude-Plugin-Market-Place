@@ -23,7 +23,7 @@ confirmation gates, the file hand-offs, and the pricing cheat-sheet fill.
 - Jira creation is done by the **`create-jira-promotions`** skill (plugin
   `pcs-jira-task-builder`).
 - The kit stage shells out to the **`kb`** CLI (the Kit Builder tool,
-  version **>= 0.5.18**), installed separately.
+  version **>= 0.5.19**), installed separately.
 
 All three must be present. See `reference/prerequisites.md`. Delegation
 details are in `reference/delegation.md`.
@@ -79,7 +79,7 @@ silently change data, and never let validation auto-answer a gate.
 ## Step 0 — Prerequisite check + run directory
 
 1. Verify the Kit Builder CLI is callable and current: run `kb --version`.
-   - If missing or `< 0.5.18`: stop and show the install/upgrade steps from
+   - If missing or `< 0.5.19`: stop and show the install/upgrade steps from
      `reference/prerequisites.md`. Offer to run the `pip install` for them
      **only after they confirm (Y/N)**. Do not install silently.
 2. Note that the Jira stage needs the **Atlassian MCP connector**; you only
@@ -167,23 +167,27 @@ Follow `reference/kit-stage.md`:
 
 ---
 
-## Step 4 — Build NS imports (+ optional images)
+## Step 4 — Build NS imports
 
-1. **Image gate:** `Compose kit images now? This can take many minutes on a
-   large deck. (Y/N)`
-2. Run with `--blank-titles` (you author the titles/descriptions in Step 4b),
-   adding `--no-images` when the image gate was **N**:
+1. Run the build **always with `--blank-titles --no-images`** (images can't
+   compose in Cowork's sandbox — they're done locally below):
    ```
    kb build-imports \
      --promo-list "<run dir>/<Vendor>-<QN>-<YYYY>-Promo-List.csv" \
      --ns-export  "<run dir>/<uploaded NS export>" \
      --out-dir    "<run dir>" \
      --prefix     "<vendor>_q<N>_<YYYY>" \
-     --blank-titles [--no-images]
+     --blank-titles --no-images
    ```
-3. Surface the CLI summary: new vs existing kit counts, the
-   `<prefix>_kit_create.csv` / `<prefix>_kits_existing.csv` paths, the image
-   ZIP (or "images skipped"), and any unmapped-SKU warnings.
+2. Surface the CLI summary: new vs existing kit counts, the
+   `<prefix>_kit_create.csv` / `<prefix>_kits_existing.csv` paths, and any
+   unmapped-SKU warnings.
+3. **Images gate:** ask `Do you want the composite kit images? (Y/N)`. On **Y**,
+   give the operator the macOS + Windows `kb … --images-only` one-liners from
+   `reference/kit-stage.md` (filled with this run's file names + prefix) to run
+   in **their own terminal** — Cowork's sandbox can't reach NetSuite's image
+   host. When `<prefix>_kit_images.zip` lands in the run directory, link it for
+   them. On **N**, skip.
 
 ---
 
@@ -315,7 +319,7 @@ List the key output paths so the operator can pick them up.
 
 ## Prerequisites
 
-- **Kit Builder `kb` CLI** on PATH, version **>= 0.5.18** (`pip install` from
+- **Kit Builder `kb` CLI** on PATH, version **>= 0.5.19** (`pip install` from
   the `pcs-kit-builder-lite` repo). Required for Steps 3–4.
 - **`pcs-promo-parser`** and **`pcs-jira-task-builder`** installed (they ship
   in this same marketplace, so installing this plugin's marketplace covers

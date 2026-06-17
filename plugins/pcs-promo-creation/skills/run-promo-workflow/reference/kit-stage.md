@@ -39,9 +39,10 @@ export itself).
 
 ## Step 4 — Build NS imports
 
-After the image gate (`reference/pipeline-and-gates.md`), run — always with
-`--blank-titles` (Claude writes the titles/descriptions in Step 4b), and with
-`--no-images` when the operator answered **N** to images:
+Run the build **always with `--blank-titles --no-images`** (Claude writes the
+titles in Step 4b; images are composed locally in "Composing the kit images"
+below — Cowork's sandbox cannot reach NetSuite's image host, so the build never
+composes here):
 
 ```
 kb build-imports \
@@ -49,19 +50,20 @@ kb build-imports \
   --ns-export  "<run dir>/<uploaded NS export file>" \
   --out-dir    "<run dir>" \
   --prefix     "<vendor>_q<N>_<YYYY>" \
-  --blank-titles \
-  [--no-images]
+  --blank-titles --no-images
 ```
 
-`--blank-titles` leaves the NS Create CSV's **Page Title** and **Detailed
-Description** columns empty — you fill them in Step 4b. Requires `kb >= 0.5.18`.
+Requires `kb >= 0.5.19`. `--blank-titles` leaves Page Title + Detailed
+Description empty (you fill them in Step 4b); `--no-images` skips composition
+(done locally — see below).
 
 Outputs land in the run directory:
 - `<prefix>_kit_create.csv` — NEW kits to create in NetSuite.
 - `<prefix>_kits_existing.csv` — already-existing kits to update.
 - `<prefix>_kit_create_RSA.csv` / `<prefix>_kits_existing_RSA.csv` — present
   only when RSA kits are mixed in.
-- `<prefix>_kit_images.zip` — composite images (omitted when `--no-images`).
+- `<prefix>_kit_images.zip` — composite images, produced by the local
+  images-only step below (not by this build).
 
 ## Surfacing the result
 
@@ -72,6 +74,38 @@ Outputs land in the run directory:
 - Any `vendor SKU(s) not yet built in NetSuite` warning — these are SKUs the
   NS search didn't return (often not yet set up in NetSuite). List the first
   few so the operator can chase them.
+
+## Composing the kit images (run locally — outside Cowork)
+
+Building the image ZIP means downloading each member's product image from
+NetSuite's image host and stitching them. **That download only works from the
+operator's own machine — Cowork's sandbox proxy is rejected by NetSuite (403)** —
+so the build above always uses `--no-images`, and the ZIP is produced by a
+one-line command the operator runs in **their own terminal**, in the run
+directory. It writes ONLY the ZIP (no CSVs), so the titles you authored in
+Step 4b are never touched, and composite filenames stay keyed to each kit's
+image source.
+
+If the operator wants images, give them **both** the macOS and Windows forms,
+filled in with this run's actual file names + prefix (don't leave the
+placeholders):
+
+**macOS (Terminal):**
+```
+cd "<run dir>"
+kb build-imports --promo-list "<Vendor>-<QN>-<YYYY>-Promo-List.csv" --ns-export "<NS export file>" --out-dir "." --prefix "<vendor>_q<N>_<YYYY>" --images-only
+```
+
+**Windows (PowerShell):**
+```
+cd "<run dir>"
+kb build-imports --promo-list "<Vendor>-<QN>-<YYYY>-Promo-List.csv" --ns-export "<NS export file>" --out-dir "." --prefix "<vendor>_q<N>_<YYYY>" --images-only
+```
+
+Requires `kb >= 0.5.19`. Tell them to run it and come back; when
+`<prefix>_kit_images.zip` appears in the run directory, **give them a link to the
+ZIP** and report the composed/failed counts it printed. **Do not attempt to
+compose images yourself in Cowork** — the fetch will 403.
 
 ## Step 4b — Write the Page Titles & Detailed Descriptions
 

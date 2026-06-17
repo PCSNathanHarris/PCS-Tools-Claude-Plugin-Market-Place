@@ -51,6 +51,15 @@ be configured and authenticated against the PCS Jira instance. You do **not**
 need it until Step 6, so don't block the earlier stages on it — but warn early
 if it's obviously absent so the operator can set it up before they get there.
 
+## 4. Drag-and-drop upload artifact (preferred, not required)
+
+The doc-request steps surface the inline **drag-and-drop file-upload artifact**
+via the Imagine/visualize widget tools (`mcp__visualize__read_me` +
+`mcp__visualize__show_widget`) — standard in the Cowork chat. If those tools
+aren't available in the session, the workflow falls back to a plain-text upload
+request, so this is preferred, not a hard requirement. See
+`reference/upload-widget.md`.
+
 ## Operator profile
 
 This full pipeline is meant for a few semi-technical operators. The one-time

@@ -14,8 +14,9 @@ the Python package.
 ```
 kb --version
 ```
-- Need **>= 0.5.17** (that version added the `--no-images` flag the image gate
-  uses).
+- Need **>= 0.5.18** (0.5.17 added the `--no-images` flag for the image gate;
+  0.5.18 added `--blank-titles`, which this workflow requires so Claude can
+  write the Page Title + Detailed Description).
 - If `kb` is missing or the version is older, show the install/upgrade below.
 
 **Install / upgrade (offer to run only after a Y/N confirm):**

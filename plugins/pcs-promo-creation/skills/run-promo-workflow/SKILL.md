@@ -23,7 +23,7 @@ confirmation gates, the file hand-offs, and the pricing cheat-sheet fill.
 - Jira creation is done by the **`create-jira-promotions`** skill (plugin
   `pcs-jira-task-builder`).
 - The kit stage shells out to the **`kb`** CLI (the Kit Builder tool,
-  version **>= 0.5.17**), installed separately.
+  version **>= 0.5.18**), installed separately.
 
 All three must be present. See `reference/prerequisites.md`. Delegation
 details are in `reference/delegation.md`.
@@ -65,7 +65,7 @@ without the explicit Yes. Full prompt wording is in
 ## Step 0 — Prerequisite check + run directory
 
 1. Verify the Kit Builder CLI is callable and current: run `kb --version`.
-   - If missing or `< 0.5.17`: stop and show the install/upgrade steps from
+   - If missing or `< 0.5.18`: stop and show the install/upgrade steps from
      `reference/prerequisites.md`. Offer to run the `pip install` for them
      **only after they confirm (Y/N)**. Do not install silently.
 2. Note that the Jira stage needs the **Atlassian MCP connector**; you only
@@ -142,17 +142,42 @@ Follow `reference/kit-stage.md`:
 
 1. **Image gate:** `Compose kit images now? This can take many minutes on a
    large deck. (Y/N)`
-2. Run (append `--no-images` when the image gate was **N**):
+2. Run with `--blank-titles` (you author the titles/descriptions in Step 4b),
+   adding `--no-images` when the image gate was **N**:
    ```
    kb build-imports \
      --promo-list "<run dir>/<Vendor>-<QN>-<YYYY>-Promo-List.csv" \
      --ns-export  "<run dir>/<uploaded NS export>" \
      --out-dir    "<run dir>" \
-     --prefix     "<vendor>_q<N>_<YYYY>"
+     --prefix     "<vendor>_q<N>_<YYYY>" \
+     --blank-titles [--no-images]
    ```
 3. Surface the CLI summary: new vs existing kit counts, the
    `<prefix>_kit_create.csv` / `<prefix>_kits_existing.csv` paths, the image
    ZIP (or "images skipped"), and any unmapped-SKU warnings.
+
+---
+
+## Step 4b — Write the Page Titles & Detailed Descriptions
+
+`--blank-titles` left the NS Create CSV's **Page Title** and **Detailed
+Description** columns empty. **You** write them now — this is the step that
+replaced the tool's deterministic generators — following
+`reference/title-description-rules.md`, using the kit groupings (create CSV),
+the member source text (NS export), and free-vs-paid (promo list).
+
+1. **Scale gate first** (`reference/kit-stage.md`): if there are more than
+   ~300 kits, tell the operator the count and ask whether to title **All**,
+   the **First N**, or **Stop** — a count in the thousands usually means the
+   deck over-expanded upstream and is worth fixing first.
+2. Author the Page Title + Detailed Description per kit, keeping brand spelling
+   and repeated-SKU wording consistent across the run.
+3. Write them back into the lead rows by CA Link via a short generated script
+   (preserve every other cell; save UTF-8-with-BOM). Repeat for the `_RSA`
+   create CSV if present.
+4. Self-check: each lead row has a Page Title (≤ 80 chars) and a Detailed
+   Description with the `KEY FEATURES:` + `INCLUDES:` sections; no free/paid
+   mislabels.
 
 ---
 
@@ -228,13 +253,14 @@ List the key output paths so the operator can pick them up.
 | `reference/pipeline-and-gates.md` | The full gate sequence and exact prompt wording; what each `N` does. |
 | `reference/kit-stage.md` | Steps 3–4 — exact `kb` commands, the DECODE/NetSuite round-trip, the `--no-images` gate. |
 | `reference/cheat-sheet.md` | Step 1b — how to read the pricing cheat sheet and merge filled prices into the Promo-List. |
+| `reference/title-description-rules.md` | Step 4b — the rules for writing each kit's Page Title + Detailed Description. |
 | `reference/delegation.md` | How to invoke `parse-promo-deck` and `create-jira-promotions` and pass them the run directory. |
 
 ---
 
 ## Prerequisites
 
-- **Kit Builder `kb` CLI** on PATH, version **>= 0.5.17** (`pip install` from
+- **Kit Builder `kb` CLI** on PATH, version **>= 0.5.18** (`pip install` from
   the `pcs-kit-builder-lite` repo). Required for Steps 3–4.
 - **`pcs-promo-parser`** and **`pcs-jira-task-builder`** installed (they ship
   in this same marketplace, so installing this plugin's marketplace covers

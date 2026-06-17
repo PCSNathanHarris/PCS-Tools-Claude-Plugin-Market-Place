@@ -160,7 +160,7 @@ python --version
 pip install --upgrade git+https://github.com/PCSNathanHarris/pcs-kit-builder-lite.git
 kb --version
 ```
-You need **0.5.17 or newer**.
+You need **0.5.18 or newer**.
 - This is **separate** from the Kit Builder desktop `.exe` — the app does not
   provide the `kb` command; this CLI does.
 - The CLI does **not** auto-update. When a new version ships, re-run the
@@ -284,7 +284,7 @@ claude                                     # First launch + login
 # Extra one-time setup for the full /run-promo-workflow pipeline only
 winget install Python.Python.3.12
 pip install --upgrade git+https://github.com/PCSNathanHarris/pcs-kit-builder-lite.git
-kb --version    # need >= 0.5.17
+kb --version    # need >= 0.5.18
 # plus: connect the Atlassian connector in Claude Code (for the Jira step)
 ```
 

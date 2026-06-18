@@ -150,8 +150,10 @@ If no cheat sheet was provided, say so and skip this step.
    `reference/validation.md` § Stage 1 (27-col schema, the $0-kit failsafe, date
    sanity, Parser-Audit reconciliation, encoding; sample kit rows vs the deck;
    suspicious exclusions; Other-Promotions `Promo Type` valid; the three retired
-   reasons absent from Non-Included). A missing output file means **zero rows of
-   that type, not an error** — reconcile against the always-present
+   reasons absent from Non-Included; **the v1.3.0 verification re-checks** —
+   vendor-regex re-match on every emit SKU, no `unverified`-held SKU present in
+   any emit output, and the `SKUs Held` reconcile). A missing output file means
+   **zero rows of that type, not an error** — reconcile against the always-present
    `Parser-Audit.csv`. Auto-correct formatting only; flag
    price/SKU/exclusion/vendor issues.
 2. Show a compact summary from the Parser-Audit + the filled/unresolved counts
@@ -160,9 +162,14 @@ If no cheat sheet was provided, say so and skip this step.
 3. **If the parser produced a For-Review workbook**, surface it here: relay the
    parser's markdown table (`PCE/Identifier | Page # | Reason(s) | SKUs`) and the
    link to the `.xlsx`, so the operator sees the flagged items before deciding.
+   **Call out verification-held items specifically** (Review Class `unverified`):
+   state the `SKUs Held` count and that those SKUs/prices were blocked from the
+   Promo-List by the grounding gate. A fully-held output (its file absent but
+   `Parser-Audit.SKUs Held` non-zero) is expected — reconcile via the audit.
 
 **Gate 2:** `Promo list looks right — continue to the Kit Builder? (Y/N)`
-(fold any ⚠️ findings — including any For-Review items — into this prompt)
+(fold any ⚠️ findings — including any For-Review items and any verification-held
+SKUs/prices — into this prompt)
 
 ---
 

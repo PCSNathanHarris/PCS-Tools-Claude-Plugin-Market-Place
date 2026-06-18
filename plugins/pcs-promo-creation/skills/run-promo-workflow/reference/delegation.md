@@ -22,6 +22,13 @@ Execute the `parse-promo-deck` workflow for the uploaded deck:
 - Do not pre-empt its vendor/quarter logic with your own guesses; if you need
   the vendor for a prompt before it's detected, say "this deck" until the
   parser reports it.
+- **Verification gate (parser v1.3.0+):** before writing, the parser runs an
+  independent per-SKU/price grounding gate (Step 5.5) and **HOLDS** any SKU/price
+  it can't ground in the deck — held items go to its For-Review workbook (Review
+  Class `unverified`) and are **NOT** in the Promo-List. Expect `SKUs Verified` /
+  `SKUs Held` in `Parser-Audit.csv`; surface held items at Gate 2 (see
+  `reference/validation.md` § Stage 1). The parser uses the read-only `Task` tool
+  internally to spawn its verifier — that's expected.
 
 After it finishes, the **parsed output dir** holds the Stage 1 outputs (each
 written **only when it has rows**; `*-Parser-Audit.csv` is always present and

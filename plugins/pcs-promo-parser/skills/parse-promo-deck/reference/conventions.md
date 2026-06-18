@@ -161,6 +161,26 @@ the price column or appearing under a `FREE GOOD` panel).
 This is a hard rule: wrong prices propagate downstream as wrong
 NetSuite items and cost real money to correct.
 
+(Grounding of the chosen price + SKU happens in Step 5.5 — see below.)
+
+---
+
+## Verification / grounding rule (v1.3.0)
+
+**No SKU or price reaches an emit output until it is independently grounded in the
+deck.** Extraction (Steps 4–5) only *stages* rows; the **Step 5.5 verification
+gate** (`reference/verification.md`) must then confirm each one before Step 6
+writes anything. A SKU is grounded only if it is found in the source text layer
+**or** confirmed-with-quote by the independent read-only verifier, **and** it
+matches the vendor SKU regex; its price is grounded the same way **and** matches
+the cheat sheet when the SKU is listed. Anything that fails is **held** to
+`For-Review.xlsx` (Review Class `unverified`) and **never written** to
+Promo-List / NLP-Sheet / RSA-Kits / RSA-NLP / Other-Promotions.
+
+This is a hard money-safety rule: the default for an ungroundable SKU/price is
+**withhold**, never guess. Match normalization mirrors the cheat-sheet rule
+(uppercase / trim / hyphen- and space-insensitive).
+
 ---
 
 ## Brand-prefix map (informational)

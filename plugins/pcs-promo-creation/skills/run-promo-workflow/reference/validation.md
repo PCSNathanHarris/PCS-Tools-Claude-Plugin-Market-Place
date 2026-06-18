@@ -74,6 +74,19 @@ Mechanical:
   stale parser — flag it).
 - Files decode cleanly (UTF-8/BOM); no mojibake.
 - No exact-duplicate rows.
+- **Verification gate (v1.3.0) — independently re-ground; don't just trust the
+  parser's own gate:**
+  - **Vendor-regex re-match:** with a generated script, load the matched vendor's
+    SKU regex (the first `Regex:` under `## SKU pattern`) and assert **every** SKU
+    in **every** slot of `*-Promo-List.csv`, `*-NLP-Sheet.csv`, `*-RSA-Kits.csv`,
+    `*-RSA-NLP.csv`, `*-Other-Promotions.csv` matches. Any non-match ⇒ ⚠️ (a
+    hallucinated SKU that slipped the gate).
+  - **No held SKU was emitted:** read `*-For-Review.xlsx`, collect the SKUs on
+    `unverified` rows, and assert **none** appears in any emit output. A leak ⇒ hard ⚠️.
+  - **`SKUs Held` reconcile:** assert `Parser-Audit.SKUs Held` == the count of
+    withheld-emit `unverified` For-Review rows (exclude `missed-on-page`). Mismatch ⇒ ⚠️.
+  - **`SKUs Verified` sanity:** assert `Parser-Audit.SKUs Verified` ≈ total filled
+    SKU slots across the five emit outputs; a large gap ⇒ ⚠️.
 
 Semantic:
 - Vendor + quarter/year match the deck.
@@ -85,7 +98,10 @@ Semantic:
   unresolved (no silent gaps).
 - **For-Review:** if `*-For-Review.xlsx` exists, relay the parser's table
   (`PCE/Identifier | Page # | Reason(s) | SKUs`) + the workbook link and fold a
-  ⚠️ into Gate 2 so the operator weighs the flagged items.
+  ⚠️ into Gate 2. **Call out verification-held items specifically** — state the
+  `SKUs Held` count and that those SKUs/prices were blocked from the Promo-List by
+  the grounding gate (Review Class `unverified`), so the operator reviews them
+  before continuing.
 
 Auto-correct: whitespace/encoding/date-format only. Flag: missing prices,
 suspicious exclusions, vendor/quarter mismatch.

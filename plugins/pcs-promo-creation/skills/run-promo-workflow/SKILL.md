@@ -173,9 +173,14 @@ Follow `reference/kit-stage.md`:
    kb decode-formula --skus "<parsed output dir>/<Vendor>-<QN>-<YYYY>-Promo-List.csv" \
      --field vendorname --out "<NS imports dir>/decode_blocks.txt"
    ```
-2. Display the DECODE block(s) and tell the operator to paste them into the
-   **NetSuite "Promo Kit Support" saved search** (Formula (Numeric) filter),
-   run it, and export the results.
+2. **Present the DECODE block(s) as a copy-paste artifact in chat** (see
+   `reference/kit-stage.md` → "Presenting the DECODE") — render each block via
+   `mcp__visualize__show_widget` as a selectable monospace box with its own
+   **Copy** button, so the operator copies each block in one click.
+   `decode_blocks.txt` is still written to the NS imports dir as a backup. Then
+   tell the operator to paste each block into the **NetSuite "Promo Kit Support"
+   saved search** (Formula (Numeric) filter — one block per criterion), run it,
+   and export the results.
 3. **Surface the upload artifact** (`reference/upload-widget.md`) for the
    NetSuite export (`.xls` or `.csv`) — render the drag-and-drop dropzone; the
    dropped file attaches to the conversation for the build. **Recreate the

@@ -33,15 +33,37 @@ kb decode-formula \
 ```
 - `decode-formula` accepts the Promo-List CSV directly and pulls the unique
   vendor SKUs from it.
-- Long SKU lists are split into multiple blocks (250 values each). Show every
-  block; tell the operator to paste each into the **Formula (Numeric)** filter
-  as separate criteria.
+- Long SKU lists are split into multiple blocks (250 values each). **Present
+  every block as a copy-paste artifact** (see "Presenting the DECODE" below);
+  the operator pastes each into the **Formula (Numeric)** filter as separate
+  criteria.
 - Then prompt them to upload the NetSuite export (`.xls` SpreadsheetML or
   `.csv`); save it into the **NS imports dir**.
 
 `decode_blocks.txt` is only for the operator's paste step — it is **not** an
 input to `build-imports` (the build auto-derives what it needs from the NS
 export itself).
+
+## Presenting the DECODE (copy-paste artifact)
+
+**Always** show the DECODE block(s) as a copy-paste artifact in chat — not just
+as a file or an inline mention — so the operator can grab each block in one
+click:
+
+- Render with `mcp__visualize__show_widget` (HTML mode): **one selectable
+  monospace code box per DECODE block**, each with its own **Copy** button
+  (`navigator.clipboard.writeText`). Label the boxes `Block 1 of N`, … when
+  there's more than one. Keep the explanatory text (where to paste, one block
+  per Formula (Numeric) criterion) in your normal chat message — the widget
+  holds only the block(s) + Copy buttons.
+- **Also** keep `decode_blocks.txt` in the **NS imports dir** as a backup copy.
+- **Fallback:** if the visualize widget tools aren't available, print each block
+  as its own fenced ``` code block ``` in chat (still copy-pasteable) — never
+  make the operator open the file to copy it.
+
+This is the same "render an artifact in chat" convention as the upload widget
+(`reference/upload-widget.md`), just for output the operator copies **out**
+rather than files they drop **in**.
 
 ## Step 4 — Build NS imports
 

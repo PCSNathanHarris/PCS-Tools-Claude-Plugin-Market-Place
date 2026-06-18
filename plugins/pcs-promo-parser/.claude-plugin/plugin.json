@@ -1,7 +1,7 @@
 {
   "name": "pcs-promo-parser",
-  "version": "1.1.0",
-  "description": "Parse vendor promo decks (Milwaukee, DeWalt, Makita, Bosch, EGO, Flex, GearWrench, Crescent) into PCS Kit Builder Stage 1 CSVs. Handles kit promos, NLP price drops, and exclusions including POS Redemption, ARP, and e-rebate. v1.1.0: e-rebate slides (REDEEM AT .../e-rebate, or PCE = E-REBATE) are excluded even with a free-goods table; split slides (a divider with per-group free goods) pair each qualifying group only with its own free good; `Get N` / `Choice of N` promos now emit multiset combinations so 'two of the same free good' is included; Milwaukee reads on-slide pricing tables (Promo IMAP > IMAP) so a cheat sheet is rarely needed. v1.0.0: RSA kits/NLPs route to dedicated RSA-Kits.csv / RSA-NLP.csv with credit amounts and `-RSA` Promo Name suffix; new-product launches skipped; Makita missing-price rows route to Needs-Pricing.csv. Outputs brand-quarter-year prefixed files ready for Stage 2/3/4.",
+  "version": "1.2.0",
+  "description": "Parse vendor promo decks (Milwaukee, DeWalt, Makita, Bosch, EGO, Flex, GearWrench, Crescent) into PCS Kit Builder Stage 1 outputs. Handles kit promos, NLP price drops, RSAs, and exclusions (POS Redemption, ARP, brick-and-mortar, etc.). v1.2.0: outputs are organized into `Parsed Decks/<Vendor>/<Vendor>-<QN>-<YYYY>-<MM-DD>/Promo Parsed Output/`; Buy-More-Save-More, e-rebate, and promo-code promos are now PARSED into a combined Other-Promotions.csv (no longer excluded); a conditional For-Review.xlsx collects low-confidence + missing-data pages with an in-chat table + link; empty outputs are no longer written, with the always-present Parser-Audit.csv as the run manifest. v1.1.0: split-slide per-group pairing, multiset `Get N` picks, Milwaukee on-slide pricing. v1.0.0: RSA-Kits/RSA-NLP outputs with credit amounts, Makita Needs-Pricing routing.",
   "author": {
     "name": "PCS Tools"
   },

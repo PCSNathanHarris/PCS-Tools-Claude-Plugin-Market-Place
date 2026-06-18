@@ -8,9 +8,9 @@
   "plugins": [
     {
       "name": "pcs-promo-parser",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "source": "./plugins/pcs-promo-parser/",
-      "description": "Parse vendor promo decks (Milwaukee, DeWalt, Makita, Bosch, EGO, Flex, GearWrench, Crescent) into PCS Kit Builder Stage 1 CSVs. v1.1.0: excludes e-rebate slides, pairs split slides per-group, allows duplicate free-good picks (multiset), and reads Milwaukee on-slide pricing tables."
+      "description": "Parse vendor promo decks (Milwaukee, DeWalt, Makita, Bosch, EGO, Flex, GearWrench, Crescent) into PCS Kit Builder Stage 1 outputs. v1.2.0: new `Parsed Decks/<Vendor>/<session>/Promo Parsed Output/` folder tree; BMSM, e-rebate, and promo-code promos are parsed into a combined Other-Promotions.csv instead of excluded; a conditional For-Review.xlsx flags low-confidence + missing-data pages; empty outputs aren't written (Parser-Audit.csv is the always-present manifest)."
     },
     {
       "name": "pcs-map-updater",
@@ -20,15 +20,15 @@
     },
     {
       "name": "pcs-jira-task-builder",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "source": "./plugins/pcs-jira-task-builder/",
-      "description": "Beta. Reads pcs-promo-parser Stage 1 CSVs and creates matching Jira Tasks in the PCS Promotions space. Hard PROM write-protection (literal-phrase gate), defaults to PAT, per-vendor period naming, auto-HERO detection, RSA per-row review, storefront link scaffolding. v0.1.1: auto-skips the parser's new e-rebate exclusion reason."
+      "description": "Beta. Reads pcs-promo-parser Stage 1 CSVs (Promo Parsed Output/ folder) and creates matching Jira Tasks in the PCS Promotions space. Hard PROM write-protection (literal-phrase gate), defaults to PAT, per-vendor period naming, auto-HERO detection, RSA per-row review, storefront link scaffolding. v0.2.0: also creates Tasks from the parser's Other-Promotions.csv (BMSM / e-rebate / promo-code) with per-group review and BMSM/E-Rebate/Coupon labels; those three are no longer Non-Included reasons; tolerates absent empty files via the Parser-Audit manifest."
     },
     {
       "name": "pcs-promo-creation",
-      "version": "1.4.0",
+      "version": "1.5.0",
       "source": "./plugins/pcs-promo-creation/",
-      "description": "Guided end-to-end promo pipeline: parse a vendor deck -> build NetSuite kit imports -> create Jira promotion tasks, with a Yes/No confirmation before each stage and the hard PROM write-protection at the Jira step. Surfaces a drag-and-drop file-upload artifact at every document step (deck, cheat sheet, NetSuite export). An AI validation pass scans each stage's imports/exports before its gate, auto-correcting safe issues and flagging the rest. v1.4.0: kit images are composed locally via a `kb --images-only` one-liner (macOS + Windows) since Cowork's sandbox can't reach NetSuite's image host; the ZIP lands in the run folder and Claude links it. Orchestrates pcs-promo-parser and pcs-jira-task-builder and drives the Kit Builder kb CLI (>= 0.5.19); Claude writes each kit's Page Title and Detailed Description from the item data using the ported title/description rules; prompts for deck, pricing cheat sheet, and NetSuite Promo Kit Support export uploads when needed."
+      "description": "Guided end-to-end promo pipeline: parse a vendor deck -> build NetSuite kit imports -> create Jira promotion tasks, with a Yes/No confirmation before each stage and the hard PROM write-protection at the Jira step. Surfaces a drag-and-drop file-upload artifact at every document step (deck, cheat sheet, NetSuite export). An AI validation pass scans each stage's imports/exports before its gate, auto-correcting safe issues and flagging the rest. v1.5.0: a run lands in one session folder `Parsed Decks/<Vendor>/<session>/` with Promo Parsed Output / NetSuite Import Files / Images subfolders; the upload widget is recreated on every file (re)prompt; the parser's For-Review workbook is surfaced at the kit gate. v1.4.0: kit images are composed locally via a `kb --images-only` one-liner (macOS + Windows) since Cowork's sandbox can't reach NetSuite's image host. Orchestrates pcs-promo-parser and pcs-jira-task-builder and drives the Kit Builder kb CLI (>= 0.5.19); Claude writes each kit's Page Title and Detailed Description from the item data using the ported title/description rules; prompts for deck, pricing cheat sheet, and NetSuite Promo Kit Support export uploads when needed."
     }
   ]
 }

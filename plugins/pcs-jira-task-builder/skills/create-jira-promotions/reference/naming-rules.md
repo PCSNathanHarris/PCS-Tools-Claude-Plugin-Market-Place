@@ -17,7 +17,7 @@ Components:
 
 Example: `2026 P2 - Free Battery — M18 1852 + 2 Bare Tools @ $299 (HERO)`
 
-## N2 — Coupon-code title format (currently out of scope for v0.1.0)
+## N2 — Coupon-code title format (v0.2.0)
 
 ```
 <Vendor> <YYYY> Coupon Code - <CODE>
@@ -33,9 +33,9 @@ Holidays/events (Memorial Day, Black Friday) are PCS-internal — the
 skill never invents them. Insert only if explicitly extracted from the
 deck text. Coupon Tasks always parent to the `COUPON CODE PROMOS` Epic.
 
-For v0.1.0, the parser routes coupon-code pages to `non_included.csv`
-(reason `promo-code-only`), so this format isn't generated automatically.
-Documented for future parser-integration cycles.
+As of parser v1.2.0, coupon-code promos arrive in `Other-Promotions.csv`
+(Promo Type `promo-code`), so this skill generates these titles automatically.
+`<CODE>` is the `Promo Code` column — never a FLEX `SOT…` deal identifier.
 
 ## N3 — Standalone / hand-managed Tasks (skill never touches)
 
@@ -59,7 +59,7 @@ filename quarter to the right token per vendor:
 | GearWrench | `P1` / `P2` | Q1/Q2 → P1; Q3/Q4 → P2 |
 | EGO | `H1` / `H2` | Q1/Q2 → H1; Q3/Q4 → H2 |
 | Flex | `Q1` / `Q2` / `Q3` / `Q4` | Direct (no remap) |
-| Crescent | n/a — uses Rule N2 (coupon-code, out of scope v0.1.0) | n/a |
+| Crescent | n/a — uses Rule N2 (coupon-code) | n/a |
 | SKIL (under OTHER BRANDS Epic) | Year-quarter-vendor compound | e.g. `2026 Q3 SKIL NLPs` |
 | Fluke, JPW, Fondue Discounts, Specials/Self-Funded | Hand-managed | Skill never generates |
 
@@ -83,9 +83,10 @@ table above.
 | Promo-List rows, multi-paid bundle (no free) | `Bundles` (or specific: `Lighting Bundles`, `Nailer Bundles`, `Concrete Tool Bundles`) |
 | RSA-Kits rows | `RSAs` |
 | RSA-NLP rows | `RSAs` |
-| Needs-Pricing rows (out of scope v0.1.0) | `Needs Pricing` |
-| Deck-flagged E-Rebate | `E-Rebate` |
-| Deck-flagged BMSM | `BMSM` |
+| Needs-Pricing rows (out of scope) | `Needs Pricing` |
+| Other-Promotions rows, Promo Type `e-rebate` | `E-Rebate` (N1 template) |
+| Other-Promotions rows, Promo Type `buy-more-save-more` | `BMSM` (N1 template) |
+| Other-Promotions rows, Promo Type `promo-code` | uses **Rule N2** title format, not a Category |
 
 **When in doubt:** prompt the user before guessing a Category. Wrong
 categories cost board-view clarity downstream.
@@ -108,7 +109,7 @@ HERO promos get **both**:
 - Suffix ` (HERO)` appended as the last token of the title.
 
 HERO is auto-detected per `labels.md` Rule L4 (starter kit free good,
-2+ free goods, BMSM pages — though BMSM is currently parser-excluded).
+2+ free goods, BMSM — BMSM now arrives via `Other-Promotions.csv`).
 
 ## N8 — PCE/PCR identifier handling
 

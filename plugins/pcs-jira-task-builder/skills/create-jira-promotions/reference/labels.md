@@ -24,7 +24,7 @@ fields serve different audiences.
 
 ## L3 — Promo type label
 
-Exactly one of these four values per Task:
+Exactly one of these values per Task (the promo-type label):
 
 | Parser source → | Label |
 |---|---|
@@ -32,11 +32,14 @@ Exactly one of these four values per Task:
 | RSA-Kits.csv rows | `Kit-Promo` (RSA flavor signaled by POS Redemption=Yes, not by label) |
 | NLP-Sheet.csv rows (any `Source Marker`, including special-buy) | `NLP` |
 | RSA-NLP.csv rows | `NLP` |
-| Needs-Pricing.csv rows (out of scope v0.1.0) | `NLP` |
-| Coupon-code promos (out of scope v0.1.0) | `Coupon` |
-| E-Rebate promos (deck-flagged) | `E-Rebate` |
+| Needs-Pricing.csv rows (out of scope) | `NLP` |
+| Other-Promotions.csv, Promo Type `promo-code` | `Coupon` |
+| Other-Promotions.csv, Promo Type `e-rebate` | `E-Rebate` |
+| Other-Promotions.csv, Promo Type `buy-more-save-more` | `BMSM` |
 
-Only one promo-type label per Task. No multi-type labels.
+Only one promo-type label per Task. No multi-type labels. (Parser v1.2.0 routes
+coupon / e-rebate / BMSM promos through `Other-Promotions.csv`; before that they
+were excluded, so `Coupon` / `E-Rebate` / `BMSM` were unreachable.)
 
 ## L4 — Auto-HERO detection
 
@@ -44,7 +47,7 @@ A Task is HERO when **any** of these triggers fire:
 
 | Trigger | Detection logic |
 |---|---|
-| BMSM sale | Deck page is BMSM. **Gap:** parser currently excludes BMSM as `non_included` reason `buy-more-save-more` — they don't reach Promo-List/NLP-Sheet. BMSM HEROs need a parser-side change before v0.1.0 can catch them. Document, don't emit. |
+| BMSM sale | The row comes from `Other-Promotions.csv` with Promo Type `buy-more-save-more` (parser v1.2.0). These now reach the plugin — emit the HERO (label `BMSM` + Priority Highest). |
 | Kit promo with starter kit as free good | Promo-List row has a free SKU (slot price = 0.00) whose description or Promo Name contains `starter kit` (case-insensitive). |
 | Kit promo with 2+ free goods | Promo-List row has **2 or more** slots filled where price = 0.00 (counting slots 2..6). Mix of bare tools / batteries / both — doesn't matter, the count alone triggers HERO. |
 
@@ -60,7 +63,7 @@ When ANY trigger fires:
   with the `labels` field in the `additional_fields` (or `fields`)
   parameter.
 - Labels are **case-sensitive** in Jira. Emit exactly `Kit-Promo`,
-  `NLP`, `Coupon`, `E-Rebate`, `Q1`/`Q2`/`Q3`/`Q4` with the casing
+  `NLP`, `Coupon`, `E-Rebate`, `BMSM`, `Q1`/`Q2`/`Q3`/`Q4` with the casing
   shown.
 - The `2026` (year) label is just a string — Jira doesn't validate it's
   a year, but keep the format consistent.
@@ -73,4 +76,5 @@ When ANY trigger fires:
 | DeWalt Q3 2026 kit promo (Free Battery) | `2026`, `Q3`, `Kit-Promo` |
 | Milwaukee Q3 2026 RSA kit | `2026`, `Q3`, `Kit-Promo` (POS Redemption=Yes signals RSA; not a separate label) |
 | Makita Q3 2026 E-Rebate | `2026`, `Q3`, `E-Rebate` |
-| Crescent Q3 2026 Coupon (v0.1.0 manual) | `2026`, `Q3`, `Coupon` |
+| Crescent Q3 2026 Coupon (Other-Promotions) | `2026`, `Q3`, `Coupon` |
+| Milwaukee Q3 2026 BMSM (HERO) | `2026`, `Q3`, `BMSM` (Priority Highest) |

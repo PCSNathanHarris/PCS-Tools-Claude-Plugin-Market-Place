@@ -34,14 +34,14 @@ intact (it's still on the page being parsed) instead of losing it.
 
 Catch anything that still slipped through:
 
-1. Read `<run dir>/<Vendor>-<QN>-<YYYY>-Needs-Pricing.csv` and any
-   `Non-Included.csv` rows with reason `missing-price`.
+1. Read `<parsed output dir>/<Vendor>-<QN>-<YYYY>-Needs-Pricing.csv` (if present)
+   and any `Non-Included.csv` rows with reason `missing-price`.
 2. For each, look up the SKU in the cheat-sheet map.
    - **Found, and the deal's free goods are recoverable** (from the row's Deal
      Text, or by re-reading that deck page): build the proper Promo-List
      row(s) — paid SKU at the filled price, free goods at `0.00` — and append
-     to `<Vendor>-<QN>-<YYYY>-Promo-List.csv` (27-column schema, same encoding:
-     UTF-8 BOM, CRLF, `M/D/YYYY` dates).
+     to `<parsed output dir>/<Vendor>-<QN>-<YYYY>-Promo-List.csv` (27-column
+     schema, same encoding: UTF-8 BOM, CRLF, `M/D/YYYY` dates).
    - **Found, but the pairing is unclear:** show the row + cheat-sheet price to
      the operator and ask how to pair it, rather than guessing.
    - **Not found:** leave it unresolved.

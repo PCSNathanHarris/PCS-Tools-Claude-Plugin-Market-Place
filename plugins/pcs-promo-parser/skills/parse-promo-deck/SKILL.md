@@ -1,13 +1,13 @@
 ---
 name: parse-promo-deck
-description: Parse a vendor promo deck (PDF, PNG, or JPG) end-to-end into the PCS Kit Builder Stage 1 output CSVs — Promo-List, Non-Included, NLP-Sheet, Parser-Audit, plus the v0.3.0 outputs RSA-Kits, RSA-NLP, and (Makita) Needs-Pricing. Use whenever the user supplies a Milwaukee, DeWalt, Makita, Bosch, EGO, Flex, GearWrench, or Crescent promo deck and asks to parse it, extract kits, build a Promo List, generate Stage 1 outputs, or process a vendor flyer.
+description: Parse a vendor promo deck (PDF, PNG, or JPG) end-to-end into the PCS Kit Builder Stage 1 output files — Promo-List, Non-Included, NLP-Sheet, Parser-Audit, the v0.3.0 outputs RSA-Kits, RSA-NLP, and (Makita) Needs-Pricing, plus the v1.2.0 outputs Other-Promotions (Buy-More-Save-More / e-rebate / promo-code) and a For-Review workbook for anything ambiguous. Use whenever the user supplies a Milwaukee, DeWalt, Makita, Bosch, EGO, Flex, GearWrench, or Crescent promo deck and asks to parse it, extract kits, build a Promo List, generate Stage 1 outputs, or process a vendor flyer.
 allowed-tools: Read, Write, Glob, Bash
 ---
 
 # Parse Promo Deck
 
-You are parsing a vendor promo deck and producing the four Stage 1 output
-CSVs for the PCS Kit Builder pipeline. The output of this skill drops
+You are parsing a vendor promo deck and producing the Stage 1 output
+files for the PCS Kit Builder pipeline. The output of this skill drops
 directly into the AI-stripped fork of the Kit Builder app for Stages
 2/3/4 (DECODE generator → Anglera builder → Finalize), so the CSV
 schemas **must match exactly**.
@@ -49,12 +49,32 @@ Follow these steps in order.
 
 - The user provides a path to a `.pdf`, `.png`, `.jpg`, or `.jpeg` file.
   If they didn't, ask once.
-- **Default output directory**: `./parsed-output/<vendor>_<YYYY-MM-DD>/`
-  relative to the user's current working directory, where `<vendor>` is
-  the detected vendor key (e.g. `milwaukee`, `dewalt`) and the date is
-  today UTC. If the user passed an explicit output directory, use that
-  instead.
-- Create the output dir before writing CSVs.
+- **Output location** — build this tree under the user's current working
+  directory (or under an explicit output directory if the user passed one):
+
+  ```
+  Parsed Decks/<Vendor>/<Vendor>-<QN>-<YYYY>-<MM-DD>[_NN]/
+    Promo Parsed Output/   ← this skill writes all its CSVs (+ For-Review.xlsx) here
+  ```
+
+  - `<Vendor>` is the Title-cased display name (the same token as the
+    file-name segment: `Milwaukee`, `DeWalt`, `Makita`, `Bosch`, `EGO`,
+    `Flex`, `GearWrench`, `Crescent`) — detected in Step 2.
+  - `<QN>`/`<YYYY>` are the promo quarter/year determined below; `<MM-DD>` is
+    today's run date — so the session folder reads `Milwaukee-Q2-2026-06-18`.
+  - **`_NN` collision suffix**: before creating the folder, `Glob`
+    `Parsed Decks/<Vendor>/<Vendor>-<QN>-<YYYY>-<MM-DD>*`. If nothing matches,
+    use the bare stem (no suffix). If the bare stem (or any `_NN`) already
+    exists — a re-run on the same day — append the lowest unused two-digit
+    suffix starting at `_02` (`…-06-18`, then `…-06-18_02`, `…-06-18_03`, …).
+    Never reuse `_01`. (Glob-then-create is not atomic; fine for
+    single-operator interactive use.)
+  - Construct this once the vendor (Step 2) and quarter/year are known, and
+    create the `Promo Parsed Output/` folder before writing CSVs in Step 6.
+    The `NetSuite Import Files/` and `Images/` sibling folders are created
+    later by their own pipeline stages — this skill does NOT create them.
+  - **Quote every path** — `Parsed Decks` and `Promo Parsed Output` contain
+    spaces.
 - **Determine the quarter and year** for file naming (see File Naming
   Convention below). Try in this order:
   1. Deck filename — scan for patterns like `Q2 2026`, `Q2-2026`,
@@ -104,6 +124,10 @@ in-context lists:
 - `rsa_nlp_rows` — RSA single-SKU rows for `RSA-NLP.csv` (v0.3.0)
 - `needs_pricing_rows` — Makita paid SKUs with no extractable price across
   any tier, for `Needs-Pricing.csv` (v0.3.0; Makita only)
+- `other_promotions` — Buy-More-Save-More / e-rebate / promo-code rows for
+  `Other-Promotions.csv` (v1.2.0; these are parsed, NOT excluded)
+- `for_review` — low-confidence (unclassifiable) + missing-data items for
+  `For-Review.xlsx` (v1.2.0)
 - `audit_counters` — page-type counts for `Parser-Audit.csv`
 
 ### Step 4 — Per-page classification
@@ -119,20 +143,29 @@ For every page, apply the decision tree in
     `reference/page-classification.md#3a`)
 3b. **New product launch / new arrivals** → `non_included` reason
     `new-product` (skip the page entirely; v0.3.0)
-3c. **E-rebate (online rebate portal)** → `non_included` reason `e-rebate`.
-    Signal: a `REDEEM AT …/e-rebate` header OR a `PCE = E-REBATE` value.
-    Excluded even with a free-goods package + price table (overrides the 4a
-    B1G1 exception). See `reference/page-classification.md#3c`.
+3c. **E-rebate (online rebate portal)** → `other_promotions` (Promo Type
+    `e-rebate`). Signal: a `REDEEM AT …/e-rebate` header OR a `PCE = E-REBATE`
+    value. Routed here (NOT a kit, NOT Non-Included) even with a free-goods
+    package + price table (overrides the 4a B1G1 exception). See
+    `reference/page-classification.md#3c`.
 4. **Spend-to-earn / rebate** → `non_included` reason `spend-to-earn`
 4a. **POS Redemption / mail-in rebate** → `non_included` reason `pos-redemption`
-5. **Buy-More-Save-More / volume-tiered** → `non_included` reason `buy-more-save-more`
-6. **Promo-code / coupon / checkout-code** → `non_included` reason `promo-code-only`
+5. **Buy-More-Save-More / volume-tiered** → `other_promotions` (Promo Type `buy-more-save-more`)
+6. **Promo-code / coupon / checkout-code** → `other_promotions` (Promo Type
+   `promo-code`) — the FLEX `PROMO CODE: SOT…` deal identifier is NOT a promo
+   code (see traps); never emit it as a promo-code row
 6a. **ARP / Authorized Retailer Program** → `non_included` reason `arp`
 7. **NLP / Special Buy / Clearance / % Off / Price Drop** → emit to
    `nlp_rows` (NOT `non_included` — these are real shelf-price drops
    that need to land in NetSuite)
 8. **Cover / TOC / dealer info / marketing** → skip silently (counted
    in audit only)
+8a. **Unclassifiable / low-confidence** → `for_review` (emit no kit / NLP /
+    Other-Promotions / Non-Included rows). Ambiguous or unknown layout, 2+
+    conflicting markers with no priority winner, an unrecognized page type, or
+    an unconfirmed Crescent layout. Sits ABOVE the kit fallthrough so ambiguous
+    pages go to human review instead of being silently kitted. See
+    `reference/page-classification.md#8a`.
 9. **Otherwise** → it's a **kit page**: emit Cartesian rows to
    `promo_rows`
 
@@ -184,10 +217,14 @@ Use the matched vendor's reference file as the authority.
 - **No paid SKU without a price.** If price extraction fails for ALL
   tiers in `price_label_priority`, drop that SKU to `non_included` with
   reason `missing-price` rather than emitting a zero-priced paid row.
+  **Also add it to `for_review`** (Review Class `missing-data`, Missing Field
+  `price`) so the operator sees the gap — this surfaces the drop, it does not
+  change it.
   - **Makita exception (v0.3.0)**: when the vendor is Makita and ALL
     price tiers are blank or `N/A`, route the SKU to
     `needs_pricing_rows` instead of `non_included`. The team fills in
-    pricing manually downstream. See
+    pricing manually downstream; **also add a `for_review` row**
+    (Review Class `missing-data`, reason `missing-price-makita`). See
     `reference/vendors/makita.md#missing-price-routing`.
 
 **NLP pages** (Step 4 case 7):
@@ -201,14 +238,37 @@ Use the matched vendor's reference file as the authority.
 - If a SKU has no extractable price, emit it anyway with blank
   `promo_price` — the user fills in manually downstream.
 
-**Excluded pages** (Step 4 cases 1–6):
+**Excluded pages** (the true exclusions — killed, brick-and-mortar, spiff,
+new-product, spend-to-earn, pos-redemption, arp, strikethrough,
+image-only-free-good, missing-price):
 - Emit one `non_included` row per affected SKU (or one row with
   blank SKU if no SKUs were extractable). Set `Reason` to the case
   label and `Detail` to a short phrase echoing the marker text.
+- **e-rebate, Buy-More-Save-More, and promo-code pages are no longer excluded**
+  — they are parsed into `other_promotions` (see below).
+
+**Other-Promotions pages** (Step 4 cases 3c e-rebate, 5 BMSM, 6 promo-code):
+- Parse, don't discard. Emit one `other_promotions` row per SKU (or one
+  blank-SKU row if none) per `reference/output-csvs.md#other-promotionscsv`.
+  Set `Promo Type` to `e-rebate` / `buy-more-save-more` / `promo-code` and
+  capture the type-specific detail — e-rebate: redemption URL + rebate amount;
+  BMSM: tier text + discount; promo-code: the checkout code + discount. Emit
+  **no** kit / NLP / RSA / Non-Included rows for these pages.
+- **FLEX trap**: `PROMO CODE: SOT…` is a deal identifier, not a checkout code —
+  never put it in `Promo Code`; carry it in the deal-title brackets instead.
+
+**For-Review items** (Step 4 case 8a + any missing-data drop):
+- Low-confidence pages (8a) → one `for_review` row (Review Class
+  `low-confidence`) with the reason, best-guess `Suggested Bucket`, page, and
+  any extracted SKUs / identifier.
+- Missing-data drops (blank price/SKU) → one `for_review` row (Review Class
+  `missing-data`) in ADDITION to the SKU's normal routing.
+- See `reference/output-csvs.md#for-reviewxlsx` for the column layout.
 
 ### Step 6 — Write the output CSVs
 
-When all pages have been processed, write:
+When all pages have been processed, write these into the run's
+`Promo Parsed Output/` folder (quote the path — it contains a space):
 
 | File | Source list | Schema reference |
 |------|-------------|------------------|
@@ -217,26 +277,49 @@ When all pages have been processed, write:
 | `<Vendor>-<QN>-<YYYY>-NLP-Sheet.csv` | `nlp_rows` | `reference/output-csvs.md#nlp_sheetcsv` |
 | `<Vendor>-<QN>-<YYYY>-RSA-Kits.csv` | `rsa_kit_rows` | `reference/output-csvs.md#rsa-kitscsv` |
 | `<Vendor>-<QN>-<YYYY>-RSA-NLP.csv` | `rsa_nlp_rows` | `reference/output-csvs.md#rsa-nlpcsv` |
-| `<Vendor>-<QN>-<YYYY>-Needs-Pricing.csv` | `needs_pricing_rows` | `reference/output-csvs.md#needs-pricingcsv` (Makita only; emit header-only when empty for other vendors) |
+| `<Vendor>-<QN>-<YYYY>-Needs-Pricing.csv` | `needs_pricing_rows` | `reference/output-csvs.md#needs-pricingcsv` (Makita only) |
+| `<Vendor>-<QN>-<YYYY>-Other-Promotions.csv` | `other_promotions` | `reference/output-csvs.md#other-promotionscsv` |
 | `<Vendor>-<QN>-<YYYY>-Parser-Audit.csv` | `audit_counters` | `reference/output-csvs.md#parser_auditcsv` |
+
+(The `for_review` list is written separately as
+`<Vendor>-<QN>-<YYYY>-For-Review.xlsx` in Step 6b — not as a CSV.)
 
 Where `<Vendor>` is the display name (e.g. `Milwaukee`, `DeWalt`,
 `Makita`), `<QN>` is the quarter (e.g. `Q2`), and `<YYYY>` is the
 4-digit year (e.g. `2026`). See **File Naming Convention** below.
 
-All four are written with:
+Each file is written with:
 - **Encoding**: `utf-8-sig` (UTF-8 with BOM)
 - **Line ending**: `\r\n` (Excel-friendly)
 - **Date format**: M/D/YYYY non-padded (e.g. `5/4/2026`, never `05/04/2026`)
 - **Price format**: 2-decimal fixed (e.g. `199.00`)
 - **Empty cells**: empty string (NOT zero, NOT "None")
 
-Write the files using the Write tool. Even if a list is empty, emit the
-header-only file — Stage 2/3 of the app expect at least the original
-four (`Promo-List`, `Non-Included`, `NLP-Sheet`, `Parser-Audit`) to
-exist. The v0.3.0 additions (`RSA-Kits`, `RSA-NLP`, `Needs-Pricing`)
-are emitted header-only when no rows match — keeps file listings
-consistent across runs.
+**Only create a file when its list has at least one data row.** If a list is
+empty, do NOT write the file — no empty / header-only files. The one exception
+is **`Parser-Audit.csv` — always write it**: it is a single summary row and is
+the run manifest, recording the counts for every other output so downstream
+stages know what to expect even when those files are absent. `For-Review.xlsx`
+is conditional too (Step 6b — written only when there are review items).
+
+### Step 6b — Write For-Review.xlsx (only if there are review items)
+
+If `for_review` has **zero** rows, skip this step entirely — write no file and
+print no review table.
+
+If `for_review` has **one or more** rows:
+1. Generate and run a throwaway Python script (the marketplace ships no runtime
+   code — see Top-level rules) that uses `openpyxl` to write
+   `<Vendor>-<QN>-<YYYY>-For-Review.xlsx` into the run's `Promo Parsed Output/`
+   folder — one sheet named `For Review`, a **bold + frozen header row**, and the
+   columns in `reference/output-csvs.md#for-reviewxlsx`. If `openpyxl` isn't
+   importable, `pip install openpyxl` first; if that also fails, fall back to a
+   `<Vendor>-<QN>-<YYYY>-For-Review.csv` and say so.
+2. Print a markdown table in chat so the operator sees the flags inline —
+   columns **exactly**: `PCE/Identifier | Page # | Reason(s) | SKUs` (one row per
+   `for_review` item).
+3. Follow the table with a clickable markdown link to the workbook, e.g.
+   `[Open For-Review workbook](Parsed Decks/<Vendor>/<session>/Promo Parsed Output/<Vendor>-<QN>-<YYYY>-For-Review.xlsx)`.
 
 ### Step 7 — Report
 
@@ -245,23 +328,26 @@ Print a short summary table for the user:
 ```
 ✅ Parsed: <deck-name>
 Vendor: <vendor-display>
-Pages: <total> (<kit> kit, <nlp> NLP, <rsa> RSA, <excluded> excluded, <skip> skipped)
+Pages: <total> (<kit> kit, <nlp> NLP, <rsa> RSA, <other> other-promo, <excluded> excluded, <skip> skipped)
 Promo rows: <n>
 NLP rows: <n>
 RSA kit rows: <n>
 RSA NLP rows: <n>
 Needs-Pricing rows: <n>
+Other-Promotions rows: <n>
 Non-included: <n>
-Output: <output-dir>/
+For-Review rows: <n> (workbook written: yes/no)
+Session folder: Parsed Decks/<Vendor>/<session>/
+Parser output: <session>/Promo Parsed Output/
 
-Files:
+Files written (only those with data — empty outputs are skipped):
 - <Vendor>-<QN>-<YYYY>-Promo-List.csv (<n> rows)
-- <Vendor>-<QN>-<YYYY>-Non-Included.csv (<n> rows)
 - <Vendor>-<QN>-<YYYY>-NLP-Sheet.csv (<n> rows)
-- <Vendor>-<QN>-<YYYY>-RSA-Kits.csv (<n> rows)
-- <Vendor>-<QN>-<YYYY>-RSA-NLP.csv (<n> rows)
-- <Vendor>-<QN>-<YYYY>-Needs-Pricing.csv (<n> rows)
-- <Vendor>-<QN>-<YYYY>-Parser-Audit.csv (1 row)
+- <Vendor>-<QN>-<YYYY>-Other-Promotions.csv (<n> rows)
+- <Vendor>-<QN>-<YYYY>-Non-Included.csv (<n> rows)
+- <Vendor>-<QN>-<YYYY>-RSA-Kits.csv / RSA-NLP.csv / Needs-Pricing.csv (only if non-empty)
+- <Vendor>-<QN>-<YYYY>-For-Review.xlsx (<n> rows) — only when there are review items
+- <Vendor>-<QN>-<YYYY>-Parser-Audit.csv (1 row) — always written (run manifest)
 ```
 
 Then stop. Do not move on to Stages 2/3/4 — those are separate skills /
@@ -292,7 +378,12 @@ Every output file is prefixed with three segments joined by hyphens:
 | rsa_kits | `RSA-Kits` |
 | rsa_nlp | `RSA-NLP` |
 | needs_pricing | `Needs-Pricing` |
+| other_promotions | `Other-Promotions` |
+| for_review | `For-Review` (**`.xlsx`**, not `.csv`) |
 | parser_audit | `Parser-Audit` |
+
+All outputs are `.csv` **except `For-Review`, which is an `.xlsx` workbook**
+(`<Vendor>-<QN>-<YYYY>-For-Review.xlsx`).
 
 **Full examples:**
 

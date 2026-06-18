@@ -16,13 +16,27 @@ chat `+` button, so you can read it like any other attachment.
 If you ever add another step that needs a file, surface the artifact there too —
 this is the standing convention, not a per-step special case.
 
+## Recreate the widget on every (re)prompt
+
+The widget is **ephemeral** — once it scrolls up the chat it can't be reused.
+Every time you arrive at (or **return to**) a file-request point, render a
+**fresh** widget:
+
+- After the operator hits **Skip**, says "not yet", or does anything else in
+  chat and the workflow comes back to asking for that file → render it again.
+- Never tell the operator to "use the box above" or wait on a stale widget.
+- The **only** time you skip rendering is when the needed file is **already
+  attached** (step 1 below). Don't nag for a file you already have.
+
 ## How to render it
 
 The artifact is an **elicitation widget**. To render it:
 
 1. **Infer first.** If the needed file is already attached to the conversation
    (the operator dropped it before/while invoking the skill), **skip the widget**
-   and use the attachment. Only surface the dropzone for files you don't have.
+   and use the attachment. Only surface the dropzone for files you don't have —
+   and when you do, render a **fresh** widget each time you (re)reach this point,
+   never a pointer to an earlier one.
 2. Call `mcp__visualize__read_me` with the `elicitation` module once to load the
    current canonical chrome (the File header anthropicon + the Upload dropzone
    SVG are fixed chrome — emit them byte-for-byte from what read_me returns).

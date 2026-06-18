@@ -49,6 +49,36 @@ Redemption Tracking - <blank URL — paste NS Saved Search URL>
   Tracking` rows with blank URLs.
 - **Source:** required. Always include for traceability.
 
+## Other-Promotions description (BMSM / e-rebate / promo-code) — v0.2.0
+
+For `Other-Promotions.csv` Tasks, render the standard Template (Date range,
+Promo Identifier, SKUs, Collection Links, NetSuite, Source) **plus** a
+type-specific block right after the Promo Identifier line:
+
+- **Promo type:** `Buy More Save More` | `E-Rebate` | `Coupon` (from `Promo Type`).
+- **e-rebate** → also add:
+  ```
+  **Rebate amount:** $<Rebate Amount>
+  **Redeem at:** <Redemption URL>
+  ```
+- **promo-code** → also add:
+  ```
+  **Promo code:** <Promo Code>
+  **Discount:** <Discount>
+  ```
+- **buy-more-save-more** → also add:
+  ```
+  **Tiers:** <tier ladder, e.g. "Buy 5+ = 10% off; Buy 10+ = 15% off">
+  **Discount:** <Discount>
+  ```
+
+The **SKUs** table lists the qualifying SKUs — one row per SKU, `Slot` = `Item`,
+`Price` = the `Price` column when present (else blank), `Notes` = model /
+description. These promos have no paid/free pairing, so don't force `FREE` rows.
+
+Never render a FLEX `SOT…` identifier as a **Promo code:** — it belongs on the
+**Promo Identifier:** line.
+
 ## Image handling
 
 **Never reference images in the description.** No `Deck Page

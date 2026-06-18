@@ -9,6 +9,11 @@ text layer), but you should never be **less** strict.
 Several markers have **false-positive traps** documented after the
 phrase lists. Read those carefully before deciding.
 
+> **v1.2.0 routing change:** `E_REBATE_MARKER`, `BMSM_MARKER`, and
+> `PROMO_CODE_MARKER` no longer route to `Non-Included.csv`. They are **parsed
+> into `Other-Promotions.csv`** (Promo Types `e-rebate` / `buy-more-save-more` /
+> `promo-code`). They still produce **no** kit / NLP / RSA rows.
+
 ---
 
 ## SPECIAL_BUY_MARKER → NLP routing
@@ -263,8 +268,9 @@ separate redemption channel.
   with paired free-good SKUs → classify as a **kit page** (priority #9).
   The kit structure is what matters; the POS badge is just the delivery
   mechanism. **Carve-out:** this does NOT apply to **e-rebate** slides
-  (`REDEEM AT …/e-rebate` header or `PCE = E-REBATE`) — those are excluded
-  regardless of any free-goods table. See `E_REBATE_MARKER` above.
+  (`REDEEM AT …/e-rebate` header or `PCE = E-REBATE`) — those route to
+  `Other-Promotions.csv` regardless of any free-goods table. See
+  `E_REBATE_MARKER` below.
 - `Instant Rebate` paired with a full MAP/SKU price column may route to
   **NLP** (priority #7) instead of `pos-redemption` if a customer-facing
   shelf price is clearly extractable. Prefer NLP routing when in doubt
@@ -272,14 +278,15 @@ separate redemption channel.
 
 ---
 
-## E_REBATE_MARKER → `non_included` reason `e-rebate`
+## E_REBATE_MARKER → `other_promotions` (Promo Type `e-rebate`)
 
 E-rebate promos are fulfilled through an **online rebate portal**, not as a
 kitted free good. The slide usually shows a "free goods package" and a pricing
 table, so it looks like a kit — but the customer redeems online, so we must
-NOT build a kit from it. Distinct from `pos-redemption` (mail-in / register
-rebates): e-rebate is the online-portal case identified by the redeem URL or an
-`E-REBATE` promo identifier.
+NOT build a kit from it. **As of v1.2.0 these are parsed into
+`Other-Promotions.csv`, not excluded to Non-Included.** Distinct from
+`pos-redemption` (mail-in / register rebates): e-rebate is the online-portal
+case identified by the redeem URL or an `E-REBATE` promo identifier.
 
 ### Phrases (case-insensitive, vendor-agnostic)
 
@@ -299,13 +306,15 @@ rebates): e-rebate is the online-portal case identified by the redeem URL or an
 
 ### Routing + precedence (important)
 
-- Emit one `non_included` row per affected SKU (or one blank-SKU row) with
-  reason `e-rebate`. Do NOT emit kit / NLP / RSA rows for the page.
+- Emit one `other_promotions` row per affected SKU (or one blank-SKU row) with
+  Promo Type `e-rebate`. Capture the **redemption URL** (column `Redemption
+  URL`) and any rebate amount / anchor price. Do NOT emit kit / NLP / RSA /
+  Non-Included rows for the page.
 - **Overrides the B1G1-table exception.** Unlike `pos-redemption`, an e-rebate
-  signal excludes the page **even when it shows a free-goods package and a full
-  price table** — the online-redemption mechanism is decisive, the table does
-  not rescue it. (See `page-classification.md` — e-rebate is checked before the
-  kit fallthrough.)
+  signal routes the page to Other-Promotions **even when it shows a free-goods
+  package and a full price table** — the online-redemption mechanism is
+  decisive, the table does not rescue it into a kit. (See
+  `page-classification.md` — e-rebate is checked before the kit fallthrough.)
 - A non-numeric `PCE = E-REBATE` is the highest-confidence signal: classify
   e-rebate regardless of other page content.
 
@@ -319,7 +328,12 @@ rebates): e-rebate is the online-portal case identified by the redeem URL or an
 
 ---
 
-## BMSM_MARKER → `non_included` reason `buy-more-save-more`
+## BMSM_MARKER → `other_promotions` (Promo Type `buy-more-save-more`)
+
+As of v1.2.0, BMSM pages are **parsed into `Other-Promotions.csv`** (Promo Type
+`buy-more-save-more`), not excluded. Capture the tier text in `Tier` and the
+per-tier discount in `Discount`; one row per qualifying SKU. Emit no kit / NLP /
+RSA rows.
 
 ### Phrases
 
@@ -337,7 +351,11 @@ rebates): e-rebate is the online-portal case identified by the redeem URL or an
 
 ---
 
-## PROMO_CODE_MARKER → `non_included` reason `promo-code-only`
+## PROMO_CODE_MARKER → `other_promotions` (Promo Type `promo-code`)
+
+As of v1.2.0, promo-code pages are **parsed into `Other-Promotions.csv`** (Promo
+Type `promo-code`), not excluded. Capture the checkout code in `Promo Code` and
+the discount in `Discount`. Emit no kit / NLP / RSA rows.
 
 ### Phrases (case-insensitive)
 
@@ -354,7 +372,7 @@ rebates): e-rebate is the online-portal case identified by the redeem URL or an
 uses `PROMO CODE: <identifier>` as the deal's tracking identifier
 label on EVERY kit page in their decks. If your only signal is the
 literal phrase `PROMO CODE:` followed by a code, that's NOT enough to
-classify the page as promo-code-only.
+classify the page as a promo-code Other-Promotion.
 
 The marker requires one of:
 - The literal word "discount" / "coupon" / "checkout" preceding "code"

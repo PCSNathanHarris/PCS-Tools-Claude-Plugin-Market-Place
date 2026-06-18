@@ -17,14 +17,16 @@ a manual-review prompt before deciding.
 | `spiff` | **Auto-skip** | Internal sales-rep incentive. Override flag if PCS later wants Jira visibility. |
 | `killed` | **Auto-skip** | Cancelled deal. |
 | `strikethrough` | **Auto-skip** | Per-SKU exclusion (parser handles inline). |
-| `e-rebate` | **Auto-skip** | Online rebate-portal promo (parser v1.1.0) — redeemed at a vendor URL, not a kit/Task. No Jira footprint. |
 | `arp` | **Manual review** — prompt Y/N/Skip-all | Channel-restricted ARP deals; might need Jira tracking per case. |
 | `pos-redemption` | **Manual review** | Mail-in / POS rebate; might still warrant a Jira footprint for monitoring. |
 | `spend-to-earn` | **Manual review** | Threshold rebate; could be customer-visible online. |
 | `image-only-free-good` | **Manual review** | Parser uncertainty — Nathan confirms whether to include. |
 | `missing-price` (non-Makita) | **Manual review** | Paid SKU lost its price; might still warrant a Task with TBD pricing. |
-| `buy-more-save-more` (BMSM) | **Out of plugin scope v0.1.0** | Manual workflow until parser emits a separate BMSM output. |
-| `promo-code-only` (coupon) | **Out of plugin scope v0.1.0** | Manual workflow until parser emits a separate Coupon output. |
+
+> **v1.2.0:** `e-rebate`, `buy-more-save-more`, and `promo-code-only` are no
+> longer Non-Included reasons — the parser emits those promos to
+> `Other-Promotions.csv`, and this skill now creates Tasks from them directly
+> (see `SKILL.md` Step 4 + `field-mapping.md`). They are not handled from this file.
 
 ## Manual-review prompt format
 
@@ -68,14 +70,14 @@ Auto-skipped (Non-Included): 11
 
 ## Future direction
 
-When the parser is updated to emit dedicated `BMSM.csv` and `Coupon.csv`
-files (currently both route to `non_included.csv`), this skill will
-gain handling for them. For v0.1.0, both stay manual.
+As of parser v1.2.0, BMSM / e-rebate / promo-code promos are emitted to a
+combined `Other-Promotions.csv` and this skill creates Tasks from them (v0.2.0).
+They no longer appear in `Non-Included.csv`.
 
-The `non-included` file structure has remained stable across parser
-versions (5 columns). If the parser adds new `Reason` codes, this table
-needs updating — until then the skill defaults unknown reasons to
-manual review with a clear "unknown reason" warning.
+The `Non-Included.csv` file structure has remained stable across parser versions
+(5 columns) — only its reason set shrank in v1.2.0. If the parser adds new
+`Reason` codes, this table needs updating — until then the skill defaults unknown
+reasons to manual review with a clear "unknown reason" warning.
 
 ## RSAs are separate (not in this file)
 

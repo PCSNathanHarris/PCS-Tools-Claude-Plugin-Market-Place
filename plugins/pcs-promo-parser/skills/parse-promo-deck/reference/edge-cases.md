@@ -174,6 +174,11 @@ which group earns which free good (no table, unclear alignment), **stop and ask
 the operator** to confirm the group→free-good mapping before emitting. Do not
 guess, and do not silently fall back to a full Cartesian.
 
+If the operator does not confirm, **skip those pairs** and add a `for_review`
+row (Review Class `low-confidence`, reason `split-mapping-unconfirmed`,
+Suggested Bucket `kit`) so the slide is surfaced for human review rather than
+guessed at. See `output-csvs.md#for-reviewxlsx`.
+
 ---
 
 ## Multi-paid bundle (no free goods)

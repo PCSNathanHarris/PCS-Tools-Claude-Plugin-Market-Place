@@ -74,20 +74,23 @@ Distinguish carefully from **NLP** (`New Lower Price` / case #7) —
 that's a shelf-price drop and routes to the NLP Sheet, not exclusions.
 Match NLP first.
 
-### 3c. E-rebate (online rebate portal) → `non_included` reason `e-rebate`
+### 3c. E-rebate (online rebate portal) → `other_promotions` (Promo Type `e-rebate`)
 
-Slides fulfilled through an **online rebate portal** are not kits, even though
-they show a "free goods package" and a price table. Identify by either signal:
+Slides fulfilled through an online rebate portal are not kits, even though they
+show a "free goods package" and a price table. They are also NOT a Non-Included
+exclusion — route them to `Other-Promotions.csv`. Identify by either signal:
 
 - A `REDEEM AT …` header with an `e-rebate` URL (e.g.
   `milwaukeetool.com/e-rebate`), or
 - A **PCE / promo identifier whose value is `E-REBATE`** (non-numeric) — this
   alone is decisive.
 
-Emit one `non_included` row per affected SKU with reason `e-rebate`; skip the
-page (no kit / NLP / RSA rows). **This is checked here — above the kit
-fallthrough — and is NOT subject to the "B1G1 table → kit page" exception in
-4a.** A free-goods package + price table does NOT rescue an e-rebate slide.
+Emit one `other_promotions` row per affected SKU with Promo Type `e-rebate`
+(capture the redemption URL and any rebate amount / anchor price). Emit **no**
+kit / NLP / RSA rows and **no** Non-Included row for the page. **This is checked
+here — above the kit fallthrough — and OVERRIDES the "B1G1 table → kit page"
+exception in 4a.** A free-goods package + price table does NOT turn an e-rebate
+slide into a kit; it becomes an Other-Promotions (e-rebate) row instead.
 See `exclusion-markers.md#e_rebate_marker`.
 
 ### 4. Spend-to-earn / rebate → `non_included` reason `spend-to-earn`
@@ -109,22 +112,28 @@ at register", "Rebate Form enclosed".
 Exception: if the page also carries a full B1G1 price table with paired
 free-good SKUs, classify as a kit page (#9) — the kit structure wins.
 **But e-rebate slides (#3c) are exempt from this exception** — an
-`E-REBATE` PCE or a `REDEEM AT …/e-rebate` header excludes the page even with
-a full free-goods table.
+`E-REBATE` PCE or a `REDEEM AT …/e-rebate` header routes the page to
+`Other-Promotions.csv` (Promo Type `e-rebate`) even with a full free-goods
+table; it is never kitted.
 
-### 5. Buy-More-Save-More / volume-tiered → `non_included` reason `buy-more-save-more`
+### 5. Buy-More-Save-More / volume-tiered → `other_promotions` (Promo Type `buy-more-save-more`)
 
 Pages that say "Buy 5 save 10%" or "Buy More Save More" or "BMSM" or
-"Volume Discount". Tiered pricing, not a fixed kit.
+"Volume Discount". Tiered pricing, not a fixed kit — and not a Non-Included
+exclusion. Emit one `other_promotions` row per SKU (capture the tier text in
+`Tier` and the discount in `Discount`). Emit no kit / NLP / RSA rows.
 
-### 6. Promo-code / coupon / checkout-code only → `non_included` reason `promo-code-only`
+### 6. Promo-code / coupon / checkout-code only → `other_promotions` (Promo Type `promo-code`)
 
-Pages whose entire deal is "Use code XYZ at checkout for $50 off."
-There's no free good — the page IS the discount mechanism.
+Pages whose entire deal is "Use code XYZ at checkout for $50 off." There's no
+free good — the page IS the discount mechanism. Route to `Other-Promotions.csv`
+(Promo Type `promo-code`); capture the checkout code in `Promo Code` and the
+discount in `Discount`. Emit no kit / NLP / RSA rows and no Non-Included row.
 
-**TRAP**: FLEX uses `PROMO CODE: SOT2514219` as a deal **identifier**,
-not a discount code. That pattern alone does NOT mean
-`promo-code-only`. See `exclusion-markers.md` for the carve-out.
+**TRAP**: FLEX uses `PROMO CODE: SOT2514219` as a deal **identifier**, not a
+discount code. That pattern alone does NOT make the page promo-code and must NOT
+create an Other-Promotions (promo-code) row — carry the identifier in the deal
+title brackets instead. See `exclusion-markers.md` for the carve-out.
 
 ### 6a. ARP / Authorized Retailer Program → `non_included` reason `arp`
 
@@ -174,6 +183,21 @@ anywhere.
 
 Don't try to force these into any category. Just count and move on.
 
+### 8a. Unclassifiable / low-confidence → `for_review`
+
+If a page cannot be confidently classified — ambiguous or unknown layout, two
+or more conflicting markers with no priority winner, an unrecognized page type,
+or a Crescent-style layout the operator did not confirm — record it in
+`for_review` (Review Class `low-confidence`) with a reason and the parser's
+best-guess Suggested Bucket. Emit **no** kit / NLP / Other-Promotions /
+Non-Included rows for it. This sits ABOVE the kit fallthrough (#9) so an
+ambiguous page is sent to human review rather than silently kitted, but BELOW
+the deterministic markers (#1–#8) so confident classifications still win.
+
+Missing-required-data rows (blank price/SKU on an otherwise-classified row) are
+ALSO added to `for_review` (Review Class `missing-data`) in addition to their
+normal routing (Non-Included `missing-price` / Makita `Needs-Pricing`).
+
 ### 9. Otherwise → **kit page**: emit Cartesian rows to `promo_rows`
 
 This is the default case. The page is a B1G1 / B-X-G-Y / multi-paid-
@@ -218,14 +242,15 @@ above. So a BMSM page that's also marked Special Buy is classified as
 
 E-rebate precedence: an **e-rebate signal** (a `PCE = E-REBATE` value, or a
 `REDEEM AT …/e-rebate` header) outranks the kit fallthrough (#9) **and** the 4a
-"B1G1 table → kit" exception. When present, classify `e-rebate` (#3c)
-regardless of any free-goods package or price table on the page.
+"B1G1 table → kit" exception. When present, route to `Other-Promotions.csv`
+(Promo Type `e-rebate`) regardless of any free-goods package or price table on
+the page.
 
-Exception: priority #7 (NLP routing) takes precedence over #6
-(`promo-code-only`) only when the page has a clear price column and
-extractable SKUs. If a page has BOTH "use code at checkout" AND a
-visible Special Buy price column, prefer the NLP routing — the price
-data is valuable. When in doubt, route to NLP.
+Exception: priority #7 (NLP routing) takes precedence over #6 (promo-code
+Other-Promotions) only when the page has a clear price column and extractable
+SKUs. If a page has BOTH "use code at checkout" AND a visible Special Buy price
+column, prefer the NLP routing — the price data is valuable. When in doubt,
+route to NLP.
 
 ---
 

@@ -47,6 +47,10 @@ project. Each created Task is parented to the right Epic.
 2. Map to the canonical vendor name (case-normalize).
 3. Look up the row in the table for whichever project is the
    resolved target from SKILL.md Step 1 (PAT or PROM).
+4. **Other-Promotions (v0.2.0):** `promo-code` rows parent to the **Coupon-code
+   promos** Epic (`PAT-117` / `PROM-364`). `e-rebate` and `buy-more-save-more`
+   rows have no dedicated Epic — parent them to the **vendor** Epic (same as that
+   vendor's kit / NLP Tasks).
 
 ## Validation before write
 

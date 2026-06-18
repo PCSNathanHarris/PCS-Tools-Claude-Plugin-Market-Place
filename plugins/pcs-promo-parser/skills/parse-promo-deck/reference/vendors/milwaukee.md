@@ -111,11 +111,12 @@ label AND **≥2 total** of these tokens:
   exactly 6 digits. If you see `PCE 12345` (5 digits) or `PCE 1234567`
   (7 digits) it's not a Milwaukee PCE — likely a typo or a different
   vendor's code. Don't append it.
-- **`PCE# E-REBATE` = e-rebate, exclude.** When the PCE field reads the literal
-  word `E-REBATE` (not 6 digits), the slide is an online-rebate promo — route
-  the whole page to `non_included` reason `e-rebate` and emit NO kit rows, even
-  though it shows a free-goods package + a price table. A `REDEEM AT …` header
-  with a `milwaukeetool.com/e-rebate` URL is the same signal. See
+- **`PCE# E-REBATE` = e-rebate → Other-Promotions.** When the PCE field reads
+  the literal word `E-REBATE` (not 6 digits), the slide is an online-rebate
+  promo — route the whole page to `Other-Promotions.csv` (Promo Type `e-rebate`)
+  and emit NO kit rows, even though it shows a free-goods package + a price
+  table. A `REDEEM AT …` header with a `milwaukeetool.com/e-rebate` URL is the
+  same signal. (v1.2.0: e-rebates are parsed, not excluded.) See
   `reference/exclusion-markers.md#e_rebate_marker` and
   `reference/page-classification.md` (#3c).
 - **Split battery slides (bold-line divider).** Milwaukee battery promos often

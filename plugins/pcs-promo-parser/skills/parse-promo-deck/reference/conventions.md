@@ -149,7 +149,10 @@ If you can identify a paid SKU on a kit page but cannot extract a price
 for it from ANY tier in `price_label_priority` (every column blank,
 OCR failure across all tiers, etc.), **drop that SKU to
 `non_included.csv` with reason `missing-price`** (or to Makita's
-`Needs-Pricing.csv` per the override above).
+`Needs-Pricing.csv` per the override above). **In either case, also add a
+`for_review` row** (Review Class `missing-data`) so the gap surfaces in the
+For-Review workbook — additive only; it does not change where the SKU is
+dropped (v1.2.0).
 
 Do NOT emit a `0.00` priced paid row — the only zero-priced rows in
 `promo_list.csv` are explicit free goods (e.g. those tagged `FREE` in

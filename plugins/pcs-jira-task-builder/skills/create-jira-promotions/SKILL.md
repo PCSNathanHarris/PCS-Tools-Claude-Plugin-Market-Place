@@ -1,6 +1,6 @@
 ---
 name: create-jira-promotions
-description: Read pcs-promo-parser Stage 1 CSVs and create matching Jira Tasks in the PCS Promotions space. Defaults to PAT (test) — writes to PROM (production) only after literal-phrase confirmation. Handles kit promos, NLPs, RSAs (per-row review), per-vendor period naming, auto-HERO detection, storefront link scaffolding. Use whenever the user has a parser-output directory and wants the promos pushed into Jira.
+description: Read pcs-promo-parser Stage 1 CSVs and create matching Jira Tasks in the PCS Promotions space. Defaults to PAT (test) — writes to PROM (production) only after literal-phrase confirmation. Handles kit promos, NLPs, RSAs (per-row review), Other-Promotions (BMSM / e-rebate / promo-code, per-group review), per-vendor period naming, auto-HERO detection, storefront link scaffolding. Use whenever the user has a parser-output directory and wants the promos pushed into Jira.
 allowed-tools: Read, Glob, Bash
 ---
 
@@ -12,7 +12,7 @@ alongside an Atlassian MCP connector — you call Jira through that
 connector's tools (`getVisibleJiraProjects`, `searchJiraIssuesUsingJql`,
 `createJiraIssue`, `editJiraIssue`, `transitionJiraIssue`, etc.).
 
-This skill is **beta (v0.1.0)**. Run interactively only. Do not invoke
+This skill is **beta (v0.2.0)**. Run interactively only. Do not invoke
 in batch / scripted contexts.
 
 ---
@@ -78,9 +78,11 @@ See `reference/safety.md` for the full rationale.
 
 Once the project target is confirmed, ask for:
 
-1. **Parser output directory** — path to the directory that
-   `pcs-promo-parser` wrote (e.g. `./parsed-output/milwaukee_2026-05-18/`).
-   If not provided, ask.
+1. **Parser output directory** — the `Promo Parsed Output/` subfolder the parser
+   wrote (e.g.
+   `./Parsed Decks/Milwaukee/Milwaukee-Q2-2026-06-18/Promo Parsed Output/`).
+   When driven by `run-promo-workflow`, that orchestrator passes it directly. If
+   not provided, ask. (Quote the path — it contains spaces.)
 2. **Jira API token (optional)** — for image attachment support. If the
    user has one, prompt for it. If they skip, attachments are silently
    omitted.
@@ -93,14 +95,18 @@ Discover the in-scope CSVs in the directory:
 | `*-NLP-Sheet.csv` | Single-SKU price drops (NLP + Special Buy) |
 | `*-RSA-Kits.csv` | RSA kit promos (manual review per row) |
 | `*-RSA-NLP.csv` | RSA single-SKU promos (manual review per row) |
+| `*-Other-Promotions.csv` | BMSM / e-rebate / promo-code promos (manual review per group; v0.2.0) |
 
-**Out of scope for v0.1.0** — do NOT create Tasks from:
+**Out of scope** — do NOT create Tasks from:
 - `*-Needs-Pricing.csv` — Makita missing prices, handled manually downstream
 - `*-Non-Included.csv` — per-reason filter logic in `reference/non-included.md`
-- `*-Parser-Audit.csv` — informational only
+- `*-For-Review.xlsx` — operator-review workbook only, never a Jira input
+- `*-Parser-Audit.csv` — informational only (also the row-count manifest)
 
-If the directory is missing files, log the gap but continue with what's
-present.
+**A missing file means zero rows of that type, not an error** — the parser
+(v1.2.0) writes an output only when it has rows. `*-Parser-Audit.csv` is always
+present and lists the counts; read it to know what to expect, then process
+whatever in-scope files exist. Log any genuinely-expected-but-absent file.
 
 ---
 
@@ -130,7 +136,9 @@ in NLP-Sheet).
 
 For each CSV:
 
-1. Group rows by `(Promo Name, Start Date, End Date)`.
+1. Group rows by `(Promo Name, Start Date, End Date)` — for
+   `*-Other-Promotions.csv` also key on `Promo Type` so a deal that appears under
+   two promo types doesn't merge.
 2. Each group becomes **one Jira Task**.
 3. If the same Promo Name appears with multiple non-contiguous date
    windows, the parent Task gets the overall window (earliest start,
@@ -150,7 +158,8 @@ For each group, compute:
   applicable). Strip any `[PCE NNNNNN]` from the title; preserve it in
   the description.
 - **Labels** — exactly 3 per `reference/labels.md` (year, universal
-  Q-notation quarter, one of `Kit-Promo` / `NLP` / `Coupon` / `E-Rebate`).
+  Q-notation quarter, one of `Kit-Promo` / `NLP` / `Coupon` / `E-Rebate` /
+  `BMSM`).
 - **HERO triggers** — auto-detected per `reference/labels.md` Rule L4
   (starter kit as free good, 2+ free goods, BMSM). When triggered, set
   Priority = Highest AND append ` (HERO)` to the summary.
@@ -166,7 +175,7 @@ Custom field IDs differ between PAT and PROM. Use the remap table in
 
 ---
 
-## Step 6 — RSA / Non-Included manual review
+## Step 6 — RSA / Other-Promotions / Non-Included manual review
 
 For each RSA row (from `RSA-Kits.csv` / `RSA-NLP.csv`):
 - Display the row's vendor, Promo Name, dates, SKUs.
@@ -174,6 +183,11 @@ For each RSA row (from `RSA-Kits.csv` / `RSA-NLP.csv`):
 - `Y` → continue to Step 7 with this row.
 - `N` → skip this row, log, continue.
 - `Skip-all` → skip every remaining RSA row this run.
+
+For each **Other-Promotions** group (from `*-Other-Promotions.csv`; v0.2.0):
+- Display the Promo Type, Promo Name, dates, SKUs, and the type-specific detail
+  (rebate amount + redeem URL / promo code + discount / tier ladder).
+- Same `Y/N/Skip-all` prompt — these promo families are new, so confirm each.
 
 For each `Non-Included.csv` row whose reason needs manual review per
 `reference/non-included.md` (e.g. `arp`, `pos-redemption`, `spend-to-earn`,
@@ -242,6 +256,7 @@ Tasks skipped (manual N): <n>
 Manual review prompts: <n> (<n> created, <n> declined)
 Auto-skipped (Non-Included): <n>
 RSA rows reviewed: <n> (<n> created, <n> declined)
+Other-Promotions reviewed: <n> (<n> created, <n> declined)
 Errors: <n>
 
 Audit log: <output-dir>/jira-task-builder-<ISO-timestamp>.log

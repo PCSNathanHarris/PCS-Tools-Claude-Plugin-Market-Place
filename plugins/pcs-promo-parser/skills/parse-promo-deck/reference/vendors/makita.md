@@ -62,6 +62,9 @@ priority list is blank or `N/A`:
   (that's the rule for other vendors).
 - **Emit the row to `Makita-<QN>-<YYYY>-Needs-Pricing.csv`** with the
   schema documented at `reference/output-csvs.md#needs-pricingcsv`.
+- **Also add a `for_review` row** (Review Class `missing-data`, reason
+  `missing-price-makita`) so the gap shows up in the For-Review workbook —
+  this surfaces the SKU, it does NOT remove it from Needs-Pricing (v1.2.0).
 - The team uses this file as a worklist — they fill in the missing
   pricing and merge those rows into the main promo list manually.
 

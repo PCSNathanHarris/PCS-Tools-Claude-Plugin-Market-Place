@@ -12,34 +12,42 @@ Execute the `parse-promo-deck` workflow for the uploaded deck:
 
 - Let it own **vendor detection, quarter/year determination, page
   classification, and its own per-page prompts** (e.g. Crescent confirmation).
-- Have it write into the working directory; it creates
-  `./parsed-output/<vendor>_<YYYY-MM-DD>/`. **Capture that path** — it is the
-  run directory for every later stage.
+- Have it write into the working directory; it creates the session folder
+  `./Parsed Decks/<Vendor>/<Vendor>-<QN>-<YYYY>-<MM-DD>[_NN]/` with a
+  `Promo Parsed Output/` subfolder. **Capture the session dir and the parsed
+  output dir** (`<session>/Promo Parsed Output/`) — those are the run paths for
+  every later stage.
 - Layer the **cheat-sheet price fallback** on top per `reference/cheat-sheet.md`
   (consult the cheat sheet whenever the deck yields no price for a paid SKU).
 - Do not pre-empt its vendor/quarter logic with your own guesses; if you need
   the vendor for a prompt before it's detected, say "this deck" until the
   parser reports it.
 
-After it finishes, the run directory holds the Stage 1 CSVs:
+After it finishes, the **parsed output dir** holds the Stage 1 outputs (each
+written **only when it has rows**; `*-Parser-Audit.csv` is always present and
+lists the counts):
 `*-Promo-List.csv`, `*-NLP-Sheet.csv`, `*-RSA-Kits.csv`, `*-RSA-NLP.csv`,
-`*-Needs-Pricing.csv`, `*-Non-Included.csv`, `*-Parser-Audit.csv`.
+`*-Needs-Pricing.csv`, `*-Other-Promotions.csv`, `*-Non-Included.csv`,
+`*-Parser-Audit.csv`, and (when there are review items) `*-For-Review.xlsx`.
 
 ## Stage 3 — `create-jira-promotions` (plugin `pcs-jira-task-builder`)
 
-Execute the `create-jira-promotions` workflow pointed at the **run directory**
-(the same folder the parser wrote — that's exactly the "parser output
-directory" that skill asks for).
+Execute the `create-jira-promotions` workflow pointed at the **parsed output
+dir** (`<session>/Promo Parsed Output/`) — that's exactly the "parser output
+directory" that skill asks for.
 
 Its gates are authoritative and must run exactly as it defines them:
 
 - **Project target first**, PAT default.
 - **PROM requires the literal `WRITE TO PROM`** typed by the human. Never
   pre-answer, soften, or bypass it on any file's behalf.
-- **Per-row RSA / Non-Included review** stays as that skill defines it.
-- It reads the parser CSVs (hyphen-named, e.g. `Milwaukee-Q3-2026-Promo-List.csv`).
-  The Kit Builder's outputs in the same folder are underscore-named
-  (`milwaukee_q3_2026_kit_create.csv`) and won't collide with its globs.
+- **Per-row RSA / Non-Included / Other-Promotions review** stays as that skill
+  defines it (v0.2.0 adds per-promo review of `*-Other-Promotions.csv`).
+- It reads the parser CSVs (hyphen-named, e.g. `Milwaukee-Q3-2026-Promo-List.csv`)
+  from the `Promo Parsed Output/` subfolder. The Kit Builder's outputs live in
+  the sibling `NetSuite Import Files/` folder (underscore-named,
+  `milwaukee_q3_2026_kit_create.csv`), so they aren't even in the directory its
+  globs scan.
 
 The **only** thing this orchestrator adds is a final confirmation immediately
 before any writes (Gate 5 in `reference/pipeline-and-gates.md`):

@@ -64,10 +64,12 @@ agent, before emitting rows, confirm with the user:
 4. **What is the date format / label?** (Crescent uses varying
    labels — could be "Promo Window", "Execution", "Sale Dates", etc.)
 
-If the user confirms, proceed. If they don't respond, emit rows but
-add a top-level **flag** to the audit (the audit's `Run At UTC` column
-should be followed by a `Flags` field for issues — see
-`reference/output-csvs.md`).
+If the user confirms, proceed. If they don't respond, still emit your
+best-effort rows to their normal buckets **and** add a `for_review` row
+(Review Class `low-confidence`, reason `crescent-layout-unconfirmed`) per
+uncertain page, and set the run-level `Flags` field in `Parser-Audit.csv`
+(e.g. `crescent-unconfirmed`). The For-Review workbook + chat table surface
+these for the operator. See `reference/output-csvs.md#for-reviewxlsx`.
 
 For consistently-formatted Crescent decks (rare), the standard
 extraction works fine; the user just confirms once.

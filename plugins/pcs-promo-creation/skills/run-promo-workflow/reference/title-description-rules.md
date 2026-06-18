@@ -10,20 +10,23 @@ inconsistent brand/spec wording.**
 
 ## What you're filling, and the inputs
 
-After `kb build-imports --blank-titles`, the run directory has
-`<prefix>_kit_create.csv` (the NS Create CSV). Each **kit** is one **lead row**
-(carries Page Title col + Detailed Description col, currently empty) followed by
-`kit_size - 1` **detail rows**; all rows of a kit share the same **CA Link**.
-The member's NetSuite id is in **Item ID**; quantity in **Item Qty**.
+After `kb build-imports --blank-titles`, the **NS imports dir**
+(`<session>/NetSuite Import Files/`) has `<prefix>_kit_create.csv` (the NS
+Create CSV). Each **kit** is one **lead row** (carries Page Title col + Detailed
+Description col, currently empty) followed by `kit_size - 1` **detail rows**; all
+rows of a kit share the same **CA Link**. The member's NetSuite id is in **Item
+ID**; quantity in **Item Qty**.
 
-To write a good title/description you need three inputs from the run directory:
+To write a good title/description you need three inputs from the session
+subfolders:
 
-1. **`<prefix>_kit_create.csv`** — the kit groupings (CA Link → its Item IDs) and
-   the two empty cells you will fill (lead row only).
-2. **The NetSuite export** the operator uploaded — join on **Item ID / internal
-   id** to get each member's **Name, Page Title, Detailed Description, Brand,
-   Manufacturer, vendor SKU**. This is your source text.
-3. **The `*-Promo-List.csv`** — to know **which members are FREE vs PAID**: a
+1. **`<prefix>_kit_create.csv`** (NS imports dir) — the kit groupings (CA Link →
+   its Item IDs) and the two empty cells you will fill (lead row only).
+2. **The NetSuite export** the operator uploaded (NS imports dir) — join on
+   **Item ID / internal id** to get each member's **Name, Page Title, Detailed
+   Description, Brand, Manufacturer, vendor SKU**. This is your source text.
+3. **The `*-Promo-List.csv`** (parsed output dir) — to know **which members are
+   FREE vs PAID**: a
    member whose Item Price is `0`/`0.00` is a **free good**; the others are
    paid **anchors**. (Map create-CSV Item ID → NS export `vendor_name` → the
    promo list SKU to read its price.)

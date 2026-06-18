@@ -1,9 +1,15 @@
 # Kit stage — DECODE round-trip + NS imports
 
-The kit stage drives the real Kit Builder engine via the `kb` CLI. Run the
-commands from the run directory (or pass absolute paths). All paths below use
-`<run dir>` = the parser's dated output folder and the prefix
-`<vendor>_q<N>_<YYYY>` (lowercase, underscores — e.g. `milwaukee_q3_2026`).
+The kit stage drives the real Kit Builder engine via the `kb` CLI. It uses the
+session subfolders from `SKILL.md` Step 0:
+- **parsed output dir** = `<session>/Promo Parsed Output/` — the parser CSVs
+  (read the Promo-List from here).
+- **NS imports dir** = `<session>/NetSuite Import Files/` — the NS export, the
+  build CSVs, and `decode_blocks.txt` go here.
+- **images dir** = `<session>/Images/` — the composite-image ZIP.
+
+The prefix is `<vendor>_q<N>_<YYYY>` (lowercase, underscores — e.g.
+`milwaukee_q3_2026`). **Quote every path — the folder names contain spaces.**
 
 ## Why there's a NetSuite round-trip
 
@@ -21,9 +27,9 @@ which SKUs to return. So the order is:
 
 ```
 kb decode-formula \
-  --skus "<run dir>/<Vendor>-<QN>-<YYYY>-Promo-List.csv" \
+  --skus "<parsed output dir>/<Vendor>-<QN>-<YYYY>-Promo-List.csv" \
   --field vendorname \
-  --out  "<run dir>/decode_blocks.txt"
+  --out  "<NS imports dir>/decode_blocks.txt"
 ```
 - `decode-formula` accepts the Promo-List CSV directly and pulls the unique
   vendor SKUs from it.
@@ -31,7 +37,7 @@ kb decode-formula \
   block; tell the operator to paste each into the **Formula (Numeric)** filter
   as separate criteria.
 - Then prompt them to upload the NetSuite export (`.xls` SpreadsheetML or
-  `.csv`) into the run directory.
+  `.csv`); save it into the **NS imports dir**.
 
 `decode_blocks.txt` is only for the operator's paste step — it is **not** an
 input to `build-imports` (the build auto-derives what it needs from the NS
@@ -46,9 +52,9 @@ composes here):
 
 ```
 kb build-imports \
-  --promo-list "<run dir>/<Vendor>-<QN>-<YYYY>-Promo-List.csv" \
-  --ns-export  "<run dir>/<uploaded NS export file>" \
-  --out-dir    "<run dir>" \
+  --promo-list "<parsed output dir>/<Vendor>-<QN>-<YYYY>-Promo-List.csv" \
+  --ns-export  "<NS imports dir>/<uploaded NS export file>" \
+  --out-dir    "<NS imports dir>" \
   --prefix     "<vendor>_q<N>_<YYYY>" \
   --blank-titles --no-images
 ```
@@ -57,13 +63,13 @@ Requires `kb >= 0.5.19`. `--blank-titles` leaves Page Title + Detailed
 Description empty (you fill them in Step 4b); `--no-images` skips composition
 (done locally — see below).
 
-Outputs land in the run directory:
+Outputs land in the **NS imports dir**:
 - `<prefix>_kit_create.csv` — NEW kits to create in NetSuite.
 - `<prefix>_kits_existing.csv` — already-existing kits to update.
 - `<prefix>_kit_create_RSA.csv` / `<prefix>_kits_existing_RSA.csv` — present
   only when RSA kits are mixed in.
 - `<prefix>_kit_images.zip` — composite images, produced by the local
-  images-only step below (not by this build).
+  images-only step below **into the images dir** (not by this build).
 
 ## Surfacing the result
 
@@ -81,38 +87,40 @@ Building the image ZIP means downloading each member's product image from
 NetSuite's image host and stitching them. **That download only works from the
 operator's own machine — Cowork's sandbox proxy is rejected by NetSuite (403)** —
 so the build above always uses `--no-images`, and the ZIP is produced by a
-one-line command the operator runs in **their own terminal**, in the run
-directory. It writes ONLY the ZIP (no CSVs), so the titles you authored in
-Step 4b are never touched, and composite filenames stay keyed to each kit's
+one-line command the operator runs in **their own terminal**, from the
+**session folder**. It writes ONLY the ZIP (no CSVs), so the titles you authored
+in Step 4b are never touched, and composite filenames stay keyed to each kit's
 image source.
 
 If the operator wants images, give them **both** the macOS and Windows forms,
 filled in with this run's actual file names + prefix (don't leave the
-placeholders):
+placeholders). `cd` to the **session folder** so the relative subfolder paths
+resolve, and the ZIP is written into `Images/`:
 
 **macOS (Terminal):**
 ```
-cd "<run dir>"
-kb build-imports --promo-list "<Vendor>-<QN>-<YYYY>-Promo-List.csv" --ns-export "<NS export file>" --out-dir "." --prefix "<vendor>_q<N>_<YYYY>" --images-only
+cd "<session dir>"
+kb build-imports --promo-list "Promo Parsed Output/<Vendor>-<QN>-<YYYY>-Promo-List.csv" --ns-export "NetSuite Import Files/<NS export file>" --out-dir "Images" --prefix "<vendor>_q<N>_<YYYY>" --images-only
 ```
 
 **Windows (PowerShell):**
 ```
-cd "<run dir>"
-kb build-imports --promo-list "<Vendor>-<QN>-<YYYY>-Promo-List.csv" --ns-export "<NS export file>" --out-dir "." --prefix "<vendor>_q<N>_<YYYY>" --images-only
+cd "<session dir>"
+kb build-imports --promo-list "Promo Parsed Output/<Vendor>-<QN>-<YYYY>-Promo-List.csv" --ns-export "NetSuite Import Files/<NS export file>" --out-dir "Images" --prefix "<vendor>_q<N>_<YYYY>" --images-only
 ```
 
 Requires `kb >= 0.5.19`. Tell them to run it and come back; when
-`<prefix>_kit_images.zip` appears in the run directory, **give them a link to the
-ZIP** and report the composed/failed counts it printed. **Do not attempt to
+`<prefix>_kit_images.zip` appears in the **images dir**, **give them a link to
+the ZIP** and report the composed/failed counts it printed. **Do not attempt to
 compose images yourself in Cowork** — the fetch will 403.
 
 ## Step 4b — Write the Page Titles & Detailed Descriptions
 
 Because the build ran with `--blank-titles`, the NS Create CSV's **Page Title**
 and **Detailed Description** columns are empty. You now write them following
-`reference/title-description-rules.md`, using the kit groupings (create CSV),
-the member source text (NS export), and free-vs-paid (promo list).
+`reference/title-description-rules.md`, using the kit groupings (the create CSV
+in the **NS imports dir**), the member source text (the NS export), and
+free-vs-paid (the Promo-List in the **parsed output dir**).
 
 **Scale gate (always do this first).** Count the kits (lead rows) in the create
 CSV. Writing a title + description for every kit is real work, so:
@@ -127,11 +135,11 @@ per the rules. Keep brand spelling and repeated-SKU descriptors consistent
 across the run.
 
 **Write them back in place.** Don't hand-edit cells one by one — decide the
-values, then run a short generated script that loads `<prefix>_kit_create.csv`,
-sets Page Title + Detailed Description on each **lead row** keyed by **CA Link**,
-and writes the file back as **UTF-8 with BOM**, leaving every other cell exactly
-as the Kit Builder wrote it. Do the same for `<prefix>_kit_create_RSA.csv` if it
-exists. (Existing-kits CSVs have no Page Title / Detailed Description columns —
+values, then run a short generated script that loads
+`<NS imports dir>/<prefix>_kit_create.csv`, sets Page Title + Detailed
+Description on each **lead row** keyed by **CA Link**, and writes the file back
+as **UTF-8 with BOM**, leaving every other cell exactly as the Kit Builder wrote
+it. Do the same for `<prefix>_kit_create_RSA.csv` if it exists. (Existing-kits CSVs have no Page Title / Detailed Description columns —
 leave them alone.)
 
 **Self-check** before Gate 4: every lead row now has a non-empty Page Title

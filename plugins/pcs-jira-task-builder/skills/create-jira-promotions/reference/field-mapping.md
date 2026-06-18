@@ -96,13 +96,46 @@ the end.
 
 ---
 
-## Out of scope for v0.1.0
+## Other-Promotions.csv (BMSM / e-rebate / promo-code) — v0.2.0
+
+Parser schema: 16 columns (`pcs-promo-parser` `output-csvs.md#other-promotionscsv`).
+Key columns: `Promo Type`, `Promo Name`, `SKU`, `Tier`, `Discount`,
+`Rebate Amount`, `Redemption URL`, `Promo Code`, `Price`, `Qty`, `Start Date`,
+`End Date`, `Vendor`, `Page`, `Source Marker`, `Detail`.
+
+Group rows by `(Promo Name, Promo Type, Start Date, End Date)` → 1 Task per
+group; all SKUs roll into the description table. **Manual review per group**
+before creation (SKILL.md Step 6) — these promo families are new, so confirm each.
+
+| Jira field | Source |
+|---|---|
+| `summary` | Per `naming-rules.md`: `e-rebate` → N1 template, Category `E-Rebate`; `buy-more-save-more` → N1 template, Category `BMSM`; `promo-code` → the **N2** coupon format `<Vendor> <YYYY> Coupon Code - <CODE>` (`<CODE>` = `Promo Code`). Strip any `[PCE…]`. |
+| Start date custom field | `Start Date` → ISO `YYYY-MM-DD` |
+| `duedate` | `End Date` → ISO |
+| `description` | Per `description-spec.md` Other-Promotions block (type line + SKU table + Redemption URL / Promo Code / Tier+Discount as applicable + Promo Identifier + source CSV) |
+| `labels` | `[<year>, Q<N>, <type-label>]` where type-label = `BMSM` / `E-Rebate` / `Coupon` per `labels.md` L3 |
+| `priority` | `Highest` (id 1) for `buy-more-save-more` (HERO per `labels.md` L4); `Medium` otherwise |
+| `assignee` | **Unassigned** |
+| `parent` | `promo-code` → the **Coupon-code promos** Epic; `e-rebate` / `buy-more-save-more` → the **vendor** Epic (`vendor-epics.md`) |
+| Promo Type custom field | Set to the project option that best matches the Promo Type. **Query the issue-type field metadata for the exact allowed options** (see the remap note); if none clearly matches, **flag for the operator** rather than guessing an option. |
+| POS Redemption custom field | `No` (these are customer-facing online promos, not register / mail-in). |
+| Online Execution custom field | `Yes` |
+
+Type-specific description detail: **e-rebate** → show `Rebate Amount` +
+`Redemption URL`; **promo-code** → show the `Promo Code` + `Discount`; **BMSM** →
+show the `Tier` ladder + `Discount`. Never put a FLEX `SOT…` value in a code
+field — the parser already keeps it out of `Promo Code`.
+
+---
+
+## Out of scope (no Task creation)
 
 | File | Behavior |
 |---|---|
 | `Needs-Pricing.csv` (Makita) | Skip entirely. Nathan handles manual pricing downstream. |
 | `Non-Included.csv` | Per-reason rules — see `non-included.md`. Most reasons auto-skip; a few prompt for manual review. |
-| `Parser-Audit.csv` | Read for context (vendor / quarter / page counts) but no Jira write. Surface in end-of-run console summary. |
+| `For-Review.xlsx` | **Never a Jira input** — operator-review workbook only. |
+| `Parser-Audit.csv` | Read for context (vendor / quarter / page counts; also the row-count manifest, since empty outputs aren't written) but no Jira write. Surface in end-of-run console summary. |
 
 ---
 

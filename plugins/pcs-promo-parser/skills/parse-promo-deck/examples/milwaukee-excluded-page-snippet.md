@@ -66,9 +66,10 @@ says "spend $800 to get a free tool"), emit one row with blank SKU:
 
 ## Contrast with related cases
 
-- If the page said **"Buy 5 drills, save 10%"** → BMSM_MARKER, reason
-  `buy-more-save-more` (case #5).
+- If the page said **"Buy 5 drills, save 10%"** → BMSM_MARKER → parsed into
+  `Other-Promotions.csv` (Promo Type `buy-more-save-more`, case #5), not excluded.
 - If the page said **"Use code DRILL20 at checkout for 20% off"** →
-  PROMO_CODE_MARKER, reason `promo-code-only` (case #6).
+  PROMO_CODE_MARKER → parsed into `Other-Promotions.csv` (Promo Type
+  `promo-code`, case #6), not excluded.
 - If the page said **"Special Buy — 20% Off Permanent"** → NLP routing
   to `nlp_sheet.csv` (case #7), NOT exclusion.

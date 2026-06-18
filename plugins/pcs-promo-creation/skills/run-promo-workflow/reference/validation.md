@@ -49,16 +49,29 @@ before answering Y/N.
 
 ## Stage 1 — Parse (validate the Promo-List + sibling CSVs)
 
-**Inputs:** deck, cheat sheet. **Outputs:** `*-Promo-List.csv`, `*-NLP-Sheet.csv`,
-`*-RSA-Kits.csv`, `*-RSA-NLP.csv`, `*-Non-Included.csv`, `*-Needs-Pricing.csv`,
-`*-Parser-Audit.csv`.
+**Inputs:** deck, cheat sheet. **Outputs** (in the **parsed output dir**; each
+written only when non-empty, except `*-Parser-Audit.csv` which is always
+present): `*-Promo-List.csv`, `*-NLP-Sheet.csv`, `*-RSA-Kits.csv`,
+`*-RSA-NLP.csv`, `*-Other-Promotions.csv`, `*-Non-Included.csv`,
+`*-Needs-Pricing.csv`, `*-Parser-Audit.csv`, and (only when there are review
+items) `*-For-Review.xlsx`.
 
 Mechanical:
 - Promo-List has the 27 canonical headers in order; every row has 27 fields.
 - **$0-kit failsafe:** no row has a SKU in a slot whose Qty or Price is blank
   (free goods must be an explicit `0`/`0.00`, not empty). Flag any.
 - Dates parse as non-padded `M/D/YYYY`; Start ≤ End on every row.
-- Parser-Audit counts reconcile with the actual row counts of each file.
+- Parser-Audit counts reconcile with the actual row counts of each file that is
+  present. **A file's absence = zero rows of that type** (empty outputs aren't
+  written) — verify against the Parser-Audit counts; only flag a missing file if
+  the audit says it should have rows.
+- `Other-Promotions.csv` (when present): 16 canonical headers; every `Promo
+  Type` is `buy-more-save-more` / `e-rebate` / `promo-code`; **no `Promo Code`
+  cell holds a FLEX `SOT…` / `FLX…` identifier** (that's a deal id, not a
+  checkout code).
+- `Non-Included.csv` (when present): the retired reasons `e-rebate`,
+  `buy-more-save-more`, `promo-code-only` must NOT appear (their presence means a
+  stale parser — flag it).
 - Files decode cleanly (UTF-8/BOM); no mojibake.
 - No exact-duplicate rows.
 
@@ -70,6 +83,9 @@ Semantic:
   excluded (flag).
 - Cheat-sheet fill: every Needs-Pricing SKU is either filled or listed as
   unresolved (no silent gaps).
+- **For-Review:** if `*-For-Review.xlsx` exists, relay the parser's table
+  (`PCE/Identifier | Page # | Reason(s) | SKUs`) + the workbook link and fold a
+  ⚠️ into Gate 2 so the operator weighs the flagged items.
 
 Auto-correct: whitespace/encoding/date-format only. Flag: missing prices,
 suspicious exclusions, vendor/quarter mismatch.
@@ -101,8 +117,9 @@ export. Nothing to auto-correct here.
 
 ## Stage 3/4 — Kit build + titles/descriptions
 
-**Inputs:** Promo-List, NS export. **Outputs:** `<prefix>_kit_create.csv`,
-`<prefix>_kits_existing.csv` (+ `_RSA`), image ZIP.
+**Inputs:** Promo-List (parsed output dir), NS export (NS imports dir).
+**Outputs** (NS imports dir): `<prefix>_kit_create.csv`,
+`<prefix>_kits_existing.csv` (+ `_RSA`); image ZIP in the images dir.
 
 Mechanical:
 - NS Create CSV has the 17 headers; each kit = 1 lead row + (kit_size − 1) detail
@@ -130,7 +147,7 @@ drops, create/existing anomalies, kit-size mismatches.
 
 ## Stage 6 — Jira (validate task fields BEFORE any write)
 
-**Inputs:** parser CSVs. **Outputs:** Jira tasks (human-gated).
+**Inputs:** parser CSVs (parsed output dir). **Outputs:** Jira tasks (human-gated).
 
 Checks (before the final write gate — `create-jira-promotions` owns the PROM /
 per-row gates; this is an extra pre-write scan):
@@ -139,7 +156,8 @@ per-row gates; this is an extra pre-write scan):
   rules.
 - Target project is what the operator chose (PAT vs PROM) and field IDs match it.
 - Dedupe: no task unexpectedly collides with an existing one.
-- Task count reconciles with the promo groups.
+- Task count reconciles with the promo groups (Promo-List + NLP + RSA +
+  Other-Promotions).
 
 **Never auto-create or auto-edit Jira.** Jira writes stay fully human-gated —
 this pass only surfaces problems into the WRITE gate.

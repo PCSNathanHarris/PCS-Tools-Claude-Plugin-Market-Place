@@ -23,7 +23,7 @@ confirmation gates, the file hand-offs, and the pricing cheat-sheet fill.
 - Jira creation is done by the **`create-jira-promotions`** skill (plugin
   `pcs-jira-task-builder`).
 - The kit stage shells out to the **`kb`** CLI (the Kit Builder tool,
-  version **>= 0.5.19**), installed separately.
+  version **>= 0.5.21**), installed separately.
 
 All three must be present. See `reference/prerequisites.md`. Delegation
 details are in `reference/delegation.md`.
@@ -78,8 +78,10 @@ silently change data, and never let validation auto-answer a gate.
 
 ## Step 0 — Prerequisite check + session folder
 
-1. Verify the Kit Builder CLI is callable and current: run `kb --version`.
-   - If missing or `< 0.5.19`: stop and show the install/upgrade steps from
+1. Verify the Kit Builder CLI is installed and current: run
+   `pip show pcs-kit-builder-lite` and read its `Version:` line (NOT
+   `kb --version` — the CLI has no `--version` flag and errors).
+   - If missing or `< 0.5.21`: stop and show the install/upgrade steps from
      `reference/prerequisites.md`. Offer to run the `pip install` for them
      **only after they confirm (Y/N)**. Do not install silently.
 2. Note that the Jira stage needs the **Atlassian MCP connector**; you only
@@ -367,7 +369,7 @@ List the key output paths (each subfolder) so the operator can pick them up.
 
 ## Prerequisites
 
-- **Kit Builder `kb` CLI** on PATH, version **>= 0.5.19** (`pip install` from
+- **Kit Builder `kb` CLI** on PATH, version **>= 0.5.21** (`pip install` from
   the `pcs-kit-builder-lite` repo). Required for Steps 3–4.
 - **`pcs-promo-parser`** and **`pcs-jira-task-builder`** installed (they ship
   in this same marketplace, so installing this plugin's marketplace covers

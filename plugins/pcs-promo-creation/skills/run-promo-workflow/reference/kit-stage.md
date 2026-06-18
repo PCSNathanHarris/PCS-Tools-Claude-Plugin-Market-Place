@@ -81,7 +81,7 @@ kb build-imports \
   --blank-titles --no-images
 ```
 
-Requires `kb >= 0.5.19`. `--blank-titles` leaves Page Title + Detailed
+Requires `kb >= 0.5.21`. `--blank-titles` leaves Page Title + Detailed
 Description empty (you fill them in Step 4b); `--no-images` skips composition
 (done locally — see below).
 
@@ -131,7 +131,7 @@ cd "<session dir>"
 kb build-imports --promo-list "Promo Parsed Output/<Vendor>-<QN>-<YYYY>-Promo-List.csv" --ns-export "NetSuite Import Files/<NS export file>" --out-dir "Images" --prefix "<vendor>_q<N>_<YYYY>" --images-only
 ```
 
-Requires `kb >= 0.5.19`. Tell them to run it and come back; when
+Requires `kb >= 0.5.21`. Tell them to run it and come back; when
 `<prefix>_kit_images.zip` appears in the **images dir**, **give them a link to
 the ZIP** and report the composed/failed counts it printed. **Do not attempt to
 compose images yourself in Cowork** — the fetch will 403.

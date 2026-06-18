@@ -12,12 +12,15 @@ the Python package.
 
 **Check (Step 0):**
 ```
-kb --version
+pip show pcs-kit-builder-lite
 ```
-- Need **>= 0.5.19** (0.5.17 added `--no-images`; 0.5.18 added `--blank-titles`;
-  0.5.19 added `--images-only` for composing the image ZIP locally. This
-  workflow requires all three so Claude can
-  write the Page Title + Detailed Description).
+- Need **>= 0.5.21**. Read the `Version:` line. (0.5.18 added `--blank-titles`;
+  0.5.19 added `--images-only` for composing the image ZIP locally; **0.5.21
+  collapses duplicate kit members that share an Item ID** — e.g. a free good
+  equal to the paid anchor — which NetSuite otherwise rejects on import.)
+- **`kb --version` is NOT a valid check** — the CLI has no `--version` flag and
+  errors. Use `pip show pcs-kit-builder-lite` (or
+  `python -c "import kb; print(kb.__version__)"`).
 - If `kb` is missing or the version is older, show the install/upgrade below.
 
 **Install / upgrade (offer to run only after a Y/N confirm):**
@@ -28,7 +31,7 @@ winget install Python.Python.3.12
 # Install (or upgrade) the Kit Builder CLI:
 pip install --upgrade git+https://github.com/PCSNathanHarris/pcs-kit-builder-lite.git
 ```
-Then re-check `kb --version`.
+Then re-check with `pip show pcs-kit-builder-lite`.
 
 - The `kb` CLI **does not auto-update** like the plugins. Updating is a manual
   `pip install --upgrade …`. Re-check the version at Step 0 each run.

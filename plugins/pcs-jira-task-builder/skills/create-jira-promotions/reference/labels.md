@@ -1,55 +1,59 @@
 # Labels
 
-Every plugin-generated Task gets a `labels` field with **exactly three labels —
-Vendor, Quarter, and Promo Type** (v0.3.0). **There is no HERO auto-detection and no
-Priority auto-bump** — the plugin never marks a Task HERO and never sets Priority.
+Every plugin-generated Task gets a `labels` field = **Vendor**, **Quarter-Year**, and
+**one or more promo-type labels** (plus `RSA` when applicable). **No HERO auto-detection
+and no Priority bump** — the plugin never marks a Task HERO and never sets Priority.
+
+These promo-type labels are **independent of the Promo Type custom field**
+(`field-mapping.md` → the field is `Manufacturer Free Goods` / `Manufacturer NLP` /
+`Manufacturer Coupon` / `E-rebate`). The labels here are the short tokens.
 
 ## L1 — Vendor label
 
-The vendor display name as a single label: `Milwaukee`, `DeWalt`, `Makita`, `Bosch`,
-`EGO`, `Flex`, `GearWrench`, `Crescent`. (Sub-brands inherit their parent — Stiletto /
-Empire → `Milwaukee`.)
+The vendor display name: `Milwaukee`, `DeWalt`, `Makita`, `Bosch`, `EGO`, `Flex`,
+`GearWrench`, `Crescent` (sub-brands inherit their parent — Stiletto / Empire →
+`Milwaukee`). Source: parser CSV filename.
 
-Source: parser CSV filename (`<Vendor>-Q<N>-<YYYY>-*.csv`).
+## L2 — Quarter-Year label
 
-## L2 — Quarter label
+`Q<N>-<YYYY>` — e.g. **`Q3-2026`**. Universal Q-notation (regardless of the vendor
+period token used in titles), with the year appended. Source: parser CSV filename
+`<Vendor>-Q<N>-<YYYY>-*.csv`.
 
-Always universal `Q1` / `Q2` / `Q3` / `Q4`, regardless of the vendor period token used
-in the title. Enables cross-vendor filtering (e.g. `labels = Q3`).
+## L3 — Promo-type label(s)
 
-Source: parser CSV filename quarter digit.
-
-## L3 — Promo Type label
-
-The Task's **Promo Type** (per `field-mapping.md` → Shared field derivations) as a
-single **hyphenated** label — Jira labels cannot contain spaces:
-
-| Promo Type field value | Label |
+| Parser source | Label(s) |
 |---|---|
-| `Manufacturer Free Goods` | `Manufacturer-Free-Goods` |
-| `Manufacturer NLP` | `Manufacturer-NLP` |
-| `Manufacturer Coupon` | `Manufacturer-Coupon` |
-| `E-rebate` | `E-rebate` |
-| `Buy In Promo` (Think-Tank only) | `Buy-In-Promo` |
+| `Promo-List.csv` (kit) | `Kit-Promo` |
+| `RSA-Kits.csv` | `Kit-Promo` **+ `RSA`** |
+| `NLP-Sheet.csv` (incl. special-buy) | `NLP` |
+| `RSA-NLP.csv` | `NLP` **+ `RSA`** |
+| `Other-Promotions.csv`, Promo Type `promo-code` | `Coupon` |
+| `Other-Promotions.csv`, Promo Type `buy-more-save-more` | `Coupon` **+ `BMSM`** |
+| `Other-Promotions.csv`, Promo Type `e-rebate` | `E-Rebate` |
 
-The label always mirrors whatever Promo Type was set. If Promo Type is left unset
-(self-funding — a coworker configures those), omit the third label and note it in the
-run summary.
+- **BMSM:** when you detect a Buy-More-Save-More (Other-Promotions Promo Type
+  `buy-more-save-more`), add **both** `Coupon` **and** `BMSM`.
+- **RSA:** add `RSA` to any RSA / credit-bearing promo (from `RSA-Kits.csv` /
+  `RSA-NLP.csv`), **alongside** its base type label.
+- Most Tasks get **one** type label (so 3 labels total); BMSM and RSA Tasks get **two**
+  type labels (4 total).
 
 ## Implementation notes
 
 - Labels are an array of strings on the `labels` system field — set via the Atlassian
   MCP `createJiraIssue` / `editJiraIssue` `fields` parameter.
 - Labels are **case-sensitive** and **cannot contain spaces** — emit exactly the Vendor
-  display name, `Q1`–`Q4`, and the hyphenated Promo Type, with the casing shown.
+  display name, `Q<N>-<YYYY>`, and `Kit-Promo` / `NLP` / `Coupon` / `E-Rebate` / `BMSM` /
+  `RSA` with the casing shown.
 
 ## Example label sets
 
 | Task | Labels |
 |---|---|
-| Milwaukee Q3 2026 NLP | `Milwaukee`, `Q3`, `Manufacturer-NLP` |
-| DeWalt Q3 2026 kit (free battery) | `DeWalt`, `Q3`, `Manufacturer-Free-Goods` |
-| Milwaukee Q3 2026 RSA kit | `Milwaukee`, `Q3`, `Manufacturer-Free-Goods` (RSA signaled by POS Redemption=Yes) |
-| Makita Q3 2026 e-rebate | `Makita`, `Q3`, `E-rebate` |
-| Crescent Q3 2026 coupon | `Crescent`, `Q3`, `Manufacturer-Coupon` |
-| Milwaukee Q3 2026 BMSM | `Milwaukee`, `Q3`, `Manufacturer-Coupon` |
+| Milwaukee Q3 2026 NLP | `Milwaukee`, `Q3-2026`, `NLP` |
+| DeWalt Q3 2026 kit (free battery) | `DeWalt`, `Q3-2026`, `Kit-Promo` |
+| Milwaukee Q3 2026 RSA kit | `Milwaukee`, `Q3-2026`, `Kit-Promo`, `RSA` |
+| Makita Q3 2026 e-rebate | `Makita`, `Q3-2026`, `E-Rebate` |
+| Crescent Q3 2026 coupon | `Crescent`, `Q3-2026`, `Coupon` |
+| Milwaukee Q3 2026 BMSM | `Milwaukee`, `Q3-2026`, `Coupon`, `BMSM` |

@@ -1,6 +1,6 @@
 ---
 name: create-jira-promotions
-description: Read pcs-promo-parser Stage 1 CSVs and create matching Jira Tasks in the PCS Promotions space. Defaults to PAT (test) — writes to PROM (production) only after literal-phrase confirmation. Handles kit promos, NLPs, RSAs (per-row review), Other-Promotions (BMSM / e-rebate / promo-code, per-group review), per-vendor period naming, Vendor/Quarter/Promo-Type labels, storefront link scaffolding. Use whenever the user has a parser-output directory and wants the promos pushed into Jira.
+description: Read pcs-promo-parser Stage 1 CSVs and create matching Jira Tasks in the PCS Promotions space. Defaults to PAT (test) — writes to PROM (production) only after literal-phrase confirmation. Handles kit promos, NLPs, RSAs (per-row review), Other-Promotions (BMSM / e-rebate / promo-code, per-group review), per-vendor period naming, Vendor / Quarter-Year / promo-type labels, storefront link scaffolding. Use whenever the user has a parser-output directory and wants the promos pushed into Jira.
 allowed-tools: Read, Glob, Bash
 ---
 
@@ -171,9 +171,10 @@ For each group, compute:
   period prefix + Category + optional Specifics). Strip any `[PCE NNNNNN]`
   from the title; preserve it in the description. **No `(HERO)` suffix and
   no Priority change — HERO auto-marking was removed in v0.3.0.**
-- **Labels** — exactly 3 per `reference/labels.md`: **Vendor, Quarter
-  (`Q1`–`Q4`), and the (hyphenated) Promo Type** — e.g. `Milwaukee`, `Q3`,
-  `Manufacturer-Free-Goods`.
+- **Labels** per `reference/labels.md`: **Vendor**, **`Q<N>-<YYYY>`** (e.g.
+  `Q3-2026`), and the **promo-type label(s)** — `Kit-Promo` / `NLP` / `Coupon` /
+  `E-Rebate`; add `BMSM` alongside `Coupon` for Buy-More-Save-More, and `RSA` for
+  RSA/credit promos.
 - **Promo Type / Online Execution / Needs POS Redemption** per
   `reference/field-mapping.md` → **Shared field derivations** (Promo Type by
   free-good / NLP / coupon-consolidation / e-rebate, and Buy-In is Think-Tank-only →

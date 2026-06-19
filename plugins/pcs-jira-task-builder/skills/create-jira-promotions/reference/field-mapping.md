@@ -62,7 +62,7 @@ one Task whose description holds the full SKU matrix.
 | `customfield_<start-date>` | `Start Date` — convert `M/D/YYYY` to ISO `YYYY-MM-DD` |
 | `duedate` | `End Date` — same conversion |
 | `description` | Per `description-spec.md` (Date range header + SKU table + storefront links + NetSuite links + Promo Identifier + source CSV reference) |
-| `labels` | `[<Vendor>, Q<N>, Manufacturer-Free-Goods]` per `labels.md` |
+| `labels` | per `labels.md` — Vendor + `Q<N>-<YYYY>` + promo-type label(s) (RSA promos also get `RSA`) |
 | `priority` | **Not auto-set** — leave the Jira default. No HERO / no Priority bump (v0.3.0). |
 | `assignee` | **Unassigned** |
 | `parent` | Vendor Epic from `vendor-epics.md` |
@@ -90,7 +90,7 @@ The field rows below apply to the parent Task.
 | Start date custom field | `Online Execution Start` |
 | `duedate` | `Online Execution End` |
 | `description` | Per `description-spec.md` — SKU table has one row per CSV row (SKU + Promo Price + Price Label) |
-| `labels` | `[<Vendor>, Q<N>, Manufacturer-NLP]` per `labels.md` |
+| `labels` | per `labels.md` — Vendor + `Q<N>-<YYYY>` + promo-type label(s) (RSA promos also get `RSA`) |
 | `priority` | **Not auto-set** — leave the Jira default (v0.3.0). |
 | `assignee` | **Unassigned** |
 | `parent` | Vendor Epic from `vendor-epics.md` |
@@ -118,7 +118,7 @@ Skip rows declined.
 | Promo Type custom field | `Manufacturer Free Goods` |
 | **POS Redemption** | **`Yes`** — RSAs always POS redemption |
 | **Online Execution** | **`No`** — RSAs are sales-rep-facing, not online |
-| `labels` | `[<Vendor>, Q<N>, Manufacturer-Free-Goods]` per `labels.md` |
+| `labels` | per `labels.md` — Vendor + `Q<N>-<YYYY>` + promo-type label(s) (RSA promos also get `RSA`) |
 | Description | Include a dedicated "RSA Credit" section showing per-SKU credit amounts in addition to the standard SKU table |
 
 ---
@@ -136,7 +136,7 @@ the end.
 | Promo Type custom field | `Manufacturer NLP` |
 | **POS Redemption** | **`Yes`** |
 | **Online Execution** | **`No`** |
-| `labels` | `[<Vendor>, Q<N>, Manufacturer-NLP]` per `labels.md` |
+| `labels` | per `labels.md` — Vendor + `Q<N>-<YYYY>` + promo-type label(s) (RSA promos also get `RSA`) |
 | Description SKU table | Include `Credit Amount` column per SKU |
 
 ---
@@ -158,7 +158,7 @@ before creation (SKILL.md Step 6) — these promo families are new, so confirm e
 | Start date custom field | `Start Date` → ISO `YYYY-MM-DD` |
 | `duedate` | `End Date` → ISO |
 | `description` | Per `description-spec.md` Other-Promotions block (type line + SKU table + Redemption URL / Promo Code / Tier+Discount as applicable + Promo Identifier + source CSV) |
-| `labels` | `[<Vendor>, Q<N>, <Promo-Type>]` per `labels.md` (`Manufacturer-Coupon` for promo-code/BMSM; `E-rebate` for e-rebate) |
+| `labels` | per `labels.md` — Vendor + `Q<N>-<YYYY>` + promo-type label(s): `Coupon` for promo-code; `Coupon`+`BMSM` for buy-more-save-more; `E-Rebate` for e-rebate |
 | `priority` | **Not auto-set** — leave the Jira default. No HERO / no Priority bump (v0.3.0). |
 | `assignee` | **Unassigned** |
 | `parent` | `promo-code` → the **Coupon-code promos** Epic; `e-rebate` / `buy-more-save-more` → the **vendor** Epic (`vendor-epics.md`) |

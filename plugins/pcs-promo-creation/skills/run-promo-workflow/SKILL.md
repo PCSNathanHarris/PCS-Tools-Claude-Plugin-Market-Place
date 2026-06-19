@@ -297,9 +297,13 @@ free-vs-paid (the Promo-List in `<parsed output dir>`).
 3. Write them back into the lead rows by CA Link via a short generated script
    (preserve every other cell; save UTF-8-with-BOM). Repeat for the `_RSA`
    create CSV if present.
-4. Self-check: each lead row has a Page Title (≤ 80 chars) and a Detailed
-   Description with the `KEY FEATURES:` + `INCLUDES:` sections; no free/paid
-   mislabels.
+4. Self-check (per `reference/title-description-rules.md` → "Title self-check"):
+   each lead row has a Page Title that is **≤ 90 chars (hard max 95)**, leads with
+   the canonical **Brand + main paid SKU**, names a **specific product noun** (not
+   bare "Tool"), carries **every member SKU** with `FREE` on each free good (and
+   never on a paid one), and has **no** `(Bare)` / `Tool Only` / `[PCE …]` / empty
+   `()` / leftover `{placeholder}`; plus a Detailed Description with the
+   `KEY FEATURES:` + `INCLUDES:` sections.
 
 ---
 
@@ -307,8 +311,8 @@ free-vs-paid (the Promo-List in `<parsed output dir>`).
 
 1. **Validate** per `reference/validation.md` § Stage 3/4: NS Create CSV
    structure (lead + detail rows, counts reconcile with the build summary);
-   every lead row now has a Page Title (≤ 80 chars) + a Detailed Description
-   with `KEY FEATURES:` / `INCLUDES:` (valid HTML); create-vs-existing split
+   every lead row now has a Page Title (≤ 90 chars, hard max 95) + a Detailed
+   Description with `KEY FEATURES:` / `INCLUDES:` (valid HTML); create-vs-existing split
    integrity; Display Name brackets; single-member drops cross-checked against
    Stage 2's missing-SKU list. Second-pass QA your own titles/descriptions and
    **auto-correct** any defects (length, free/paid mislabel, brand casing, HTML)

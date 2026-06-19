@@ -18,8 +18,9 @@ gate so the operator decides with eyes open.
 ## Correction policy — what you may fix vs must flag
 
 **Auto-correct (safe — fix silently, then list what you fixed):**
-- Your *own* generated text (kit titles/descriptions): a title > 80 chars, a
-  free/paid mislabel, an empty-paren artifact `( / )`, inconsistent brand
+- Your *own* generated text (kit titles/descriptions): a title over 95 chars
+  (shorten per the reduction order in `title-description-rules.md` — never drop a
+  SKU), a free/paid mislabel, an empty-paren artifact `( / )`, inconsistent brand
   casing, broken/missing HTML escaping or a missing `KEY FEATURES:` / `INCLUDES:`
   section.
 - Pure formatting: stray whitespace, encoding artifacts (mojibake from CP1252),
@@ -141,9 +142,9 @@ Mechanical:
 - NS Create CSV has the 17 headers; each kit = 1 lead row + (kit_size − 1) detail
   rows; detail rows carry CA Link + Item ID + Item Qty.
 - new + existing counts reconcile with the build summary.
-- **After Step 4b:** every lead row has a non-empty Page Title (≤ 80 chars) and a
-  Detailed Description containing `KEY FEATURES:` and `INCLUDES:`; the HTML is
-  valid and escaped; no leftover blank titles.
+- **After Step 4b:** every lead row has a non-empty Page Title (≤ 90 chars, hard
+  max 95) and a Detailed Description containing `KEY FEATURES:` and `INCLUDES:`;
+  the HTML is valid and escaped; no leftover blank titles.
 - Display Name bracket rule: regular kits `(start-end)`, RSA kits `[start-end]`.
 - Split integrity: no CA Link appears in both create and existing.
 - Single-member drops listed and cross-checked against Stage 2's missing-SKU

@@ -219,9 +219,12 @@ as **UTF-8 with BOM**, leaving every other cell exactly as the Kit Builder wrote
 it. Do the same for `<prefix>_kit_create_RSA.csv` if it exists. (Existing-kits CSVs have no Page Title / Detailed Description columns —
 leave them alone.)
 
-**Self-check** before Gate 4: every lead row now has a non-empty Page Title
-(≤ 80 chars) and a Detailed Description containing the `KEY FEATURES:` and
-`INCLUDES:` sections; no FREE/paid mislabels; valid HTML.
+**Self-check** before Gate 4 (full list in `reference/title-description-rules.md`
+→ "Title self-check"): every lead row now has a non-empty Page Title that is
+**≤ 90 chars (hard max 95)**, leads with Brand + main paid SKU, uses a specific
+product noun, carries every member SKU with `FREE` on each free good only, and has
+no `(Bare)` / `Tool Only` / `[PCE …]` / empty-paren artifacts; and a Detailed
+Description containing the `KEY FEATURES:` and `INCLUDES:` sections; valid HTML.
 
 ## Notes
 

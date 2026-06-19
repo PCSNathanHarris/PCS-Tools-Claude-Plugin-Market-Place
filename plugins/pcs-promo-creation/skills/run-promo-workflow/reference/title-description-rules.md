@@ -57,6 +57,17 @@ as-is). See `kit-stage.md`.
   "Hydraulic Driver Bare Tool Kit" → "Hydraulic Driver".
 - `qty > 1` → append `, {qty} Pack` (e.g. `…, 2 Pack`).
 
+**Descriptor — get the product name right (a top fix):** for each member, derive
+`{descriptor}` as a clean, **specific product-type name**. Source it in order —
+the member's **NS Display Name** (usually shortest/cleanest), else its **Page
+Title**, else its **Name** — then strip the **brand prefix**, any **leading
+vendor SKU**, a trailing **"with X battery/charger"** clause, and `(Bare)` /
+`(Tool Only)`. Land on the real noun: `Impact Wrench`, `Band Saw`, `Hammer Drill`,
+`Backpack Blower`, `M18 Battery`, `Charger`. **Never** reduce to a bare `Tool` /
+`Combo` / `Unit` — if the source text only yields that, use the kit's category or
+the member record to name the actual product. (Free vs paid for the `FREE` marker
+comes from the member's Promo-List **Item Price**: `0`/`0.00` = free.)
+
 **Brand — normalize to the canonical name (consistency fix):**
 ```
 milwaukee→Milwaukee  dewalt/de walt→DeWalt  makita→Makita  bosch→Bosch
@@ -65,10 +76,13 @@ flex/flex tools→Flex  crescent/apex tool→Crescent
 ```
 Unknown brands → Title Case. Keep model numbers exactly as printed.
 
-**Length: target ≤ 90 chars, hard max 95 (nothing over).** When over, **shorten
-intelligently — never drop a SKU.** Every member SKU must appear in the final
-title; only descriptor text is shortened. Strip in this order, only as much as
-needed:
+**Length: target ≤ 90 chars, hard max 95 (nothing over).** **A title under 95 is
+fine as-is — never pre-truncate or strip a real product descriptor just to look
+shorter** (over-shortening is the #1 thing we're fixing). Only when the assembled
+title actually exceeds 95 do you **shorten intelligently — never dropping a SKU**;
+strip just enough filler to land ≤ 90 (then ≤ 95) and stop. Every member SKU must
+appear in the final title; only descriptor text is shortened. Strip in this order,
+only as much as needed:
 1. Always-strip cruft: `(Bare)`, `(Tool Only)`, `Bare Tool`, trailing
    "with X battery/charger", and the standalone "Kit".
 2. Platform/voltage filler: `M18 FUEL`, `M12 FUEL`, `XGT`, `LXT`, `FUEL`, `XR`,
@@ -87,6 +101,27 @@ needed:
 **Cleanup:** remove empty parentheses (`( / )`), collapse double spaces, trim
 orphan trailing `& / , ; :` and dangling `W/`. Strip any `[PCE …]` / promo
 code from the title (it belongs only in NetSuite fields, not the title).
+
+**Worked examples** (the target quality — note real product nouns, FREE markers,
+and full descriptors kept because they fit):
+
+- B1G1: `Milwaukee 2962-22 Impact Wrench W/ FREE 48-11-1850 Battery`
+- 2 free goods (choose-N): `Milwaukee 2695-24 4-Tool Combo W/ FREE 0880-20 Vacuum and FREE 2630-20 Circular Saw`
+- qty pack: `Milwaukee 48-11-1850 M18 Battery, 2 Pack`
+- multi-paid bundle (no free good): `GearWrench 81230P 86-Pc Socket Set W/ 80950T Ratchet and 80551 Extension`
+- only reduced when **over 95** — free goods drop to SKU-only, never dropped: `Milwaukee 2962-22 Impact Wrench W/ FREE 48-11-1850 and FREE 48-11-2440`
+
+## Title self-check (run on every title)
+
+- **Length** ≤ 90 (hard max 95); a sub-95 title with full descriptors is good —
+  not over-trimmed.
+- **Lead** = canonical Brand + the main **paid** SKU.
+- **Descriptor** = a specific product noun (no bare `Tool` / `Combo` / `Unit`).
+- **Every member SKU appears**; `FREE` on each free good and on **no** paid item.
+- **No** `(Bare)` / `Tool Only` / `[PCE …]` / empty `()` / dangling `W/` / leftover
+  `{placeholder}`.
+- **Consistency:** same brand spelling + same descriptor for a repeated SKU across
+  the whole run.
 
 ---
 

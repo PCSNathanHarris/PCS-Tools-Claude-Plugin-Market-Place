@@ -23,7 +23,7 @@ confirmation gates, the file hand-offs, and the pricing cheat-sheet fill.
 - Jira creation is done by the **`create-jira-promotions`** skill (plugin
   `pcs-jira-task-builder`).
 - The kit stage shells out to the Kit Builder **`kb.exe`** (the prebuilt CLI
-  binary, version **>= 0.5.22**), fetched separately (see `reference/kb-binary.md`).
+  binary, version **>= 0.5.23**), fetched separately (see `reference/kb-binary.md`).
 
 All three must be present. See `reference/prerequisites.md`. Delegation
 details are in `reference/delegation.md`.
@@ -82,7 +82,7 @@ silently change data, and never let validation auto-answer a gate.
    (Steps 3–5) need the `kb.exe` CLI; resolve its availability **now**, up front,
    so the run never stalls mid-pipeline (do **not** defer the install to Step 3).
    Decide the **kit capability** by this order:
-   - **`.\kb.exe` already present** → run `.\kb.exe --version`; if **≥ 0.5.22**,
+   - **`.\kb.exe` already present** → run `.\kb.exe --version`; if **≥ 0.5.23**,
      kit stages are **ENABLED** (no token needed). If older, treat it as missing
      and use the next bullet.
    - **`.\kb.exe` missing/old AND a `.env` GitHub token is in the working folder**
@@ -428,7 +428,7 @@ List the key output paths (each subfolder) so the operator can pick them up.
 ## Prerequisites
 
 - **Kit Builder `kb.exe`** (prebuilt CLI binary) in the working folder, version
-  **>= 0.5.22** — fetched from the private Release via the `.env` token at Step 0
+  **>= 0.5.23** — fetched from the private Release via the `.env` token at Step 0
   (`reference/kb-binary.md`); source `pip install` is the dev/non-Windows
   fallback. Required only for the kit stages (Steps 3–5): if no `.env` token is
   present and `kb.exe` isn't already there, Step 0 offers to continue without it

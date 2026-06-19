@@ -10,7 +10,7 @@ REST API + `curl`.)
 ## When to fetch
 At **Step 0, before parsing** — settle the Kit Builder up front; never defer the
 install to the kit stage. Skip the fetch if `.\kb.exe` already exists and
-`.\kb.exe --version` is **≥ 0.5.22**. Otherwise (missing/old):
+`.\kb.exe --version` is **≥ 0.5.23**. Otherwise (missing/old):
 - **A token file is present** (found per *Find + read the token* below) → fetch
   **immediately**, no Y/N (the token's presence is the go-ahead). Announce
   `Installing the Kit Builder (kb.exe) from the private Release…` and download.
@@ -79,7 +79,7 @@ calls use `.\kb.exe …`.
 
 ## Step 3 — verify
 ```powershell
-.\kb.exe --version    # must print "kb, version 0.5.22" or newer
+.\kb.exe --version    # must print "kb, version 0.5.23" or newer
 ```
 First run may trip **SmartScreen** ("More info → Run anyway") — expected for an
 unsigned in-house binary.

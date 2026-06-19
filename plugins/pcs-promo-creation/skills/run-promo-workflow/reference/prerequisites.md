@@ -15,7 +15,7 @@ the full playbook is `reference/kb-binary.md`.
 **Settle this at Step 0, before parsing** — don't defer the install to the kit
 stage. Resolve the **kit capability** in this order:
 
-1. **`.\kb.exe` already present** → `.\kb.exe --version`; if **≥ 0.5.22**, kit
+1. **`.\kb.exe` already present** → `.\kb.exe --version`; if **≥ 0.5.23**, kit
    stages are **ENABLED** (no token needed). (`kb.exe --version` is a real check
    as of 0.5.22 — earlier versions had no `--version` flag.) If older, treat as
    missing and go to step 2.
@@ -40,11 +40,13 @@ stage. Resolve the **kit capability** in this order:
    # redact pip's output so the token embedded in the URL is never printed
    ```
    Then call `kb` (not `.\kb.exe`); it lands on PATH (e.g. `~/.local/bin/kb`).
-   Verify with `kb --version` ≥ 0.5.22. (The Cowork sandbox is usually Linux
+   Verify with `kb --version` ≥ 0.5.23. (The Cowork sandbox is usually Linux
    **without poppler** — the parser's PyMuPDF fallback renders PDFs there.)
 
 `kb.exe` **does not auto-update** — re-fetch when a new tag ships; the Step-0
-`--version` gate is the trigger.
+`--version` gate is the trigger. **v0.5.23** fixes duplicate kits from "choose N"
+multi-pick promos, so an operator still on 0.5.22 should re-fetch — the Step-0
+≥ 0.5.23 gate triggers it automatically.
 
 ## 2. Sibling plugins (required for Steps 1 and 6)
 

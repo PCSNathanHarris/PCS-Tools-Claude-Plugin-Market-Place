@@ -158,7 +158,10 @@ Or just run `/run-promo-workflow` — its Step 0 fetches `kb.exe` for you. **Man
 download `kb.exe` from the Release page and drop it in the folder (SmartScreen →
 "More info" → "Run anyway" the first time).
 
-You need **0.5.22 or newer** — check with `.\kb.exe --version`.
+You need **0.5.23 or newer** — check with `.\kb.exe --version`. (0.5.23 fixes
+duplicate kits from "choose N" promos; since `kb.exe` doesn't auto-update,
+**re-fetch** if you're on an older one — `/run-promo-workflow` Step 0 does this
+automatically.)
 - There are **two** Release assets: `PCSKitBuilderLite.exe` (the desktop GUI app)
   and **`kb.exe`** (the headless CLI the pipeline uses — this is the one you want).
 - `kb.exe` does **not** auto-update — re-fetch when a new version ships.
@@ -284,7 +287,7 @@ claude                                     # First launch + login
 # Extra one-time setup for the full /run-promo-workflow pipeline only.
 # Windows: NO Python/pip — Claude fetches kb.exe from the private Release using
 #   the .env token (or run /run-promo-workflow; Step 0 fetches it). Verify:
-.\kb.exe --version              # need >= 0.5.22
+.\kb.exe --version              # need >= 0.5.23
 # plus: connect the Atlassian connector in Claude Code (for the Jira step)
 ```
 

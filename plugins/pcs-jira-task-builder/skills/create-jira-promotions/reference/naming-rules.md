@@ -5,17 +5,16 @@ Canonical rules for every Task title the skill generates. Numbered N1–N11 for 
 ## N1 — Standard title template
 
 ```
-<YYYY> <Period> - <Category>[ — <Specifics>][ (HERO)]
+<YYYY> <Period> - <Category>[ — <Specifics>]
 ```
 
 Components:
 - `<YYYY>` — 4-digit year (e.g. `2026`).
 - `<Period>` — vendor-dependent (Rule N4 below).
 - `<Category>` — controlled vocabulary token (Rule N5 below).
-- `<Specifics>` — optional descriptor for HERO / SKU-callout promos (e.g. `DCB205-2C + 2 Bare Tools @ $299`). Em-dash separator (`—`), not hyphen.
-- `(HERO)` — appended literally when HERO-flagged (Rule N7).
+- `<Specifics>` — optional SKU-callout descriptor (e.g. `DCB205-2C + 2 Bare Tools @ $299`). Em-dash separator (`—`), not hyphen.
 
-Example: `2026 P2 - Free Battery — M18 1852 + 2 Bare Tools @ $299 (HERO)`
+Example: `2026 P2 - Free Battery — M18 1852 + 2 Bare Tools @ $299`
 
 ## N2 — Coupon-code title format (v0.2.0)
 
@@ -102,14 +101,10 @@ Every generated title must be normalized:
 - No trailing whitespace.
 - No apostrophes — write `NLPs`, not `NLP's`.
 
-## N7 — HERO marker
+## N7 — (removed in v0.3.0)
 
-HERO promos get **both**:
-- Priority field = `Highest` (Jira priority id `1`).
-- Suffix ` (HERO)` appended as the last token of the title.
-
-HERO is auto-detected per `labels.md` Rule L4 (starter kit free good,
-2+ free goods, BMSM — BMSM now arrives via `Other-Promotions.csv`).
+HERO auto-marking was **removed in v0.3.0** — the plugin never appends ` (HERO)` to a
+title and never sets Priority. (Rule number kept so later N-references don't shift.)
 
 ## N8 — PCE/PCR identifier handling
 

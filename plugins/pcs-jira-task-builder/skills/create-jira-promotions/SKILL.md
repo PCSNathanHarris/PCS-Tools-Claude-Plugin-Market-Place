@@ -1,6 +1,6 @@
 ---
 name: create-jira-promotions
-description: Read pcs-promo-parser Stage 1 CSVs and create matching Jira Tasks in the PCS Promotions space. Defaults to PAT (test) — writes to PROM (production) only after literal-phrase confirmation. Handles kit promos, NLPs, RSAs (per-row review), Other-Promotions (BMSM / e-rebate / promo-code, per-group review), per-vendor period naming, auto-HERO detection, storefront link scaffolding. Use whenever the user has a parser-output directory and wants the promos pushed into Jira.
+description: Read pcs-promo-parser Stage 1 CSVs and create matching Jira Tasks in the PCS Promotions space. Defaults to PAT (test) — writes to PROM (production) only after literal-phrase confirmation. Handles kit promos, NLPs, RSAs (per-row review), Other-Promotions (BMSM / e-rebate / promo-code, per-group review), per-vendor period naming, Vendor/Quarter/Promo-Type labels, storefront link scaffolding. Use whenever the user has a parser-output directory and wants the promos pushed into Jira.
 allowed-tools: Read, Glob, Bash
 ---
 
@@ -168,15 +168,12 @@ See `reference/field-mapping.md` for the per-CSV breakdown.
 For each group, compute:
 
 - **Canonical Task summary** per `reference/naming-rules.md` (vendor
-  period prefix + Category + optional Specifics + HERO suffix when
-  applicable). Strip any `[PCE NNNNNN]` from the title; preserve it in
-  the description.
-- **Labels** — exactly 3 per `reference/labels.md` (year, universal
-  Q-notation quarter, one of `Kit-Promo` / `NLP` / `Coupon` / `E-Rebate` /
-  `BMSM`).
-- **HERO triggers** — auto-detected per `reference/labels.md` Rule L4
-  (starter kit as free good, 2+ free goods, BMSM). When triggered, set
-  Priority = Highest AND append ` (HERO)` to the summary.
+  period prefix + Category + optional Specifics). Strip any `[PCE NNNNNN]`
+  from the title; preserve it in the description. **No `(HERO)` suffix and
+  no Priority change — HERO auto-marking was removed in v0.3.0.**
+- **Labels** — exactly 3 per `reference/labels.md`: **Vendor, Quarter
+  (`Q1`–`Q4`), and the (hyphenated) Promo Type** — e.g. `Milwaukee`, `Q3`,
+  `Manufacturer-Free-Goods`.
 - **Promo Type / Online Execution / Needs POS Redemption** per
   `reference/field-mapping.md` → **Shared field derivations** (Promo Type by
   free-good / NLP / coupon-consolidation / e-rebate, and Buy-In is Think-Tank-only →
@@ -233,8 +230,6 @@ For each group ready to write:
    - `Cancel` → abort the entire run.
 3. If no match:
    - Call `createJiraIssue` with all derived fields.
-   - If HERO, call `transitionJiraIssue` to set priority (or include in
-     create payload).
    - Log decision with new Jira key.
 4. **Attachments (when the Jira token file is present** — `reference/integrations.md`):
    attach the promo's **deck-page screenshot** (`deck_pages/p<Page>.png`, per
@@ -325,7 +320,7 @@ The audit log file (written alongside the parser output) captures:
 |------|--------------|
 | `reference/safety.md` | The PROM write-protection gate, in full. Read once per run before Step 1. |
 | `reference/naming-rules.md` | Title template, per-vendor period map, controlled `<Category>` vocabulary, normalization. Read once per run during Step 5. |
-| `reference/labels.md` | The 3-label rule, HERO auto-detection (Rule L4). Read once per run during Step 5. |
+| `reference/labels.md` | The 3-label rule (Vendor / Quarter / Promo Type). Read once per run during Step 5. |
 | `reference/field-mapping.md` | CSV column → Jira field for every in-scope CSV. PAT vs PROM custom field IDs. Read during Steps 5, 7. |
 | `reference/description-spec.md` | Description markdown template. Per-vendor storefront mapping (TUP/RTS/ATO/GWS/JPT/MTS). Read during Step 5. |
 | `reference/vendor-epics.md` | Vendor → Epic key lookup for PAT and PROM. Read during Step 3. |

@@ -78,14 +78,38 @@ silently change data, and never let validation auto-answer a gate.
 
 ## Step 0 — Prerequisite check + session folder
 
-1. Verify the Kit Builder CLI binary is present and current: run
-   `.\kb.exe --version` (a real check as of 0.5.22) and require **≥ 0.5.22**.
-   - If `.\kb.exe` is missing from the working folder, fetch it from the latest
-     private Release using the `.env` token (`reference/kb-binary.md`), then
-     re-check; if older, re-fetch. On a non-Windows environment where the binary
-     can't run, fall back to the source `pip install` per
-     `reference/prerequisites.md`. Offer the fetch/install **only after a Y/N
-     confirm** — never silently.
+1. **Settle the Kit Builder first — before parsing anything.** The kit stages
+   (Steps 3–5) need the `kb.exe` CLI; resolve its availability **now**, up front,
+   so the run never stalls mid-pipeline (do **not** defer the install to Step 3).
+   Decide the **kit capability** by this order:
+   - **`.\kb.exe` already present** → run `.\kb.exe --version`; if **≥ 0.5.22**,
+     kit stages are **ENABLED** (no token needed). If older, treat it as missing
+     and use the next bullet.
+   - **`.\kb.exe` missing/old AND a `.env` GitHub token is in the working folder**
+     → **fetch it right now** per `reference/kb-binary.md` — announce
+     `Installing the Kit Builder (kb.exe) from the private Release…` and do it
+     (the token being present is the go-ahead; no Y/N needed for this case).
+     Re-check `--version`; on success kit stages are **ENABLED**. If the fetch
+     fails (no `kb.exe` asset in the Release, auth/network error), report the
+     specific reason, offer the manual download (`reference/kb-binary.md`), then
+     fall to the no-token branch.
+   - **`.\kb.exe` missing/old AND no `.env`/token found** → do **not** stop the
+     whole run. Tell the operator:
+     > I couldn't find a GitHub token (`.env`) in this folder, so I can't install
+     > the Kit Builder (`kb.exe`). **To use the kit-building stage**, ask your
+     > admin for the GitHub token `.env` file, drop it in this folder, and re-run.
+     > Otherwise I can continue **without** kit building — deck parsing and the
+     > Jira tasks still work; I'll just skip the NetSuite kit stages (Steps 3–5).
+
+     Then **Gate 0**: `Continue without kit building (deck parse + Jira only)? (Y/N)`.
+     **Y** → set kit stages = **DISABLED** and continue. **N** → stop cleanly
+     ("add the `.env` and re-run /run-promo-workflow").
+   - **Non-Windows execution environment** (the binary can't run, e.g. a Linux
+     sandbox) → use the source `pip install` fallback in
+     `reference/prerequisites.md` §1 (needs Python) instead of `kb.exe`.
+
+   Carry the **kit stages ENABLED/DISABLED** decision through the run — Steps 3–5
+   check it; Steps 1–2 (parse) and Step 6 (Jira) run regardless.
 2. Note that the Jira stage needs the **Atlassian MCP connector**; you only
    need it at Step 6, so just confirm it's expected — don't block Step 1 on it.
 3. Pick the working directory (default: the current directory). In Step 1 the
@@ -171,7 +195,9 @@ If no cheat sheet was provided, say so and skip this step.
 
 **Gate 2:** `Promo list looks right — continue to the Kit Builder? (Y/N)`
 (fold any ⚠️ findings — including any For-Review items and any verification-held
-SKUs/prices — into this prompt)
+SKUs/prices — into this prompt). **If kit stages are DISABLED** (Step 0, no Kit
+Builder), reword to `Promo list looks right — continue to Jira task creation? (Y/N)`
+since the kit stages will be skipped.
 
 ---
 
@@ -179,6 +205,11 @@ SKUs/prices — into this prompt)
 
 Follow `reference/kit-stage.md`:
 
+0. **If kit stages are DISABLED** (Step 0: no Kit Builder, operator chose to
+   continue without it), **skip Steps 3, 4, 4b and 5 entirely** — note
+   `Kit stages skipped — no Kit Builder available (add the .env token and re-run
+   to include them)` and go straight to **Step 6 (Jira)**. The parser's NLP / RSA
+   / Other-Promotions rows still become Jira tasks.
 1. Run:
    ```
    .\kb.exe decode-formula --skus "<parsed output dir>/<Vendor>-<QN>-<YYYY>-Promo-List.csv" \
@@ -322,7 +353,7 @@ Stage 1 (parse):  <vendor> <Q#> <YYYY> — <promo> promo / <nlp> NLP / <rsa> RSA
                   prices filled from cheat sheet: <n>; still unresolved: <n>
                   For-Review items: <n> (workbook: <path | none>)
 Stage 2 (kit):    <new> new kits, <existing> existing  ->  <prefix>_kit_create.csv (+ _kits_existing.csv)
-                  images: <composed N | skipped>
+                  images: <composed N | skipped>     [or: skipped — no Kit Builder (no .env token)]
 Stage 3 (Jira):   <project> — <created> created (incl. <other> from Other-Promotions), <updated> updated, <skipped> skipped
 ```
 
@@ -381,9 +412,11 @@ List the key output paths (each subfolder) so the operator can pick them up.
 ## Prerequisites
 
 - **Kit Builder `kb.exe`** (prebuilt CLI binary) in the working folder, version
-  **>= 0.5.22** — fetched from the private Release via the `.env` token
+  **>= 0.5.22** — fetched from the private Release via the `.env` token at Step 0
   (`reference/kb-binary.md`); source `pip install` is the dev/non-Windows
-  fallback. Required for Steps 3–4.
+  fallback. Required only for the kit stages (Steps 3–5): if no `.env` token is
+  present and `kb.exe` isn't already there, Step 0 offers to continue without it
+  (deck parse + Jira still run; the kit stages are skipped).
 - **`pcs-promo-parser`** and **`pcs-jira-task-builder`** installed (they ship
   in this same marketplace, so installing this plugin's marketplace covers
   them — confirm they're installed).

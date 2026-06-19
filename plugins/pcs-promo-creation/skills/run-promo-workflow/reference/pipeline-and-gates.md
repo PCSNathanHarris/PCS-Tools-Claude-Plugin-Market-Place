@@ -14,7 +14,7 @@ never answers a gate itself.
 
 | # | Where | Prompt (ask verbatim, fill the `<…>`) | On `N` |
 |---|-------|----------------------------------------|--------|
-| 0 | Step 0, only if `kb.exe` missing/old | `kb.exe is missing or below 0.5.22. Fetch the latest kb.exe from the private Release now? (Y/N)` | Stop; show the manual download steps (`reference/kb-binary.md`) and exit. |
+| 0 | Step 0, only if `kb.exe` missing/old **and no `.env` token** | `No GitHub token (.env) found, so I can't install the Kit Builder (kb.exe). Continue without kit building (deck parse + Jira only)? (Y/N)` | Stop cleanly; tell the operator to get the GitHub token `.env` file from their admin, drop it in this folder, and re-run. |
 | 4b-scale | Step 4b, only if > ~300 kits | `That's <N> kits to title — generate all, do the first <K>, or stop? (All / First N / Stop)` | Stop, or title only the first N, per the answer. |
 | 1 | Step 1, after uploads | `Parse this <vendor?> deck now? (Y/N)` | Stop; nothing parsed. |
 | 2 | Step 2, after parse + cheat-sheet fill | `Promo list looks right — continue to the Kit Builder? (Y/N)` | Stop; parser CSVs remain in `Promo Parsed Output/`. |
@@ -27,6 +27,11 @@ never answers a gate itself.
 
 ## Rules
 
+- **Gate 0 only appears when there's no `.env` token.** If the token *is* present
+  and `kb.exe` is missing/old, Step 0 fetches it **automatically** (no gate) —
+  the install happens up front, before parsing. Gate 0's `Y` does **not** stop
+  the run: it sets kit stages **DISABLED** (Steps 3–5 skipped) and continues
+  through deck parse + Jira. Only `N` stops it.
 - The `img` gate is the only one whose `N` does not stop the run — it just
   passes `--no-images`.
 - Gates 1–5 are sequential hard stops. Treat "maybe", silence, or anything

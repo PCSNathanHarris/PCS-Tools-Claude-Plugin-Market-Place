@@ -8,8 +8,17 @@ folder using the GitHub token in the `.env`. (`gh` CLI is not installed; use the
 REST API + `curl`.)
 
 ## When to fetch
-At **Step 0**, only after the operator confirms (Y/N). Skip the fetch if
-`.\kb.exe` already exists and `.\kb.exe --version` is **≥ 0.5.22**.
+At **Step 0, before parsing** — settle the Kit Builder up front; never defer the
+install to the kit stage. Skip the fetch if `.\kb.exe` already exists and
+`.\kb.exe --version` is **≥ 0.5.22**. Otherwise (missing/old):
+- **`.env` token present in the folder** → fetch **immediately**, no Y/N (the
+  token's presence is the go-ahead). Announce
+  `Installing the Kit Builder (kb.exe) from the private Release…` and download.
+- **No `.env`/token found** → do **not** fetch and do **not** stop the run. Tell
+  the operator to ask their admin for the GitHub token `.env` file (drop it in
+  this folder, re-run) **if** they want kit building, and offer to continue
+  without it — deck parsing + Jira still run; the kit stages are skipped. This is
+  **Gate 0** in `pipeline-and-gates.md`.
 
 ## Token hygiene (do this every time)
 - Read `GITHUB_TOKEN` from the `.env` in the working folder into a shell variable

@@ -4,7 +4,7 @@ This workflow chains three components. The two sibling skills are markdown and
 ship in this marketplace; the Kit Builder is a separate Python CLI; Jira needs
 the Atlassian MCP connector.
 
-## 1. Kit Builder `kb` — prebuilt `kb.exe` binary (required for Steps 3–4)
+## 1. Kit Builder `kb` — prebuilt `kb.exe` binary (kit stages, Steps 3–5)
 
 The kit stage runs the real Kit Builder engine. As of **v0.5.22** it ships as a
 **prebuilt headless Windows binary `kb.exe`** (attached to every Release next to
@@ -12,26 +12,30 @@ the GUI `PCSKitBuilderLite.exe`), so Windows operators need **no Python / pip /
 Git**. The repo is private, so fetching `kb.exe` uses the `.env` GitHub token —
 the full playbook is `reference/kb-binary.md`.
 
-**Check (Step 0):**
-```
-.\kb.exe --version
-```
-- Need **>= 0.5.22**. If `.\kb.exe` is missing from the working folder, fetch it
-  from the latest Release with the `.env` token (see `reference/kb-binary.md`),
-  then re-check. (`kb.exe --version` is a real, supported check as of 0.5.22 —
-  earlier versions had no `--version` flag.)
-- `kb.exe` **does not auto-update** — re-fetch when a new tag ships; the Step-0
-  `--version` gate is the trigger.
+**Settle this at Step 0, before parsing** — don't defer the install to the kit
+stage. Resolve the **kit capability** in this order:
 
-**Get / update `kb.exe` (offer only after a Y/N confirm — never silently):**
-- **Primary (Windows):** Claude downloads `kb.exe` from the latest **private**
-  Release via the GitHub REST API + the `.env` token (no Python/Git/pip). See
-  `reference/kb-binary.md`. Manual fallback: download `kb.exe` from the Release
-  page in a browser and drop it in the working folder.
-- **Fallback (source / non-Windows):** where the Windows binary can't run (e.g. a
-  non-Windows sandbox), install from source — `winget install Python.Python.3.12`
-  then `pip install --upgrade git+https://github.com/PCSNathanHarris/pcs-kit-builder-lite.git`
-  — and call `kb` (not `.\kb.exe`). Verify with `kb --version` ≥ 0.5.22.
+1. **`.\kb.exe` already present** → `.\kb.exe --version`; if **≥ 0.5.22**, kit
+   stages are **ENABLED** (no token needed). (`kb.exe --version` is a real check
+   as of 0.5.22 — earlier versions had no `--version` flag.) If older, treat as
+   missing and go to step 2.
+2. **Missing/old AND a `.env` token is in the folder** → **fetch `kb.exe` now**
+   via the GitHub REST API + the `.env` token (`reference/kb-binary.md`). The
+   token's presence is the go-ahead — **fetch it immediately, no Y/N** — then
+   re-check `--version`. Kit stages **ENABLED**. Manual fallback: download
+   `kb.exe` from the Release page in a browser and drop it in the folder.
+3. **Missing/old AND no `.env`/token** → don't stop the run. Tell the operator to
+   ask their admin for the GitHub token `.env` file (drop it in this folder and
+   re-run) **if** they want kit building, and offer to **continue without it** —
+   deck parsing and the Jira tasks still work; the kit stages (Steps 3–5) are
+   skipped. This is **Gate 0** (`reference/pipeline-and-gates.md`).
+4. **Non-Windows execution environment** (the binary can't run, e.g. a Linux
+   sandbox) → install from source instead — `winget install Python.Python.3.12`
+   then `pip install --upgrade git+https://github.com/PCSNathanHarris/pcs-kit-builder-lite.git`
+   — and call `kb` (not `.\kb.exe`). Verify with `kb --version` ≥ 0.5.22.
+
+`kb.exe` **does not auto-update** — re-fetch when a new tag ships; the Step-0
+`--version` gate is the trigger.
 
 ## 2. Sibling plugins (required for Steps 1 and 6)
 

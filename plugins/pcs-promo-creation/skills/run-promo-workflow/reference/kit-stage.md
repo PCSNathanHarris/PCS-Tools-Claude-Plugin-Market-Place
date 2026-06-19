@@ -1,6 +1,7 @@
 # Kit stage — DECODE round-trip + NS imports
 
-The kit stage drives the real Kit Builder engine via the `kb` CLI. It uses the
+The kit stage drives the real Kit Builder engine via the `kb.exe` CLI binary
+(Windows; fetched per `reference/kb-binary.md`). It uses the
 session subfolders from `SKILL.md` Step 0:
 - **parsed output dir** = `<session>/Promo Parsed Output/` — the parser CSVs
   (read the Promo-List from here).
@@ -26,7 +27,7 @@ which SKUs to return. So the order is:
 ## Step 3 — DECODE formula
 
 ```
-kb decode-formula \
+.\kb.exe decode-formula \
   --skus "<parsed output dir>/<Vendor>-<QN>-<YYYY>-Promo-List.csv" \
   --field vendorname \
   --out  "<NS imports dir>/decode_blocks.txt"
@@ -73,7 +74,7 @@ below — Cowork's sandbox cannot reach NetSuite's image host, so the build neve
 composes here):
 
 ```
-kb build-imports \
+.\kb.exe build-imports \
   --promo-list "<parsed output dir>/<Vendor>-<QN>-<YYYY>-Promo-List.csv" \
   --ns-export  "<NS imports dir>/<uploaded NS export file>" \
   --out-dir    "<NS imports dir>" \
@@ -81,7 +82,7 @@ kb build-imports \
   --blank-titles --no-images
 ```
 
-Requires `kb >= 0.5.21`. `--blank-titles` leaves Page Title + Detailed
+Requires `kb.exe >= 0.5.22`. `--blank-titles` leaves Page Title + Detailed
 Description empty (you fill them in Step 4b); `--no-images` skips composition
 (done locally — see below).
 
@@ -114,24 +115,25 @@ one-line command the operator runs in **their own terminal**, from the
 in Step 4b are never touched, and composite filenames stay keyed to each kit's
 image source.
 
-If the operator wants images, give them **both** the macOS and Windows forms,
-filled in with this run's actual file names + prefix (don't leave the
-placeholders). `cd` to the **session folder** so the relative subfolder paths
-resolve, and the ZIP is written into `Images/`:
+If the operator wants images, give them the form for their OS, filled in with
+this run's actual file names + prefix (don't leave the placeholders). `cd` to the
+**session folder** so the relative subfolder paths resolve, and the ZIP is
+written into `Images/`:
 
-**macOS (Terminal):**
+**Windows (PowerShell)** — uses the prebuilt `kb.exe` in the session folder (no Python):
+```
+cd "<session dir>"
+.\kb.exe build-imports --promo-list "Promo Parsed Output/<Vendor>-<QN>-<YYYY>-Promo-List.csv" --ns-export "NetSuite Import Files/<NS export file>" --out-dir "Images" --prefix "<vendor>_q<N>_<YYYY>" --images-only
+```
+
+**macOS (Terminal)** — there is **no `kb.exe` on Mac**; use the source `kb`
+(install per `reference/prerequisites.md` §1 fallback):
 ```
 cd "<session dir>"
 kb build-imports --promo-list "Promo Parsed Output/<Vendor>-<QN>-<YYYY>-Promo-List.csv" --ns-export "NetSuite Import Files/<NS export file>" --out-dir "Images" --prefix "<vendor>_q<N>_<YYYY>" --images-only
 ```
 
-**Windows (PowerShell):**
-```
-cd "<session dir>"
-kb build-imports --promo-list "Promo Parsed Output/<Vendor>-<QN>-<YYYY>-Promo-List.csv" --ns-export "NetSuite Import Files/<NS export file>" --out-dir "Images" --prefix "<vendor>_q<N>_<YYYY>" --images-only
-```
-
-Requires `kb >= 0.5.21`. Tell them to run it and come back; when
+Requires `kb.exe >= 0.5.22` (Windows) or source `kb >= 0.5.22` (macOS). Tell them to run it and come back; when
 `<prefix>_kit_images.zip` appears in the **images dir**, **give them a link to
 the ZIP** and report the composed/failed counts it printed. **Do not attempt to
 compose images yourself in Cowork** — the fetch will 403.

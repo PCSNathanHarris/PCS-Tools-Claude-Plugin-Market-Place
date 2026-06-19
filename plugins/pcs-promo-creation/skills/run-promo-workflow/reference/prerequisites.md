@@ -4,38 +4,34 @@ This workflow chains three components. The two sibling skills are markdown and
 ship in this marketplace; the Kit Builder is a separate Python CLI; Jira needs
 the Atlassian MCP connector.
 
-## 1. Kit Builder `kb` CLI (required for Steps 3–4)
+## 1. Kit Builder `kb` — prebuilt `kb.exe` binary (required for Steps 3–4)
 
-The kit stage runs the real Kit Builder engine via its command line. The
-released **`.exe` is GUI-only and does NOT provide `kb`** — the CLI comes from
-the Python package.
+The kit stage runs the real Kit Builder engine. As of **v0.5.22** it ships as a
+**prebuilt headless Windows binary `kb.exe`** (attached to every Release next to
+the GUI `PCSKitBuilderLite.exe`), so Windows operators need **no Python / pip /
+Git**. The repo is private, so fetching `kb.exe` uses the `.env` GitHub token —
+the full playbook is `reference/kb-binary.md`.
 
 **Check (Step 0):**
 ```
-pip show pcs-kit-builder-lite
+.\kb.exe --version
 ```
-- Need **>= 0.5.21**. Read the `Version:` line. (0.5.18 added `--blank-titles`;
-  0.5.19 added `--images-only` for composing the image ZIP locally; **0.5.21
-  collapses duplicate kit members that share an Item ID** — e.g. a free good
-  equal to the paid anchor — which NetSuite otherwise rejects on import.)
-- **`kb --version` is NOT a valid check** — the CLI has no `--version` flag and
-  errors. Use `pip show pcs-kit-builder-lite` (or
-  `python -c "import kb; print(kb.__version__)"`).
-- If `kb` is missing or the version is older, show the install/upgrade below.
+- Need **>= 0.5.22**. If `.\kb.exe` is missing from the working folder, fetch it
+  from the latest Release with the `.env` token (see `reference/kb-binary.md`),
+  then re-check. (`kb.exe --version` is a real, supported check as of 0.5.22 —
+  earlier versions had no `--version` flag.)
+- `kb.exe` **does not auto-update** — re-fetch when a new tag ships; the Step-0
+  `--version` gate is the trigger.
 
-**Install / upgrade (offer to run only after a Y/N confirm):**
-```
-# Python 3.10+ required first (one time):
-winget install Python.Python.3.12
-
-# Install (or upgrade) the Kit Builder CLI:
-pip install --upgrade git+https://github.com/PCSNathanHarris/pcs-kit-builder-lite.git
-```
-Then re-check with `pip show pcs-kit-builder-lite`.
-
-- The `kb` CLI **does not auto-update** like the plugins. Updating is a manual
-  `pip install --upgrade …`. Re-check the version at Step 0 each run.
-- Never install silently — the operator confirms first.
+**Get / update `kb.exe` (offer only after a Y/N confirm — never silently):**
+- **Primary (Windows):** Claude downloads `kb.exe` from the latest **private**
+  Release via the GitHub REST API + the `.env` token (no Python/Git/pip). See
+  `reference/kb-binary.md`. Manual fallback: download `kb.exe` from the Release
+  page in a browser and drop it in the working folder.
+- **Fallback (source / non-Windows):** where the Windows binary can't run (e.g. a
+  non-Windows sandbox), install from source — `winget install Python.Python.3.12`
+  then `pip install --upgrade git+https://github.com/PCSNathanHarris/pcs-kit-builder-lite.git`
+  — and call `kb` (not `.\kb.exe`). Verify with `kb --version` ≥ 0.5.22.
 
 ## 2. Sibling plugins (required for Steps 1 and 6)
 

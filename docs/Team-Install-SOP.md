@@ -143,29 +143,28 @@ Press `Esc` to close the menu.
 > parse → kit build → Jira pipeline). If you only parse decks or update MAP,
 > skip this part — the plugins above are all you need.
 
-The combined pipeline drives the **Kit Builder `kb` CLI** (a Python tool) and
-creates Jira tasks through the **Atlassian connector**.
+The combined pipeline drives the **Kit Builder `kb.exe`** (a prebuilt CLI binary
+— no Python needed on Windows) and creates Jira tasks through the **Atlassian
+connector**.
 
-**4.5.1** Install Python (one time):
-```powershell
-winget install Python.Python.3.12
-```
-Close and reopen PowerShell, then verify:
-```powershell
-python --version
-```
+**4.5.1 — Get `kb.exe` (Windows; no Python/pip/Git).** With the `.env` token in
+your working folder, paste in Cowork:
 
-**4.5.2** Install the Kit Builder CLI:
-```powershell
-pip install --upgrade git+https://github.com/PCSNathanHarris/pcs-kit-builder-lite.git
-pip show pcs-kit-builder-lite
-```
-You need **0.5.21 or newer** (read the `Version:` line). `kb --version` is not a
-valid check — the CLI has no `--version` flag.
-- This is **separate** from the Kit Builder desktop `.exe` — the app does not
-  provide the `kb` command; this CLI does.
-- The CLI does **not** auto-update. When a new version ships, re-run the
-  `pip install --upgrade …` line above.
+> Read the GitHub token from `.env` and use it to download the latest `kb.exe`
+> from the `PCSNathanHarris/pcs-kit-builder-lite` private Release into this
+> folder, then run `.\kb.exe --version`.
+
+Or just run `/run-promo-workflow` — its Step 0 fetches `kb.exe` for you. **Manual:**
+download `kb.exe` from the Release page and drop it in the folder (SmartScreen →
+"More info" → "Run anyway" the first time).
+
+You need **0.5.22 or newer** — check with `.\kb.exe --version`.
+- There are **two** Release assets: `PCSKitBuilderLite.exe` (the desktop GUI app)
+  and **`kb.exe`** (the headless CLI the pipeline uses — this is the one you want).
+- `kb.exe` does **not** auto-update — re-fetch when a new version ships.
+- **Mac only** (no `kb.exe` for Mac): install from source instead — Python +
+  `pip install --upgrade git+https://github.com/PCSNathanHarris/pcs-kit-builder-lite.git`
+  — and use `kb` instead of `.\kb.exe`.
 
 **4.5.3** Connect Atlassian (Jira): add the **Atlassian connector** in Claude
 Code and log in to your PCS Jira account when prompted. This is what lets the
@@ -282,10 +281,10 @@ claude                                     # First launch + login
 ```
 
 ```powershell
-# Extra one-time setup for the full /run-promo-workflow pipeline only
-winget install Python.Python.3.12
-pip install --upgrade git+https://github.com/PCSNathanHarris/pcs-kit-builder-lite.git
-pip show pcs-kit-builder-lite   # read Version: need >= 0.5.21
+# Extra one-time setup for the full /run-promo-workflow pipeline only.
+# Windows: NO Python/pip — Claude fetches kb.exe from the private Release using
+#   the .env token (or run /run-promo-workflow; Step 0 fetches it). Verify:
+.\kb.exe --version              # need >= 0.5.22
 # plus: connect the Atlassian connector in Claude Code (for the Jira step)
 ```
 

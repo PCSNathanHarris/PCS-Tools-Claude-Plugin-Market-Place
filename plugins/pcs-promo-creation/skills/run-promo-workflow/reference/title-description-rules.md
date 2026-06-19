@@ -10,7 +10,7 @@ inconsistent brand/spec wording.**
 
 ## What you're filling, and the inputs
 
-After `kb build-imports --blank-titles`, the **NS imports dir**
+After `kb.exe build-imports --blank-titles`, the **NS imports dir**
 (`<session>/NetSuite Import Files/`) has `<prefix>_kit_create.csv` (the NS
 Create CSV). Each **kit** is one **lead row** (carries Page Title col + Detailed
 Description col, currently empty) followed by `kit_size - 1` **detail rows**; all

@@ -22,8 +22,8 @@ confirmation gates, the file hand-offs, and the pricing cheat-sheet fill.
   `pcs-promo-parser`).
 - Jira creation is done by the **`create-jira-promotions`** skill (plugin
   `pcs-jira-task-builder`).
-- The kit stage shells out to the **`kb`** CLI (the Kit Builder tool,
-  version **>= 0.5.21**), installed separately.
+- The kit stage shells out to the Kit Builder **`kb.exe`** (the prebuilt CLI
+  binary, version **>= 0.5.22**), fetched separately (see `reference/kb-binary.md`).
 
 All three must be present. See `reference/prerequisites.md`. Delegation
 details are in `reference/delegation.md`.
@@ -78,12 +78,14 @@ silently change data, and never let validation auto-answer a gate.
 
 ## Step 0 — Prerequisite check + session folder
 
-1. Verify the Kit Builder CLI is installed and current: run
-   `pip show pcs-kit-builder-lite` and read its `Version:` line (NOT
-   `kb --version` — the CLI has no `--version` flag and errors).
-   - If missing or `< 0.5.21`: stop and show the install/upgrade steps from
-     `reference/prerequisites.md`. Offer to run the `pip install` for them
-     **only after they confirm (Y/N)**. Do not install silently.
+1. Verify the Kit Builder CLI binary is present and current: run
+   `.\kb.exe --version` (a real check as of 0.5.22) and require **≥ 0.5.22**.
+   - If `.\kb.exe` is missing from the working folder, fetch it from the latest
+     private Release using the `.env` token (`reference/kb-binary.md`), then
+     re-check; if older, re-fetch. On a non-Windows environment where the binary
+     can't run, fall back to the source `pip install` per
+     `reference/prerequisites.md`. Offer the fetch/install **only after a Y/N
+     confirm** — never silently.
 2. Note that the Jira stage needs the **Atlassian MCP connector**; you only
    need it at Step 6, so just confirm it's expected — don't block Step 1 on it.
 3. Pick the working directory (default: the current directory). In Step 1 the
@@ -179,7 +181,7 @@ Follow `reference/kit-stage.md`:
 
 1. Run:
    ```
-   kb decode-formula --skus "<parsed output dir>/<Vendor>-<QN>-<YYYY>-Promo-List.csv" \
+   .\kb.exe decode-formula --skus "<parsed output dir>/<Vendor>-<QN>-<YYYY>-Promo-List.csv" \
      --field vendorname --out "<NS imports dir>/decode_blocks.txt"
    ```
 2. **Present the DECODE block(s) as a copy-paste artifact in chat** (see
@@ -214,7 +216,7 @@ Follow `reference/kit-stage.md`:
 1. Run the build **always with `--blank-titles --no-images`** (images can't
    compose in Cowork's sandbox — they're done locally below):
    ```
-   kb build-imports \
+   .\kb.exe build-imports \
      --promo-list "<parsed output dir>/<Vendor>-<QN>-<YYYY>-Promo-List.csv" \
      --ns-export  "<NS imports dir>/<uploaded NS export>" \
      --out-dir    "<NS imports dir>" \
@@ -226,7 +228,8 @@ Follow `reference/kit-stage.md`:
    `<NS imports dir>/<prefix>_kits_existing.csv` paths, and any unmapped-SKU
    warnings.
 3. **Images gate:** ask `Do you want the composite kit images? (Y/N)`. On **Y**,
-   give the operator the macOS + Windows `kb … --images-only` one-liners from
+   give the operator the Windows `.\kb.exe … --images-only` one-liner (or the
+   macOS source-`kb` form) from
    `reference/kit-stage.md` (filled with this run's file names + prefix; they
    write the ZIP into the **images dir**) to run in **their own terminal** —
    Cowork's sandbox can't reach NetSuite's image host. When
@@ -363,7 +366,8 @@ List the key output paths (each subfolder) so the operator can pick them up.
 
 | File | When to read |
 |------|--------------|
-| `reference/prerequisites.md` | Step 0 — `kb` install/version check, Atlassian MCP, sibling-plugin dependency. |
+| `reference/prerequisites.md` | Step 0 — `kb.exe` version check, Atlassian MCP, sibling-plugin dependency. |
+| `reference/kb-binary.md` | Step 0 — fetch the prebuilt `kb.exe` from the private Release via the `.env` token (no Python/pip/Git). |
 | `reference/pipeline-and-gates.md` | The full gate sequence and exact prompt wording; what each `N` does. |
 | `reference/kit-stage.md` | Steps 3–4 — exact `kb` commands, the DECODE/NetSuite round-trip, the `--no-images` gate. |
 | `reference/cheat-sheet.md` | Step 1b — how to read the pricing cheat sheet and merge filled prices into the Promo-List. |
@@ -376,8 +380,10 @@ List the key output paths (each subfolder) so the operator can pick them up.
 
 ## Prerequisites
 
-- **Kit Builder `kb` CLI** on PATH, version **>= 0.5.21** (`pip install` from
-  the `pcs-kit-builder-lite` repo). Required for Steps 3–4.
+- **Kit Builder `kb.exe`** (prebuilt CLI binary) in the working folder, version
+  **>= 0.5.22** — fetched from the private Release via the `.env` token
+  (`reference/kb-binary.md`); source `pip install` is the dev/non-Windows
+  fallback. Required for Steps 3–4.
 - **`pcs-promo-parser`** and **`pcs-jira-task-builder`** installed (they ship
   in this same marketplace, so installing this plugin's marketplace covers
   them — confirm they're installed).

@@ -76,6 +76,49 @@ This is the same "render an artifact in chat" convention as the upload widget
 (`reference/upload-widget.md`), just for output the operator copies **out**
 rather than files they drop **in**.
 
+## Unbuilt SKUs — capture for later resume
+
+The Step-3 coverage diff (validation Stage 2) lists Promo-List SKUs the NS export
+didn't return — items **not yet built in NetSuite**. Those kits can't build now,
+and building the items often takes a while and is picked up in a **separate, later
+chat**. So don't just warn — save a self-contained "resume kit" to disk. When the
+diff finds unbuilt SKUs, produce **all** of:
+
+1. **Unbuilt-SKU list** — the SKUs to go build in NetSuite. Match the engine
+   exactly: a member is unbuilt iff its Promo-List slot SKU (plain `.strip()`,
+   **case-sensitive, hyphens/spaces preserved** — NOT the parser's
+   uppercase/hyphen-stripping key) is **not** present in the NS export's
+   **`Vendor Name`** column. Write the unique unbuilt SKUs, one per line, to
+   `<NS imports dir>/<prefix>_unbuilt_skus.txt`.
+2. **Unbuilt DECODE** — so the operator can re-query just those items once built:
+   ```
+   .\kb.exe decode-formula --skus "<NS imports dir>/<prefix>_unbuilt_skus.txt" \
+     --field vendorname --out "<NS imports dir>/<prefix>_unbuilt_decode_blocks.txt"
+   ```
+   **Present it as a copy-paste artifact** (same widget as "Presenting the DECODE",
+   with the Promo Kit Support saved-search link at the top). Note in chat that this
+   DECODE returns **only** the newly-built items — to rebuild a kit you'll also need
+   its already-built companion SKUs in the export (re-run the original
+   `decode_blocks.txt`, or merge), since this list is intentionally just the unbuilt
+   ones.
+3. **Unbuilt-SKU Promo-List** — the kits to redo. Filter the Promo-List to **every
+   row whose `Promo Name` group contains at least one unbuilt slot SKU** (keep whole
+   kits; all 27 columns; `utf-8-sig` + CRLF) and write it to
+   `<parsed output dir>/<Vendor>-<QN>-<YYYY>-Unbuilt-Promo-List.csv`. It's a valid
+   Promo-List, so a later run feeds it straight to `build-imports --promo-list …`.
+4. **Resume README** — write `<session dir>/Unbuilt-SKUs-README.txt` so a cold
+   future session needs nothing from this chat. Include: the unbuilt SKU count +
+   list; the saved-search link
+   (`https://855722.app.netsuite.com/app/common/search/search.nl?cu=T&e=T&id=16021`);
+   and the resume steps — *(1) build these SKUs in NetSuite; (2) paste
+   `<prefix>_unbuilt_decode_blocks.txt` into the Promo Kit Support search to
+   confirm/fetch them (plus the original `decode_blocks.txt` for their companions);
+   (3) export; (4) re-run the kit build against the `…-Unbuilt-Promo-List.csv`*, e.g.
+   `kb.exe build-imports --promo-list "<…Unbuilt-Promo-List.csv>" --ns-export "<new export>" --out-dir "<dir>" --prefix "<prefix>_unbuilt" --blank-titles --no-images`.
+
+Surface a one-line summary in chat and the run report (unbuilt SKU + kit counts and
+the saved file paths). **If the diff found no unbuilt SKUs, skip this whole section.**
+
 ## Step 4 — Build NS imports
 
 Run the build **always with `--blank-titles --no-images`** (Claude writes the

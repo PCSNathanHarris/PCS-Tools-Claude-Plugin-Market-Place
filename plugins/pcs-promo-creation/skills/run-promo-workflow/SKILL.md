@@ -236,7 +236,15 @@ Follow `reference/kit-stage.md`:
    every Promo-List SKU; the NS export parses (tolerate CP1252) and has the
    expected columns; diff requested-vs-returned SKUs and list any not yet built
    in NetSuite. Flag the missing-SKU list; show the report.
-5. **Gate 3:** `Got the NetSuite export — build the NS imports now? (Y/N)`
+5. **If that diff found unbuilt SKUs, capture the resume kit now** (see
+   `reference/kit-stage.md` → "Unbuilt SKUs — capture for later resume"): write the
+   unbuilt-SKU list, generate the **unbuilt DECODE** and present it as a copy-paste
+   artifact, write the **Unbuilt-SKU Promo-List** (the affected kits, whole), and
+   drop a `Unbuilt-SKUs-README.txt`. Tell the operator these items aren't built in
+   NetSuite yet, that building them can take time, and that they're picked up later
+   in a **separate chat** — these saved files are how a cold session resumes. (No
+   unbuilt SKUs → skip.)
+6. **Gate 3:** `Got the NetSuite export — build the NS imports now? (Y/N)`
    (fold any ⚠️ findings into this prompt)
 
 ---
@@ -357,6 +365,7 @@ Stage 1 (parse):  <vendor> <Q#> <YYYY> — <promo> promo / <nlp> NLP / <rsa> RSA
                   For-Review items: <n> (workbook: <path | none>)
 Stage 2 (kit):    <new> new kits, <existing> existing  ->  <prefix>_kit_create.csv (+ _kits_existing.csv)
                   images: <composed N | skipped>     [or: skipped — no Kit Builder (no .env token)]
+                  unbuilt: <U> SKU(s) across <K> kit(s) -> <Vendor>-<QN>-<YYYY>-Unbuilt-Promo-List.csv + <prefix>_unbuilt_decode_blocks.txt (resume in a later chat)   [or: none]
 Stage 3 (Jira):   <project> — <created> created (incl. <other> from Other-Promotions), <updated> updated, <skipped> skipped
 ```
 

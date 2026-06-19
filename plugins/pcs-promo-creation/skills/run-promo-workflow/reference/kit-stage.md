@@ -20,8 +20,9 @@ to exactly the promo's SKUs. The **DECODE formula** is how you tell NetSuite
 which SKUs to return. So the order is:
 
 1. Generate the DECODE from the parsed Promo-List.
-2. Operator pastes it into the NS "Promo Kit Support" saved search, runs it,
-   exports the results.
+2. Operator opens the **Promo Kit Support** saved search —
+   `https://855722.app.netsuite.com/app/common/search/search.nl?cu=T&e=T&id=16021`
+   (saved search 16021) — pastes the DECODE in, runs it, exports the results.
 3. Operator uploads that export; the Kit Builder consumes it.
 
 ## Step 3 — DECODE formula
@@ -38,6 +39,10 @@ which SKUs to return. So the order is:
   every block as a copy-paste artifact** (see "Presenting the DECODE" below);
   the operator pastes each into the **Formula (Numeric)** filter as separate
   criteria.
+- **Give them the saved-search link** so they don't have to hunt for it:
+  [Promo Kit Support – Kit Builder](https://855722.app.netsuite.com/app/common/search/search.nl?cu=T&e=T&id=16021)
+  (saved search 16021). Surface it in the chat message **and** inside the DECODE
+  artifact (below).
 - Then prompt them to upload the NetSuite export (`.xls` SpreadsheetML or
   `.csv`); save it into the **NS imports dir**.
 
@@ -51,16 +56,21 @@ export itself).
 as a file or an inline mention — so the operator can grab each block in one
 click:
 
-- Render with `mcp__visualize__show_widget` (HTML mode): **one selectable
-  monospace code box per DECODE block**, each with its own **Copy** button
+- Render with `mcp__visualize__show_widget` (HTML mode). At the **top** of the
+  widget put a clickable link to the saved search, above the blocks, so it rides
+  with what the operator is copying:
+  `<a href="https://855722.app.netsuite.com/app/common/search/search.nl?cu=T&amp;e=T&amp;id=16021" target="_blank" rel="noopener">Open Promo Kit Support search</a>`
+  (escape `&` as `&amp;` in the href). Below it, render **one selectable monospace
+  code box per DECODE block**, each with its own **Copy** button
   (`navigator.clipboard.writeText`). Label the boxes `Block 1 of N`, … when
-  there's more than one. Keep the explanatory text (where to paste, one block
-  per Formula (Numeric) criterion) in your normal chat message — the widget
-  holds only the block(s) + Copy buttons.
+  there's more than one. Keep the rest of the explanatory text (where to paste,
+  one block per Formula (Numeric) criterion) in your normal chat message.
 - **Also** keep `decode_blocks.txt` in the **NS imports dir** as a backup copy.
 - **Fallback:** if the visualize widget tools aren't available, print each block
-  as its own fenced ``` code block ``` in chat (still copy-pasteable) — never
-  make the operator open the file to copy it.
+  as its own fenced ``` code block ``` in chat (still copy-pasteable) and include
+  the saved-search link as a plain line —
+  `https://855722.app.netsuite.com/app/common/search/search.nl?cu=T&e=T&id=16021`
+  — never make the operator open the file to copy it.
 
 This is the same "render an artifact in chat" convention as the upload widget
 (`reference/upload-widget.md`), just for output the operator copies **out**

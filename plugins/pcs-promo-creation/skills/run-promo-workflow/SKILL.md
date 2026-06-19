@@ -220,9 +220,12 @@ Follow `reference/kit-stage.md`:
    `mcp__visualize__show_widget` as a selectable monospace box with its own
    **Copy** button, so the operator copies each block in one click.
    `decode_blocks.txt` is still written to the NS imports dir as a backup. Then
-   tell the operator to paste each block into the **NetSuite "Promo Kit Support"
-   saved search** (Formula (Numeric) filter — one block per criterion), run it,
-   and export the results.
+   give the operator the saved-search link —
+   [Promo Kit Support – Kit Builder](https://855722.app.netsuite.com/app/common/search/search.nl?cu=T&e=T&id=16021)
+   (saved search 16021) — and tell them to paste each block into that **NetSuite
+   "Promo Kit Support"** search (Formula (Numeric) filter — one block per
+   criterion), run it, and export the results. Surface the link **both** in the
+   chat message **and** inside the DECODE artifact (see `reference/kit-stage.md`).
 3. **Surface the upload artifact** (`reference/upload-widget.md`) for the
    NetSuite export (`.xls` or `.csv`) — render the drag-and-drop dropzone; the
    dropped file attaches to the conversation for the build. **Recreate the

@@ -13,15 +13,41 @@ Case-insensitive substring match. Higher counts win.
 
 ## SKU pattern
 
-Regex: `\b\d{2,4}-(?:\d{2,3}-)?\d{2,4}[A-Z]{0,3}\b`
+Milwaukee uses several SKU shapes — standard tool/battery SKUs **plus** sub-brand
+and apparel codes. The Step 5.5 verification gate (Layer B) applies the **first
+regex below**, so it is a single alternation covering every accepted form:
 
-Examples:
-- `2962-22`, `2767-20` (4-digit-2-digit form, kits)
-- `48-11-1850`, `48-11-2440` (3-segment form, batteries / accessories)
-- `48-73-1300` (helmets / safety)
-- `MXF002-2XC` (MX Fuel SKUs — letter prefix is also valid)
+```
+\b(?:\d{2,4}-(?:\d{2,3}-)?\d{2,4}[A-Z]{0,3}|MXF\d{3,4}-\d[A-Z]{1,3}|\d{3,4}[A-Z]{1,3}-\d{2}[A-Z0-9]*|\d{4}[A-Z]{1,2}|E\d{2}\.\d{2}|TI\d{2}[A-Z]{2}|[A-Z]\d{3}[A-Z](?:/[A-Z])*|M[A-Z]{1,4}\d{2,4})\b
+```
 
-For **MX Fuel** specifically, also accept SKUs of the form `MXF\d{3,4}-\d[XAS]C?` or similar — the vendor uses a letter prefix for these.
+### Accepted SKU forms (sub-brands)
+
+| Form | Example(s) | Branch |
+|---|---|---|
+| Standard tool / battery | `2962-22`, `2767-20`, `48-11-1850`, `48-73-1300` | `\d{2,4}-(?:\d{2,3}-)?\d{2,4}[A-Z]{0,3}` |
+| MX Fuel | `MXF002-2XC` | `MXF\d{3,4}-\d[A-Z]{1,3}` |
+| Letter-infix | `2855P-20`, `2935CU-21S` | `\d{3,4}[A-Z]{1,3}-\d{2}[A-Z0-9]*` |
+| Bare model | `2013R` | `\d{4}[A-Z]{1,2}` |
+| Empire | `E75.24` | `E\d{2}\.\d{2}` |
+| Stiletto | `TI14MC` | `TI\d{2}[A-Z]{2}` |
+| Apparel | `F251B/G/P` | `[A-Z]\d{3}[A-Z](?:/[A-Z])*` |
+| Layout / accessory | `MLDIG14`, `MT205` | `M[A-Z]{1,4}\d{2,4}` |
+
+These sub-brand forms (MX Fuel, Empire, Stiletto, apparel, layout/accessory) are
+legitimate Milwaukee-family SKUs. The old digit-first / hyphen-required pattern
+wrongly held them to For-Review — they're real products and belong in the NLP /
+promo outputs.
+
+**Why this is safe — and the one caveat.** The SKU pattern is only a *secondary*
+sanity gate; the **real backstop is grounding** — every staged SKU must be
+text-grounded and/or independently vision-confirmed against the page before it can
+be written (Step 5.5 / `reference/verification.md`), and SKUs are only staged from
+actual price-table / SKU-panel rows, never from footer text. The **bare-model
+branch (`\d{4}[A-Z]{1,2}`) is the loosest** — it can match a stray 4-digit+letter
+token — so it leans hardest on grounding. A bare year like `2026` (no trailing
+letter) does not match it, and anything that slips through still has to be
+vision-confirmed in a SKU column to be emitted.
 
 ## Promo code pattern (PCE)
 
@@ -123,5 +149,7 @@ label AND **≥2 total** of these tokens:
   put two free goods (e.g. a `$79` and a `$129` battery) on one slide and split
   the qualifying tools with a **bold black line**, each group earning only the
   battery on its side. Do NOT Cartesian every tool against both batteries — pair
-  each group with its own free good. See
+  each group with its own free good. **If you can't confidently pair them, show
+  the proposed split and ask the operator to confirm before holding it** (hold to
+  For-Review only if unanswered). See
   `reference/edge-cases.md#split-slides--qualifying-groups-with-per-group-free-goods`.

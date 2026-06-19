@@ -169,15 +169,28 @@ split only controls which (paid, free) pairs are emitted.
 
 ### When the mapping is ambiguous
 
-If you detect a divider/multiple free goods but **cannot confidently** decide
-which group earns which free good (no table, unclear alignment), **stop and ask
-the operator** to confirm the group→free-good mapping before emitting. Do not
-guess, and do not silently fall back to a full Cartesian.
+If you detect a divider / multiple free goods but **cannot confidently** decide
+which group earns which free good (no association table, unclear alignment),
+**present the split to the operator and ask them to confirm — _before_ holding
+it.** Show, in chat:
+- the free goods (SKU + $-value, e.g. `$79 → 48-11-2425`, `$129 → 48-11-2450`),
+- each qualifying group's tool list, and
+- your **proposed** group→free-good mapping (best guess from spatial alignment),
 
-If the operator does not confirm, **skip those pairs** and add a `for_review`
-row (Review Class `low-confidence`, reason `split-mapping-unconfirmed`,
-Suggested Bucket `kit`) so the slide is surfaced for human review rather than
-guessed at. See `output-csvs.md#for-reviewxlsx`.
+then ask: *"Confirm this split, or tell me the correct pairing."* On a confirmed
+(or corrected) mapping, emit rows **per group** as usual. This one inline question
+is worth asking — a split slide can be 20–30 tools that would otherwise all be lost
+to review (what happened to PCE 263131 on the first Milwaukee run).
+
+**Only if the operator can't confirm — or the parser is running unattended /
+headless (delegated with no one to answer)** — fall back to the safe hold: skip
+those pairs and add a `for_review` row (Review Class `low-confidence`, reason
+`split-mapping-unconfirmed`, Suggested Bucket `kit`) so the slide is surfaced for
+human review rather than guessed at. **Never** guess, and **never** silently fall
+back to a full Cartesian. See `output-csvs.md#for-reviewxlsx`.
+
+(Under `/run-promo-workflow` the parser runs as a sub-step — surface this question
+inline; any split still held then appears at the orchestrator's Gate 2.)
 
 ---
 

@@ -29,10 +29,19 @@ stage. Resolve the **kit capability** in this order:
    re-run) **if** they want kit building, and offer to **continue without it** —
    deck parsing and the Jira tasks still work; the kit stages (Steps 3–5) are
    skipped. This is **Gate 0** (`reference/pipeline-and-gates.md`).
-4. **Non-Windows execution environment** (the binary can't run, e.g. a Linux
-   sandbox) → install from source instead — `winget install Python.Python.3.12`
-   then `pip install --upgrade git+https://github.com/PCSNathanHarris/pcs-kit-builder-lite.git`
-   — and call `kb` (not `.\kb.exe`). Verify with `kb --version` ≥ 0.5.22.
+4. **Non-Windows execution environment** (the binary can't run, e.g. a Cowork
+   Linux sandbox) → install from source. Python 3 is normally already present
+   (else `apt-get install -y python3 python3-pip`). The repo is **private**, so
+   **inject the token** (found per `reference/kb-binary.md` → *Find + read the
+   token*) into the URL — the public-form URL 404s:
+   ```bash
+   pip install --upgrade "git+https://${tok}@github.com/PCSNathanHarris/pcs-kit-builder-lite.git"
+   # add --break-system-packages if pip refuses (PEP 668 / system Python);
+   # redact pip's output so the token embedded in the URL is never printed
+   ```
+   Then call `kb` (not `.\kb.exe`); it lands on PATH (e.g. `~/.local/bin/kb`).
+   Verify with `kb --version` ≥ 0.5.22. (The Cowork sandbox is usually Linux
+   **without poppler** — the parser's PyMuPDF fallback renders PDFs there.)
 
 `kb.exe` **does not auto-update** — re-fetch when a new tag ships; the Step-0
 `--version` gate is the trigger.

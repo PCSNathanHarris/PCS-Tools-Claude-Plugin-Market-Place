@@ -109,15 +109,28 @@ it contains the SKU pattern, price priorities, header signatures,
 non-price columns, and accumulated quirks. Apply those rules during
 extraction.
 
-### Step 3 — Chunked PDF reading
+### Step 3 — Ingest the deck (text layer + page images)
 
-The Read tool's native PDF support is **capped at 20 pages per call**.
-For a multi-page deck:
+Load the deck **robustly and selectively** — full ladder in
+`reference/pdf-ingestion.md`. In short:
 
-- Call `Read(file_path=..., pages="1-20")`, then `"21-40"`, then
-  `"41-60"`, etc.
-- For a single image (`.png` / `.jpg` / `.jpeg`), one Read call covers
-  the whole input.
+- **Always dump the text layer once** (`pypdf` → `pdfminer.six`) — it feeds the
+  Step 5.5 grounding grep and the page triage. (PNG/JPG inputs have no text layer.)
+- **Get page images via the robust ladder:** probe `Read(file_path=…, pages="1-1")`;
+  if it works, read the deck in **20-page chunks** (`"1-20"`, `"21-40"`, …) — the
+  native Read returns the text layer + page image together. If it errors (missing
+  rasteriser / `pdftoppm not found`, **common in the Cowork Linux sandbox**),
+  **render with PyMuPDF** (`pip install pymupdf`; rasterises in-process, **no
+  poppler**) at 150 dpi and `Read` the PNGs. **Never** revert to the old per-batch
+  `pdftoppm` shell dance (it timed out at the 45 s limit).
+- **Triage to skip non-data pages (the token win):** before the full-resolution
+  read, skip pages you can **confidently** classify as cover / TOC / divider /
+  marketing / T&C / blank (`reference/page-classification.md` #8) using the text
+  dump (+ a cheap low-res thumbnail when text is sparse). **When in doubt, read
+  it** — a weak text layer must never drop a data page. Every promo / NLP / RSA /
+  Other-Promotions / ambiguous page still gets a **full vision read**. Record
+  skipped pages in the run notes; count **all** pages in the audit.
+- For a single image input (`.png` / `.jpg` / `.jpeg`), one Read call covers it.
 
 Process pages incrementally as you read them. Maintain these cumulative
 in-context lists:
@@ -204,8 +217,12 @@ Use the matched vendor's reference file as the authority.
   (a bold/black divider line or whitespace band) with **2+ free goods**, each
   group earns only the free good on its side — generate rows **per group**, not
   one Cartesian across the slide. Pair via an on-slide association table →
-  spatial alignment → per-group labels; if the mapping is unclear, **ask the
-  operator**. See `edge-cases.md#split-slides--qualifying-groups-with-per-group-free-goods`.
+  spatial alignment → per-group labels. **If the mapping is unclear, present the
+  proposed split (the free goods + each group's tool list + your best-guess
+  pairing) and ask the operator to confirm/correct it _before_ holding it** — only
+  fall back to the `split-mapping-unconfirmed` For-Review hold if no one answers
+  (e.g. running unattended). See
+  `edge-cases.md#split-slides--qualifying-groups-with-per-group-free-goods`.
 - **Decide row generation by title pattern** (within each group):
   - If the promo title matches a "Get N" / "Choice of N" / "Choose N"
     pattern with **N ≥ 2** → emit **multiset combinations** `C(M+N-1, N)`,
@@ -509,7 +526,8 @@ GearWrench-Q1-2027-Parser-Audit.csv
   Each row has anchor + N picks (slot 1 + slots 2..N+1). See `edge-cases.md`.
 - **Split slides**: a single slide that divides qualifying items into groups
   with a per-group free good is NOT one global Cartesian — pair within each
-  group only; ask the operator if the mapping is unclear. See `edge-cases.md`.
+  group only; if the mapping is unclear, confirm the proposed pairing with the
+  operator before holding it (hold only if unanswered). See `edge-cases.md`.
 - **Price label fallback**: when iterating a vendor's
   `price_label_priority`, **first non-empty tier wins**. A paid SKU
   must NOT be dropped if any later tier has a value. Drop to
@@ -534,7 +552,10 @@ GearWrench-Q1-2027-Parser-Audit.csv
 ## Image vs text authority
 
 When parsing a PDF you have both the rendered page image and the
-embedded text layer (Claude's PDF Read tool returns both).
+embedded text layer (the native Read tool returns both; when it can't
+rasterise, you render the image yourself — see `reference/pdf-ingestion.md`).
+The **text dump is for grounding (Step 5.5) and page triage**; the page
+**image stays authority for SKU/price tables** (text extraction drops cells).
 
 - **Text-rich narrative copy** (promo titles, descriptions, dates,
   exclusion language): the **text layer is authority**. If image and
@@ -564,6 +585,7 @@ script, image-only values by the independent verifier subagent. See
 
 | File | When to read |
 |------|--------------|
+| `reference/pdf-ingestion.md` | Step 3 — robust PDF render ladder (native Read → PyMuPDF) + page triage. |
 | `reference/conventions.md` | Date/encoding/slot details. Read once per run. |
 | `reference/output-csvs.md` | Exact CSV column orders + sample rows. Read before writing CSVs. |
 | `reference/verification.md` | The Step 5.5 verification gate: deterministic grep + independent verifier subagent + verdict/hold rules. Read before Step 5.5. |

@@ -11,24 +11,40 @@ REST API + `curl`.)
 At **Step 0, before parsing** — settle the Kit Builder up front; never defer the
 install to the kit stage. Skip the fetch if `.\kb.exe` already exists and
 `.\kb.exe --version` is **≥ 0.5.22**. Otherwise (missing/old):
-- **`.env` token present in the folder** → fetch **immediately**, no Y/N (the
-  token's presence is the go-ahead). Announce
+- **A token file is present** (found per *Find + read the token* below) → fetch
+  **immediately**, no Y/N (the token's presence is the go-ahead). Announce
   `Installing the Kit Builder (kb.exe) from the private Release…` and download.
-- **No `.env`/token found** → do **not** fetch and do **not** stop the run. Tell
+- **No token file found** → do **not** fetch and do **not** stop the run. Tell
   the operator to ask their admin for the GitHub token `.env` file (drop it in
   this folder, re-run) **if** they want kit building, and offer to continue
   without it — deck parsing + Jira still run; the kit stages are skipped. This is
   **Gate 0** in `pipeline-and-gates.md`.
 
-## Token hygiene (do this every time)
-- Read `GITHUB_TOKEN` from the `.env` in the working folder into a shell variable
-  **in one command** — never `echo` it, never print the authenticated URL, never
-  put it in chat output.
-- PowerShell:
-  ```powershell
-  $tok = (Get-Content .env | Where-Object { $_ -match '^GITHUB_TOKEN=' }) -replace '^GITHUB_TOKEN=','' -replace '"','' ; $tok = $tok.Trim()
-  ```
-- Pass it only via the `Authorization: Bearer` header.
+## Find + read the token (robust — do this every time)
+Don't assume the file is named `.env` or that the line is `GITHUB_TOKEN=`. The
+token may sit in a **subfolder** (e.g. `Token/`), in a **differently-named file**
+(e.g. `… github_p.env`), and may be a bare value or a human-labeled line.
+
+1. **Locate it** — search the working folder **and one level of subfolders** for a
+   likely file: `.env`, `*.env`, or any name containing `token` (case-insensitive).
+2. **Extract by token shape, not by key** — match a fine-grained PAT
+   `github_pat_[A-Za-z0-9_]+` **or** a classic token `ghp_[A-Za-z0-9]+`. This handles
+   `GITHUB_TOKEN=ghp_…`, a bare `github_pat_…` line, and a human-labeled
+   `Promo Kit Tool Git Token - github_p…` line alike.
+3. **Never echo it** — read into a variable in one command; never print the token or
+   any authenticated URL; pass it only via the `Authorization: Bearer` header.
+
+PowerShell (Windows):
+```powershell
+$f   = Get-ChildItem -Path . -Recurse -Depth 1 -File -ErrorAction SilentlyContinue |
+       Where-Object { $_.Name -match '(?i)(\.env$|token)' } | Select-Object -First 1
+$tok = [regex]::Match((Get-Content $f.FullName -Raw), 'github_pat_[A-Za-z0-9_]+|ghp_[A-Za-z0-9]+').Value
+```
+Bash (Linux / Cowork sandbox):
+```bash
+tok=$(grep -rhoE 'github_pat_[A-Za-z0-9_]+|ghp_[A-Za-z0-9]+' \
+        --include='.env' --include='*.env' --include='*[Tt]oken*' . 2>/dev/null | head -n1)
+```
 
 ## Step 1 — resolve the latest Release + find the `kb.exe` asset id
 ```powershell

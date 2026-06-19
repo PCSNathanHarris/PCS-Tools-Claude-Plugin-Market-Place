@@ -5,6 +5,48 @@ Per-CSV field assignments. Custom field IDs differ between PAT and PROM
 
 ---
 
+## Shared field derivations (v0.3.0)
+
+These fields follow the **same rules on every Task**, whatever the source CSV. The
+per-CSV tables below defer to this section. Discover each field's option IDs at run
+start via issue-type metadata (`getJiraIssueTypeMetaWithFields`); if a needed option
+or field isn't found, **flag for the operator — never guess**.
+
+**Promo Type** (`customfield_10778` PAT / `10474` PROM):
+- Kit with a **free good** (any slot price `0.00`) → `Manufacturer Free Goods`.
+- **NLP / special-buy** → `Manufacturer NLP`.
+- **Coupon / BMSM / buy-X-get-Y** — Other-Promotions `promo-code` **or**
+  `buy-more-save-more` — all consolidate to **`Manufacturer Coupon`**.
+- **E-rebate** (Other-Promotions `e-rebate`) → `E-rebate`.
+- **Self funding** → do **not** set this field (a coworker configures these); log it.
+- **Buy In Promo is Think-Tank-only** (purchase-only, no online execution). Do **not**
+  auto-default an all-paid deck kit to Buy In. If a kit has no free good and no
+  online-execution dates, **ask**: `All-paid kit, no free good — Promo Type = Buy In
+  Promo (Think Tank only) or leave unset? (Buy In / Unset)`.
+
+**Online Execution** (`customfield_10775` PAT / `10739` PROM):
+- `Yes` when the promo **has online-execution dates** (kit `Start`/`End`, or NLP /
+  Other `Online Execution` dates present). `No` for RSA and Buy-In.
+
+**Needs POS Redemption** (`customfield_10774` PAT / `10475` PROM):
+- `Yes` if the promo is **RSA or carries a credit** (RSA-Kits `Item Credit N` /
+  RSA-NLP `Credit Amount`), **OR** if the promo's **deck page image shows credit /
+  mail-in / "redeem at" / vendor-redemption clues** — for **any vendor** (see
+  `reference/deck-images.md`). Otherwise `No`. **This replaces the old Flex/EGO/SKIL
+  vendor-name default — decide it from the deck, not the vendor name.**
+
+**Promo Deck URL** (NEW field — discover `customfield_<id>` by **name** at run start;
+flag if it isn't on the issue type):
+- Set to the **vendor + quarter main deck** Google Drive link, found by searching the
+  hub folder via the Drive connector (`reference/integrations.md`). Fallbacks:
+  operator-paste → hub-folder link → leave blank + flag.
+
+**Start / Due dates:** Start = the promo's start (`customfield_10015`); **Due
+(`duedate`) = the last takedown day = the promo's End / Online Execution End.** ISO
+`YYYY-MM-DD`.
+
+---
+
 ## Promo-List.csv (kit promos)
 
 Parser schema: 27 columns. `Promo Name`, `Start Date`, `End Date`,
@@ -24,9 +66,9 @@ one Task whose description holds the full SKU matrix.
 | `priority` | `Highest` (id 1) if HERO triggers per `labels.md` Rule L4; default `Medium` (id 3) otherwise |
 | `assignee` | **Unassigned** |
 | `parent` | Vendor Epic from `vendor-epics.md` |
-| Promo Type custom field | Derive: free SKU(s) present → `Manufacturer Free Goods`; all paid → `Buy In Promo (No customer facing execution)` |
-| POS Redemption custom field | `Yes` if vendor is Flex/EGO/SKIL (per PCS Q1/Q2 default); `No` otherwise |
-| Online Execution custom field | `Yes` |
+| Promo Type custom field | Per **Shared field derivations**: free good present → `Manufacturer Free Goods`; all-paid kit → **ask** (never auto Buy In). |
+| POS Redemption custom field | Per **Shared field derivations** (RSA/credit, or a deck-image redemption clue). |
+| Online Execution custom field | Per **Shared field derivations** (`Yes` — kit has online dates). |
 
 ---
 
@@ -36,8 +78,11 @@ Parser schema: 9 columns. `Promo Name`, `SKU`, `Promo Price`, `Online
 Execution Start`, `Online Execution End`, `Vendor`, `Page`, `Price
 Label`, `Source Marker`.
 
-Group rows by `Promo Name` → 1 Task per group. All SKUs roll into the
-description table.
+**v0.3.0 — NLPs no longer make one Task per Promo Name.** All **non-RSA** NLPs for
+the vendor/quarter consolidate into **one parent Task** with a **sub-task per
+`(start, takedown)` date group**, and each sub-task gets two generated CSVs
+(start-pricing + revert schedule) attached — see `reference/nlp-consolidation.md`.
+The field rows below apply to the parent Task.
 
 | Jira field | Source |
 |---|---|
@@ -49,9 +94,9 @@ description table.
 | `priority` | `Medium` (HERO triggers don't fire for NLPs in v0.1.0) |
 | `assignee` | **Unassigned** |
 | `parent` | Vendor Epic from `vendor-epics.md` |
-| Promo Type custom field | `Manufacturer NLP` (special-buy folds in — same value) |
-| POS Redemption custom field | `Yes` if vendor is Flex/EGO/SKIL; `No` otherwise |
-| Online Execution custom field | `Yes` |
+| Promo Type custom field | `Manufacturer NLP` (special-buy folds in) — per **Shared field derivations**. |
+| POS Redemption custom field | Per **Shared field derivations** (RSA/credit, or a deck-image redemption clue). |
+| Online Execution custom field | Per **Shared field derivations** (`Yes`). |
 
 If `Promo Price` is blank, emit the SKU row anyway with `TBD` in the
 description table and a "Needs manual pricing" line below the table.
@@ -117,9 +162,9 @@ before creation (SKILL.md Step 6) — these promo families are new, so confirm e
 | `priority` | `Highest` (id 1) for `buy-more-save-more` (HERO per `labels.md` L4); `Medium` otherwise |
 | `assignee` | **Unassigned** |
 | `parent` | `promo-code` → the **Coupon-code promos** Epic; `e-rebate` / `buy-more-save-more` → the **vendor** Epic (`vendor-epics.md`) |
-| Promo Type custom field | Set to the project option that best matches the Promo Type. **Query the issue-type field metadata for the exact allowed options** (see the remap note); if none clearly matches, **flag for the operator** rather than guessing an option. |
-| POS Redemption custom field | `No` (these are customer-facing online promos, not register / mail-in). |
-| Online Execution custom field | `Yes` |
+| Promo Type custom field | Per **Shared field derivations**: `promo-code` **and** `buy-more-save-more` → `Manufacturer Coupon`; `e-rebate` → `E-rebate`. (Discover option IDs at run start; flag if missing.) |
+| POS Redemption custom field | Per **Shared field derivations** — normally `No`, but `Yes` if the deck page shows mail-in / redeem-at / credit clues. |
+| Online Execution custom field | Per **Shared field derivations** (`Yes`). |
 
 Type-specific description detail: **e-rebate** → show `Rebate Amount` +
 `Redemption URL`; **promo-code** → show the `Promo Code` + `Discount`; **BMSM** →
@@ -159,13 +204,15 @@ description line.
 
 ## Sub-tasks
 
-Plugin creates sub-tasks **only** when a single Promo Name spans
-multiple non-contiguous date windows in the same CSV.
+Two cases create sub-tasks:
+- **Kit / Other multi-window:** one Promo Name spanning multiple non-contiguous date
+  windows in the same CSV → a sub-task per window. Single-window Tasks have none.
+- **NLP consolidation (v0.3.0):** the single NLP parent Task per vendor/quarter gets a
+  sub-task per `(start, takedown)` date group, each with two attached CSVs — see
+  `reference/nlp-consolidation.md`.
 
-Sub-task summary: literal `MM/DD-MM/DD` (Rule N9). Parent Task gets the
-overall (earliest start, latest end) window.
-
-Single-date-window Tasks have no sub-tasks.
+Sub-task summary: literal `MM/DD-MM/DD` (Rule N9). The parent Task gets the overall
+(earliest start, latest takedown) window.
 
 ---
 
@@ -184,6 +231,7 @@ project target in Step 1 of SKILL.md, look up the right key:
 | Promo Taken Down | `customfield_10777` | `customfield_10473` |
 | Site Graphics Assigned | `customfield_10779` | `customfield_10476` |
 | Start date | `customfield_10015` (same in both) | `customfield_10015` |
+| Promo Deck URL | discover by **name** at run start | discover by **name** at run start |
 
 The allowed-value option IDs also differ between projects — when setting
 a select / multi-checkbox field, query the project's issue-type field

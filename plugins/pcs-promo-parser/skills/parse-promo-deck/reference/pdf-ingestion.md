@@ -73,3 +73,16 @@ List the triaged-out pages (page number + non-data class) in the run's process
 notes, and keep counting **every** page toward `Total Pages` in `Parser-Audit.csv`.
 Coverage stays auditable — a reviewer can see exactly which pages were not
 vision-read and why. Never silently drop a page that might hold data.
+
+## E. Persist the rendered data pages (for the Jira stage)
+
+Save every **data page** you vision-read (the pages that survive triage in §C) to
+`<session>/Promo Parsed Output/deck_pages/p<NNN>.png` (3-digit, 1-indexed — e.g.
+`p007.png`). These are exactly the pages that produce promos, so each emitted row's
+`Page` value maps to one. The downstream **Jira task builder** reads them to attach
+the deck image to each task and to check for POS/credit/redemption clues. Non-data
+pages skipped in §C are not saved (they produce no rows). Reuse the PNGs you already
+rendered via PyMuPDF in §B; if you went down the native `Read` path (no local PNGs),
+render the data pages once with PyMuPDF here so they persist. Stamp every emitted
+Promo-List / RSA-Kits row with its source `Page` (NLP / Other-Promotions / RSA-NLP
+already carry a `Page` column).

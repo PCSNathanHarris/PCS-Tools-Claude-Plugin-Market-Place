@@ -85,21 +85,23 @@ either:
 
 PAT in non-interactive mode is fine.
 
-## Attachments via API token
+## Attachments via API token (v0.3.0 — token from a project file)
 
-Image attachments (deck-page screenshots) require a Jira API token. The
-MCP connector doesn't push binaries.
+Image / CSV attachments require a Jira API token (the MCP connector doesn't push
+binaries). The token is now **read from a text file in the operator's project folder**
+(not prompted in chat) — discovery + the attach call live in
+`reference/integrations.md`.
 
-- Prompt for the token at runtime (single prompt during Step 2 of the
-  skill).
-- Never write the token to a file. Never log it in the audit log.
-  Never embed it in description text. Treat it like a password in
-  every respect.
-- If the user skips the prompt, silently omit attachments. Do not
-  block the rest of the run.
+- **Reading the token from a file changes only WHERE the token comes from — never
+  whether the `WRITE TO PROM` gate fires.** Step 1's project gate is unchanged.
+- The operator creates the token (id.atlassian.com) and drops it in the project folder
+  **as a text file only** — never share it, never paste it in chat.
+- **Never echo / log / embed the token.** Read it into a variable in one command; pass
+  it only via the `Authorization` header (Basic `email:token`). Treat it like a password.
+- If no token file is found, **instruct** the operator how to add one, then continue
+  with attachments silently omitted. Do not block the run.
 
-The token lives in memory only for the duration of the run and is
-discarded when the skill exits.
+The token is never written into any plugin file and is used only for the attach calls.
 
 ## What you control vs what you don't
 

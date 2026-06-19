@@ -15,7 +15,7 @@ Stage 1 inputs to Stage 2/3/4 — column order matters.
 
 Source: `kb/kit_builder.py::write_promo_list_csv` / `PROMO_LIST_HEADERS`
 
-**27 columns**, in this exact order:
+**28 columns** (v1.5.0 appended `Page` as a trailing column), in this exact order:
 
 | # | Column | Source / format |
 |---|--------|-----------------|
@@ -31,8 +31,16 @@ Source: `kb/kit_builder.py::write_promo_list_csv` / `PROMO_LIST_HEADERS`
 | 16–19 | `Item SKU 4` / ... / `Credit 4` | Same shape |
 | 20–23 | `Item SKU 5` / ... / `Credit 5` | Same shape |
 | 24–27 | `Item SKU 6` / ... / `Credit 6` | Same shape |
+| 28 | `Page` | 1-indexed source slide/page the promo came from (v1.5.0). Trailing column, so positional / `DictReader` consumers are unaffected — the kb engine ignores it; the Jira task builder uses it to attach the deck-page image. All rows of a Cartesian-exploded promo share the promo's source page. |
 
 **Empty slots emit 4 empty cells** (SKU, Qty, Price, Credit all blank).
+
+**`Page` (v1.5.0):** emit the 1-indexed source page on every row. The sample CSV
+blocks below predate this column — append `Page` as the 28th field. The parser
+also **persists each rendered data page** to
+`<session>/Promo Parsed Output/deck_pages/p<NNN>.png` (3-digit, 1-indexed) so the
+Jira task builder can attach the deck image and read it for POS/credit clues — see
+`reference/pdf-ingestion.md`.
 
 ### Sample row — typical B1G1 (1 paid + 1 free)
 
@@ -196,8 +204,9 @@ Milwaukee_Q2_2026.pdf,Milwaukee,98,28,55,5,5,3,412,287,18,7,0,12,9,4,2026-06-18T
 
 ## RSA-Kits.csv
 
-Source: v0.3.0 addition. Same 27-column schema as `Promo-List.csv` (see
-top of this file). Difference is **how the rows are populated**:
+Source: v0.3.0 addition. Same 28-column schema as `Promo-List.csv` (see
+top of this file — including the v1.5.0 trailing `Page` column). Difference is
+**how the rows are populated**:
 
 - `Promo Name` ends with the literal suffix `-RSA`. Example:
   `"M18 Drill RSA Reward [P-00xxxxx]-RSA"`.

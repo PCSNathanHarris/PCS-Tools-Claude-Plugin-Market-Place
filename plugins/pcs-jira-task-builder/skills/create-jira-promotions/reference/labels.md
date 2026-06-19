@@ -56,6 +56,15 @@ When ANY trigger fires:
 - Append ` (HERO)` to the Task summary (Rule N7).
 - Labels stay unchanged — there is no `HERO` label.
 
+## Promo Type field vs promo-type label (v0.3.0)
+
+The **Promo Type custom field** consolidates `promo-code` / `buy-more-save-more` /
+buy-X-get-Y to **`Manufacturer Coupon`** (see `field-mapping.md` → Shared field
+derivations). The promo-type **label** does **not** consolidate — keep emitting the
+per-type label (`Coupon` / `E-Rebate` / `BMSM`) per L3. Don't conflate the field with
+the label. And **Buy In Promo is never an auto-default** — it's Think-Tank-only; an
+all-paid kit is asked about, never auto-set.
+
 ## Implementation notes
 
 - Labels in Jira are an array of strings on the `labels` system field.

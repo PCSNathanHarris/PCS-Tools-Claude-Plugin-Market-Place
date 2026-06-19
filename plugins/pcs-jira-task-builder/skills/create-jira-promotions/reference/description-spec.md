@@ -81,13 +81,27 @@ Never render a FLEX `SOT…` identifier as a **Promo code:** — it belongs on t
 
 ## Image handling
 
-**Never reference images in the description.** No `Deck Page
-Screenshot: [paste image]` placeholder line. No "see attached" line.
+**Never reference images in the description.** No `Deck Page Screenshot: [paste image]`
+placeholder, no "see attached" line.
 
-If an API token is supplied at runtime and a deck-page screenshot is
-locally available, attach the image to the Task via direct Jira REST
-API call (the MCP connector can't push binaries). If no token or no
-local image, silently omit the attachment step.
+When a Jira token file is present (`reference/integrations.md`), attach the promo's
+**deck-page screenshot** — resolved from the row's `Page` to the parser's
+`deck_pages/p<NNN>.png` (`reference/deck-images.md`) — via the direct Jira REST call.
+No token / no page image → silently omit. The image is also **read** (not described) to
+set Needs POS Redemption.
+
+## NLP sub-task attachments (v0.3.0)
+
+For a consolidated NLP parent's date-group sub-tasks (`reference/nlp-consolidation.md`),
+attach the two generated CSVs (start-pricing + revert schedule) to each **sub-task** (not
+the parent). The parent description lists the date groups + overall window; each
+sub-task's description is the `MM/DD-MM/DD` window + a one-line "pricing + revert schedule
+attached." Don't dump the SKU table into the body.
+
+## Promo Deck URL is a field, not a description line
+
+Set the **Promo Deck URL** custom field (`reference/integrations.md` Drive search) — do
+**not** also add a deck-link line to the description (avoid duplication).
 
 ## Vendor → Storefront mapping
 

@@ -131,6 +131,11 @@ Load the deck **robustly and selectively** — full ladder in
   Other-Promotions / ambiguous page still gets a **full vision read**. Record
   skipped pages in the run notes; count **all** pages in the audit.
 - For a single image input (`.png` / `.jpg` / `.jpeg`), one Read call covers it.
+- **Persist + page-stamp (v1.5.0):** save each rendered **data** page to
+  `<parsed output dir>/deck_pages/p<NNN>.png` and stamp every emitted Promo-List /
+  RSA-Kits row with its source `Page` (NLP / Other-Promotions / RSA-NLP already
+  carry `Page`). The Jira task builder uses these to attach the deck image + read
+  POS/credit clues. See `reference/pdf-ingestion.md` §E.
 
 Process pages incrementally as you read them. Maintain these cumulative
 in-context lists:

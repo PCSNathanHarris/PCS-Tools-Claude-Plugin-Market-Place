@@ -23,7 +23,7 @@ confirmation gates, the file hand-offs, and the pricing cheat-sheet fill.
 - Jira creation is done by the **`create-jira-promotions`** skill (plugin
   `pcs-jira-task-builder`).
 - The kit stage shells out to the Kit Builder **`kb.exe`** (the prebuilt CLI
-  binary, version **>= 0.5.23**), fetched separately (see `reference/kb-binary.md`).
+  binary `kb.exe` / `kb-macos`, version **>= 0.5.24**), fetched separately (see `reference/kb-binary.md`).
 
 All three must be present. See `reference/prerequisites.md`. Delegation
 details are in `reference/delegation.md`.
@@ -79,20 +79,18 @@ silently change data, and never let validation auto-answer a gate.
 ## Step 0 — Prerequisite check + session folder
 
 1. **Settle the Kit Builder first — before parsing anything.** The kit stages
-   (Steps 3–5) need the `kb.exe` CLI; resolve its availability **now**, up front,
-   so the run never stalls mid-pipeline (do **not** defer the install to Step 3).
-   Decide the **kit capability** by this order:
-   - **`.\kb.exe` already present** → run `.\kb.exe --version`; if **≥ 0.5.23**,
-     kit stages are **ENABLED** (no token needed). If older, treat it as missing
-     and use the next bullet.
-   - **`.\kb.exe` missing/old AND a `.env` GitHub token is in the working folder**
-     → **fetch it right now** per `reference/kb-binary.md` — announce
-     `Installing the Kit Builder (kb.exe) from the private Release…` and do it
-     (the token being present is the go-ahead; no Y/N needed for this case).
-     Re-check `--version`; on success kit stages are **ENABLED**. If the fetch
-     fails (no `kb.exe` asset in the Release, auth/network error), report the
-     specific reason, offer the manual download (`reference/kb-binary.md`), then
-     fall to the no-token branch.
+   (Steps 3–5) need the kit CLI (**`kb.exe`** on Windows / **`kb-macos`** on macOS);
+   resolve its availability **now**, up front, so the run never stalls mid-pipeline
+   (do **not** defer the install to Step 3). Decide the **kit capability** by this order:
+   - **The platform binary already present** (`.\kb.exe` / `./kb-macos`) → run
+     `--version`; if **≥ 0.5.24**, kit stages are **ENABLED** (no token needed). If
+     older/missing, use the next bullet.
+   - **Binary missing/old AND a GitHub token file is in the working folder** →
+     **fetch the platform binary right now** (`kb.exe` Windows / `kb-macos` macOS)
+     per `reference/kb-binary.md` — announce `Installing the Kit Builder…` and do it
+     (the token's presence is the go-ahead; no Y/N). Re-check `--version`; on success
+     kit stages are **ENABLED**. If the fetch fails (no matching asset / auth /
+     network), report why, offer the manual download, then fall to the no-token branch.
    - **`.\kb.exe` missing/old AND no `.env`/token found** → do **not** stop the
      whole run. Tell the operator:
      > I couldn't find a GitHub token (`.env`) in this folder, so I can't install
@@ -104,9 +102,10 @@ silently change data, and never let validation auto-answer a gate.
      Then **Gate 0**: `Continue without kit building (deck parse + Jira only)? (Y/N)`.
      **Y** → set kit stages = **DISABLED** and continue. **N** → stop cleanly
      ("add the `.env` and re-run /run-promo-workflow").
-   - **Non-Windows execution environment** (the binary can't run, e.g. a Linux
-     sandbox) → use the source `pip install` fallback in
-     `reference/prerequisites.md` §1 (needs Python) instead of `kb.exe`.
+   - **macOS** → fetch the `kb-macos` binary (same token flow; `chmod +x` + clear
+     quarantine), call `./kb-macos` (`reference/kb-binary.md` → "macOS"). **Linux**
+     (Claude's sandbox) or an **Intel Mac** → source `pip install` fallback
+     (`reference/prerequisites.md` §1, needs Python).
 
    Carry the **kit stages ENABLED/DISABLED** decision through the run — Steps 3–5
    check it; Steps 1–2 (parse) and Step 6 (Jira) run regardless.
@@ -255,12 +254,16 @@ Follow `reference/kit-stage.md`:
    when there are zero kit promos — check `Parser-Audit.csv` `Promo Rows`). NLP /
    RSA / Other-Promotions still go to Jira in Step 6; just skip the kit build +
    images and note it in the report.
-1. Run the build **always with `--blank-titles --no-images`** (images can't
-   compose in Cowork's sandbox — they're done locally below):
+1. **First pull the master existing-kit list** — export the existing-kit Google Sheet
+   to CSV (`reference/kit-stage.md` → "Existing-kit list — Google Sheet master"); omit
+   `--existing-kits` + warn if it can't be read. Then run the build **always with
+   `--blank-titles --no-images`** (images compose locally below). **macOS:** use
+   `./kb-macos` in place of `.\kb.exe`.
    ```
    .\kb.exe build-imports \
      --promo-list "<parsed output dir>/<Vendor>-<QN>-<YYYY>-Promo-List.csv" \
      --ns-export  "<NS imports dir>/<uploaded NS export>" \
+     --existing-kits "<NS imports dir>/existing_kits_master.csv" \
      --out-dir    "<NS imports dir>" \
      --prefix     "<vendor>_q<N>_<YYYY>" \
      --blank-titles --no-images
@@ -341,9 +344,9 @@ them:**
 
 After that skill has grouped the rows and resolved its reviews — but **before
 any writes** — run the Jira pre-write validation per `reference/validation.md`
-§ Stage 6 (summary matches the naming template, exactly 3 labels, valid dates,
-Epic resolved for the target project, HERO consistent, dedupe clean, task count
-reconciles with the promo groups). This scan **never creates or edits Jira** —
+§ Stage 6 (summary matches the naming template; labels per `labels.md` — Vendor +
+`Q<N>-<YYYY>` + promo-type token(s); valid dates; Epic resolved for the target
+project; dedupe clean; task count reconciles with the promo groups). This scan **never creates or edits Jira** —
 it only surfaces problems. Then add **one orchestrator-level final gate**:
 
 `Create <N> Jira task(s) in <PROJECT>? (Y/N)`
@@ -354,7 +357,25 @@ them.
 
 ---
 
-## Step 7 — Report
+## Step 7 — Confirm NetSuite build + refresh the existing-kit list
+
+The last operator touchpoint, after the Jira tasks:
+
+1. **Build confirmation:** ask `Were these kits built into NetSuite? (Y/N)`. Record the
+   answer in the report. On **N**, point the operator at the **Unbuilt-SKU resume kit**
+   from Step 3 (build the SKUs in NetSuite, then re-run the kit build) — not an error,
+   just unfinished.
+2. **Refresh the existing-kit list (optional):** ask `Update the existing-kit list with a
+   fresh NS Promo Kit Support search? (Y/N)`. On **Y**, follow `reference/kit-stage.md` →
+   "Refreshing the master list": surface the Promo Kit Support saved-search link, have the
+   operator run it + upload the fresh export, **append-merge** it into the master via
+   `kb refresh-kits` (append-only by Internal ID), and **write the result back to the
+   master Google Sheet** (via the Sheets connector if it has write access; else save the
+   updated CSV and guide the operator to import/replace the Sheet). On **N**, skip.
+
+---
+
+## Step 8 — Report
 
 Print one end-of-run summary:
 
@@ -371,6 +392,7 @@ Stage 2 (kit):    <new> new kits, <existing> existing  ->  <prefix>_kit_create.c
                   images: <composed N | skipped>     [or: skipped — no Kit Builder (no .env token)]
                   unbuilt: <U> SKU(s) across <K> kit(s) -> <Vendor>-<QN>-<YYYY>-Unbuilt-Promo-List.csv + <prefix>_unbuilt_decode_blocks.txt (resume in a later chat)   [or: none]
 Stage 3 (Jira):   <project> — <created> created (incl. <other> from Other-Promotions), <updated> updated, <skipped> skipped
+Build/refresh:    NetSuite build <confirmed | not yet>; existing-kit list <refreshed +<N> rows | unchanged>
 ```
 
 List the key output paths (each subfolder) so the operator can pick them up.
@@ -428,7 +450,7 @@ List the key output paths (each subfolder) so the operator can pick them up.
 ## Prerequisites
 
 - **Kit Builder `kb.exe`** (prebuilt CLI binary) in the working folder, version
-  **>= 0.5.23** — fetched from the private Release via the `.env` token at Step 0
+  **>= 0.5.24** — fetched from the private Release via the GitHub token at Step 0
   (`reference/kb-binary.md`); source `pip install` is the dev/non-Windows
   fallback. Required only for the kit stages (Steps 3–5): if no `.env` token is
   present and `kb.exe` isn't already there, Step 0 offers to continue without it

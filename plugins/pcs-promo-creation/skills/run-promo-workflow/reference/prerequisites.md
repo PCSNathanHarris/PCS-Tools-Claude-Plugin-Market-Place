@@ -4,49 +4,52 @@ This workflow chains three components. The two sibling skills are markdown and
 ship in this marketplace; the Kit Builder is a separate Python CLI; Jira needs
 the Atlassian MCP connector.
 
-## 1. Kit Builder `kb` — prebuilt `kb.exe` binary (kit stages, Steps 3–5)
+## 1. Kit Builder `kb` — prebuilt CLI binary (`kb.exe` / `kb-macos`) (kit stages, Steps 3–5)
 
-The kit stage runs the real Kit Builder engine. As of **v0.5.22** it ships as a
-**prebuilt headless Windows binary `kb.exe`** (attached to every Release next to
-the GUI `PCSKitBuilderLite.exe`), so Windows operators need **no Python / pip /
-Git**. The repo is private, so fetching `kb.exe` uses the `.env` GitHub token —
+The kit stage runs the real Kit Builder engine. It ships as a **prebuilt headless
+binary** — **`kb.exe`** (Windows, v0.5.22+) and **`kb-macos`** (macOS, v0.5.24+) —
+attached to every Release next to the GUI `PCSKitBuilderLite.exe`, so operators need
+**no Python / pip / Git**. The repo is private, so fetching uses the GitHub token —
 the full playbook is `reference/kb-binary.md`.
 
 **Settle this at Step 0, before parsing** — don't defer the install to the kit
 stage. Resolve the **kit capability** in this order:
 
-1. **`.\kb.exe` already present** → `.\kb.exe --version`; if **≥ 0.5.23**, kit
-   stages are **ENABLED** (no token needed). (`kb.exe --version` is a real check
-   as of 0.5.22 — earlier versions had no `--version` flag.) If older, treat as
-   missing and go to step 2.
-2. **Missing/old AND a `.env` token is in the folder** → **fetch `kb.exe` now**
-   via the GitHub REST API + the `.env` token (`reference/kb-binary.md`). The
-   token's presence is the go-ahead — **fetch it immediately, no Y/N** — then
-   re-check `--version`. Kit stages **ENABLED**. Manual fallback: download
-   `kb.exe` from the Release page in a browser and drop it in the folder.
+1. **The platform binary already present** (`.\kb.exe` on Windows / `./kb-macos` on
+   macOS) → run `--version`; if **≥ 0.5.24**, kit stages are **ENABLED** (no token
+   needed). If older/missing, go to step 2.
+2. **Missing/old AND a token file is in the folder** → **fetch the platform binary
+   now** — `kb.exe` (Windows) or `kb-macos` (macOS; then `chmod +x` + clear
+   quarantine) — via the GitHub REST API + token (`reference/kb-binary.md`). The
+   token's presence is the go-ahead — **fetch immediately, no Y/N** — then re-check
+   `--version`. Kit stages **ENABLED**. Manual fallback: download it from the Release
+   page and drop it in the folder.
 3. **Missing/old AND no `.env`/token** → don't stop the run. Tell the operator to
    ask their admin for the GitHub token `.env` file (drop it in this folder and
    re-run) **if** they want kit building, and offer to **continue without it** —
    deck parsing and the Jira tasks still work; the kit stages (Steps 3–5) are
    skipped. This is **Gate 0** (`reference/pipeline-and-gates.md`).
-4. **Non-Windows execution environment** (the binary can't run, e.g. a Cowork
-   Linux sandbox) → install from source. Python 3 is normally already present
-   (else `apt-get install -y python3 python3-pip`). The repo is **private**, so
-   **inject the token** (found per `reference/kb-binary.md` → *Find + read the
-   token*) into the URL — the public-form URL 404s:
+4. **macOS** → fetch the **`kb-macos`** binary (same token flow as `kb.exe`; then
+   `chmod +x` + `xattr -dr com.apple.quarantine`), and call `./kb-macos`. See
+   `reference/kb-binary.md` → "macOS". (Intel Macs: the binary is arm64 — use the
+   source install in step 5 instead.)
+5. **Linux execution environment** (Claude's sandbox — no binary) → install from
+   source. Python 3 is normally already present (else `apt-get install -y python3
+   python3-pip`). The repo is **private**, so **inject the token** (per
+   `reference/kb-binary.md` → *Find + read the token*) — the public-form URL 404s:
    ```bash
    pip install --upgrade "git+https://${tok}@github.com/PCSNathanHarris/pcs-kit-builder-lite.git"
-   # add --break-system-packages if pip refuses (PEP 668 / system Python);
-   # redact pip's output so the token embedded in the URL is never printed
+   # add --break-system-packages if pip refuses (PEP 668); redact pip's output so the
+   # token embedded in the URL is never printed
    ```
-   Then call `kb` (not `.\kb.exe`); it lands on PATH (e.g. `~/.local/bin/kb`).
-   Verify with `kb --version` ≥ 0.5.23. (The Cowork sandbox is usually Linux
-   **without poppler** — the parser's PyMuPDF fallback renders PDFs there.)
+   Then call `kb` (lands on PATH, e.g. `~/.local/bin/kb`). Verify `kb --version` ≥ 0.5.24.
+   (The Cowork sandbox is usually Linux **without poppler** — the parser's PyMuPDF
+   fallback renders PDFs there.)
 
-`kb.exe` **does not auto-update** — re-fetch when a new tag ships; the Step-0
-`--version` gate is the trigger. **v0.5.23** fixes duplicate kits from "choose N"
-multi-pick promos, so an operator still on 0.5.22 should re-fetch — the Step-0
-≥ 0.5.23 gate triggers it automatically.
+The binaries **do not auto-update** — re-fetch when a new tag ships; the Step-0
+`--version` gate is the trigger. **v0.5.24** adds the macOS `kb-macos` binary;
+**v0.5.23** fixed duplicate kits from "choose N" multi-pick promos — the Step-0
+≥ 0.5.24 gate re-fetches an operator who's behind.
 
 ## 2. Sibling plugins (required for Steps 1 and 6)
 

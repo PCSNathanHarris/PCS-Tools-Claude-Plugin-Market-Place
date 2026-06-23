@@ -1,16 +1,24 @@
-# Fetching the `kb.exe` CLI binary (private Release, `.env` token)
+# Fetching the Kit Builder CLI binary (private Release, `.env` token)
 
-The Kit Builder ships as a prebuilt headless **`kb.exe`** (v0.5.22+) attached to
-every Release of the **private** repo `PCSNathanHarris/pcs-kit-builder-lite`,
-alongside the GUI `PCSKitBuilderLite.exe`. Windows operators run the kit stage
-with **no Python / pip / Git** — Claude downloads `kb.exe` into the working
-folder using the GitHub token in the `.env`. (`gh` CLI is not installed; use the
-REST API + `curl`.)
+The Kit Builder ships as a prebuilt headless CLI on every Release of the **private**
+repo `PCSNathanHarris/pcs-kit-builder-lite` (alongside the GUI `PCSKitBuilderLite.exe`):
+**`kb.exe`** for Windows (v0.5.22+) and **`kb-macos`** for macOS (v0.5.24+). Operators
+run the kit stage with **no Python / pip / Git** — Claude downloads the right binary into
+the working folder using the GitHub token. (`gh` CLI is not installed; use the REST API +
+`curl`.)
+
+**Pick by platform:**
+- **Windows** → fetch `kb.exe`; call `.\kb.exe` (PowerShell flow below).
+- **macOS** → fetch `kb-macos`; `chmod +x` + clear Gatekeeper quarantine; call `./kb-macos`
+  (see "macOS" section below).
+- **Linux** (Claude's sandbox) → there is **no binary**; install from source via pip
+  (`prerequisites.md` §1).
 
 ## When to fetch
 At **Step 0, before parsing** — settle the Kit Builder up front; never defer the
-install to the kit stage. Skip the fetch if `.\kb.exe` already exists and
-`.\kb.exe --version` is **≥ 0.5.23**. Otherwise (missing/old):
+install to the kit stage. Skip the fetch if the platform binary already exists
+(`.\kb.exe` on Windows / `./kb-macos` on macOS) and `--version` is **≥ 0.5.24**.
+Otherwise (missing/old):
 - **A token file is present** (found per *Find + read the token* below) → fetch
   **immediately**, no Y/N (the token's presence is the go-ahead). Announce
   `Installing the Kit Builder (kb.exe) from the private Release…` and download.
@@ -79,10 +87,29 @@ calls use `.\kb.exe …`.
 
 ## Step 3 — verify
 ```powershell
-.\kb.exe --version    # must print "kb, version 0.5.23" or newer
+.\kb.exe --version    # must print "kb, version 0.5.24" or newer
 ```
 First run may trip **SmartScreen** ("More info → Run anyway") — expected for an
 unsigned in-house binary.
+
+## macOS — fetch `kb-macos` (bash / Terminal)
+Same private-Release flow, but the asset is **`kb-macos`** and it must be made executable
+and un-quarantined (it's unsigned):
+```bash
+# $tok discovered per "Find + read the token" (bash variant above)
+curl -sSL -H "Authorization: Bearer $tok" -H "Accept: application/vnd.github+json" \
+  https://api.github.com/repos/PCSNathanHarris/pcs-kit-builder-lite/releases/latest > release.json
+aid=$(python3 -c "import json;print(next(a['id'] for a in json.load(open('release.json'))['assets'] if a['name']=='kb-macos'))")
+curl -sSL -L -H "Authorization: Bearer $tok" -H "Accept: application/octet-stream" \
+  https://api.github.com/repos/PCSNathanHarris/pcs-kit-builder-lite/releases/assets/$aid -o kb-macos
+rm -f release.json
+chmod +x kb-macos
+xattr -dr com.apple.quarantine kb-macos 2>/dev/null || true   # clear Gatekeeper quarantine
+./kb-macos --version    # must print "kb, version 0.5.24" or newer
+```
+First launch may still trip **Gatekeeper** ("unidentified developer") — right-click → Open
+once, or the `xattr` above clears it. `kb-macos` is **arm64** (Apple Silicon); on an Intel
+Mac it won't run — fall back to the source `pip install` (`prerequisites.md` §1).
 
 ## Manual fallback (no automation)
 Open the Release page for `PCSNathanHarris/pcs-kit-builder-lite` in a browser,
@@ -92,8 +119,9 @@ folder. Then `.\kb.exe --version`.
 ## Notes
 - **No auto-update.** Re-run this fetch when a new tag ships; the Step-0
   `--version` gate is what flags a stale/missing binary.
-- **Windows only.** `kb.exe` is a Windows binary. On a non-Windows environment
-  (e.g. a Linux sandbox where `kb build-imports` might run), use the source
-  `pip install` fallback instead — see `prerequisites.md` §1.
+- **Platform binaries:** `kb.exe` (Windows) + `kb-macos` (macOS, arm64) ship on the
+  Release. On **Linux** (e.g. Claude's sandbox) there's no binary — use the source
+  `pip install` fallback (`prerequisites.md` §1). An **Intel Mac** also uses the source
+  fallback (the binary is arm64-only).
 - **Never** commit the token or `kb.exe` to a repo; both live only in the
   operator's working folder.

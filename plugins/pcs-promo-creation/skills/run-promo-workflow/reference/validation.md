@@ -168,9 +168,10 @@ drops, create/existing anomalies, kit-size mismatches.
 
 Checks (before the final write gate — `create-jira-promotions` owns the PROM /
 per-row gates; this is an extra pre-write scan):
-- Each task summary matches the naming template; exactly 3 labels; dates valid;
-  parent Epic resolved for the target project; HERO detection consistent with the
-  rules.
+- Each task summary matches the naming template; labels per `labels.md` (Vendor +
+  `Q<N>-<YYYY>` + promo-type token(s), incl. `RSA` / `BMSM` where applicable); dates
+  valid; parent Epic resolved for the target project. (No HERO / Priority auto-set as
+  of jira v0.3.0.)
 - Target project is what the operator chose (PAT vs PROM) and field IDs match it.
 - Dedupe: no task unexpectedly collides with an existing one.
 - Task count reconciles with the promo groups (Promo-List + NLP + RSA +

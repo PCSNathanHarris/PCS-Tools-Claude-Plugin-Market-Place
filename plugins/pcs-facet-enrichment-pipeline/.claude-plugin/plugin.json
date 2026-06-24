@@ -1,0 +1,9 @@
+{
+  "name": "pcs-facet-enrichment-pipeline",
+  "version": "1.0.0",
+  "description": "End-to-end faceted-search enrichment: take an Anglera Faceted Search Backfill export, run a coverage gap analysis, back-fill blank attributes with HIGH-confidence values scanned from the products' real source PDPs, then output a NetSuite-ready facet import. Built for a non-technical operator — Claude automates ingest, gap analysis, scraper config, QA, and NetSuite formatting; the operator only drops the file and double-clicks a one-click runner.",
+  "author": {
+    "name": "PCS Tools"
+  },
+  "keywords": ["anglera", "facets", "enrichment", "pdp", "netsuite", "coverage", "gap-analysis", "backfill"]
+}

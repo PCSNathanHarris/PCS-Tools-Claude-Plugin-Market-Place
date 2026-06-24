@@ -46,7 +46,10 @@ as-is). See `kit-stage.md`.
 {Brand} {Main SKU} {short descriptor}[, {qty} Pack][ W/ {additional(s)}]
 ```
 - The **main item is the paid anchor** (highest-value paid member). Each
-  additional is appended after `W/`, multiples joined with ` and `.
+  additional is appended after `W/`, multiples joined with ` and `. (For a
+  multi-paid bundle with no free good, the anchor is the bundle's **main /
+  highest-value tool** — slot 1 in the Promo-List — so the title leads with the
+  tool, not a bundled battery. This pairs with the parser's bundle-anchor fix.)
 - A **free** additional is prefixed `FREE`: `… W/ FREE {SKU} {descriptor}`.
   The free SKU is mandatory; the descriptor is shown only when it fits. PAID
   additionals get no marker. **Getting this right is one of the fixes** — never
@@ -67,6 +70,17 @@ vendor SKU**, a trailing **"with X battery/charger"** clause, and `(Bare)` /
 `Combo` / `Unit` — if the source text only yields that, use the kit's category or
 the member record to name the actual product. (Free vs paid for the `FREE` marker
 comes from the member's Promo-List **Item Price**: `0`/`0.00` = free.)
+
+**Title-case ALL-CAPS source text** (a fix): if a member's descriptor arrives fully
+uppercase (e.g. `20V XR BL SEALED HEAD RATCHET-BARE`), title-case it — don't let deck / NS
+SHOUTING leak into the title. Keep genuine platform / acronym tokens as-is (`M18`, `20V`,
+`XR`, `LXT`, `FUEL`).
+
+**Additionals use a SHORT product noun, not the full Display Name** (a fix): free goods and
+bundle members get a terse noun — `Battery`, `Battery 2-Pack`, `Starter Kit`, `2-Tool Combo`,
+`Charger` — never the member's full Display Name (the full name caused mid-word truncation like
+`… FREE DCB245-2C 20V MAX Starter`). The paid anchor keeps its specific descriptor; the
+additionals stay terse.
 
 **Brand — normalize to the canonical name (consistency fix):**
 ```
@@ -117,6 +131,8 @@ and full descriptors kept because they fit):
   not over-trimmed.
 - **Lead** = canonical Brand + the main **paid** SKU.
 - **Descriptor** = a specific product noun (no bare `Tool` / `Combo` / `Unit`).
+- **No ALL-CAPS descriptors** — title-cased (platform / acronym tokens excepted).
+- **Additionals are short nouns** (`Battery`, `Starter Kit`), not full Display Names.
 - **Every member SKU appears**; `FREE` on each free good and on **no** paid item.
 - **No** `(Bare)` / `Tool Only` / `[PCE …]` / empty `()` / dangling `W/` / leftover
   `{placeholder}`.
@@ -147,8 +163,13 @@ the main yields fewer than ~3):
   (`(1) …` qty-prefixed lines), section headers (`FEATURES:`, `SPECIFICATIONS:`,
   `WHAT'S IN THE BOX:`), warnings / CA Prop 65 / "see manual" / "made in" /
   country-of-origin boilerplate, or truncated `(more...)` fragments.
-- Decode HTML entities, strip leading bullet characters, de-duplicate, and keep
-  each bullet a clean standalone phrase (roughly 6–200 chars).
+- **Prose fallback (DeWalt etc.):** when the **anchor's** Detailed Description has **no
+  `<li>` feature list** (DeWalt ships a prose `short-description-text` block, not bullets),
+  derive the bullets from the anchor's **prose sentences first** — only then fall back to an
+  additional's features. Otherwise the drill's bullets end up describing the free battery.
+- Decode HTML entities, strip leading bullet characters, **strip mojibake** (`â€¢` → `•`,
+  `â€"` → `—`, etc. — read the NS export as `utf-8-sig`; see `kit-stage.md`), de-duplicate,
+  and keep each bullet a clean standalone phrase (roughly 6–200 chars).
 - If the source has no usable features, write a few accurate capability bullets
   for that kit type — never invent specs.
 

@@ -24,7 +24,7 @@ Source: `kb/kit_builder.py::write_promo_list_csv` / `PROMO_LIST_HEADERS`
 | 3 | `End Date` | `M/D/YYYY` non-padded |
 | 4 | `Item SKU 1` | First slot SKU |
 | 5 | `Item Qty 1` | Integer, default `1` |
-| 6 | `Item Price 1` | 2-decimal fixed (`199.00`) or `0.00` for free good |
+| 6 | `Item Price 1` | 2-decimal fixed (`199.00`); `0.00` for a free good or bundled member. **A filled slot is never blank** — only a fully-unused slot leaves Price blank (the Kit Builder rejects a blank Price on a populated slot). |
 | 7 | `Item Credit 1` | **Almost always blank** |
 | 8–11 | `Item SKU 2` / `Qty 2` / `Price 2` / `Credit 2` | Same shape |
 | 12–15 | `Item SKU 3` / ... / `Credit 3` | Same shape |
@@ -52,10 +52,11 @@ Mx Fuel Kit Get One Free [PCE 252601],5/4/2026,8/2/2026,2962-22,1,499.00,,48-11-
 ### Sample row — multi-paid bundle (3 paid, no free)
 
 ```csv
-86 Pc. Mix Drive Socket Set Bundle,3/1/2026,5/31/2026,81230P,1,99.99,,80950T,1,,,80551,1,,,,,,,,,,,,,,,,
+86 Pc. Mix Drive Socket Set Bundle,3/1/2026,5/31/2026,81230P,1,99.99,,80950T,1,0.00,,80551,1,0.00,,,,,,,,,,,,,,,,
 ```
 
-(Bundle Retail in the first slot; other slots' Price/Credit blank.)
+(Bundle Retail on slot 1 / the anchor — the main / highest-value tool; every other member
+emits `0.00` Price, blank Credit. Never leave a filled member's Price blank.)
 
 ### Sample row — Cartesian explosion (2 paid × 2 free → 4 rows)
 

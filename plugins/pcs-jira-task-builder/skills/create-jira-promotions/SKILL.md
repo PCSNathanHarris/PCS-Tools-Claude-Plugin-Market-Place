@@ -128,8 +128,8 @@ Parser CSV filenames follow `<Vendor>-Q<N>-<YYYY>-<FileType>.csv`. Pull:
 - `<YYYY>` year
 
 Apply the vendor → period mapping from `reference/naming-rules.md` to
-get the title period token (P1/P2 for most vendors; H1/H2 for EGO; Q-direct
-for Flex).
+get the title period token (`P<N>` = the deck's quarter number for power-tool vendors,
+e.g. Q3→P3; H1/H2 for EGO; Q-direct for Flex).
 
 Apply the vendor → Epic lookup from `reference/vendor-epics.md` to get
 the parent Epic key in the target project (PAT or PROM).
@@ -203,7 +203,13 @@ For each RSA row (from `RSA-Kits.csv` / `RSA-NLP.csv`):
 - `Skip-all` → skip every remaining RSA row this run.
 
 For each **Other-Promotions** group (from `*-Other-Promotions.csv`; v0.2.0):
-- Display the Promo Type, Promo Name, dates, SKUs, and the type-specific detail
+- **Online-only gate first (v0.4.0):** resolve the group's Online Execution. If it's **not
+  online-executable** — `No` with no online window (in-store-only, or a spend-threshold /
+  volume program with no online advertising window, e.g. DeWalt `PMAPP = IN-STORE ONLY`) —
+  **auto-skip it: create no Task, log it in the audit summary, and do not prompt.** (These
+  should already be `Non-Included` from the parser; this is the backstop.) RSA is the
+  deliberate exception and is handled above (`No` but still tracked).
+- Otherwise display the Promo Type, Promo Name, dates, SKUs, and the type-specific detail
   (rebate amount + redeem URL / promo code + discount / tier ladder).
 - Same `Y/N/Skip-all` prompt — these promo families are new, so confirm each.
 
@@ -307,11 +313,12 @@ The audit log file (written alongside the parser output) captures:
   scripting is needed (e.g. to render a SKU markdown table), generate
   and run code at execution time — do not ship static scripts.
 - **Dedupe by canonical title + dates + Epic.** Never by free-text Promo
-  Name alone (parser may emit `[PCE …]` suffixes that get stripped from
-  titles).
-- **No `[PCE NNNNNN]` in Task title.** Keep it in description as
-  `Promo Identifier: PCE NNNNNN` until the PCS team adds a dedicated
-  custom field (see `reference/field-mapping.md#promo-identifier-temp-home`).
+  Name alone. (The canonical title now carries the `[<ID>]` bracket per N8, so it
+  stays a stable dedupe key.)
+- **Keep `[<ID>]` at the END of the Task title** (N8): `… [PCR: P-00208522]` /
+  `… [PCE: 262776]`; omit on no-ID pages and consolidated / multi-ID Tasks. Also keep the
+  `Promo Identifier: PCE NNNNNN` description line until the PCS team adds a dedicated custom
+  field (see the Promo Identifier section in `reference/field-mapping.md` + Rule N8).
 
 ---
 

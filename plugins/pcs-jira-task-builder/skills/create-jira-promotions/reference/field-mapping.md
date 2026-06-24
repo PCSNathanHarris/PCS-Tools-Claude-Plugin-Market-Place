@@ -27,6 +27,10 @@ or field isn't found, **flag for the operator — never guess**.
 **Online Execution** (`customfield_10775` PAT / `10739` PROM):
 - `Yes` when the promo **has online-execution dates** (kit `Start`/`End`, or NLP /
   Other `Online Execution` dates present). `No` for RSA and Buy-In.
+- **Online-only task gate:** if a promo is **not online-executable** — `Online Execution`
+  resolves to `No` **and** there's no online advertising window (e.g. an Other-Promotions
+  in-store-only / spend-threshold / volume deal) — **create no Task.** RSA is the deliberate
+  exception: it's `No` but still tracked. See the Other-Promotions section + SKILL.md Step 6.
 
 **Needs POS Redemption** (`customfield_10774` PAT / `10475` PROM):
 - `Yes` if the promo is **RSA or carries a credit** (RSA-Kits `Item Credit N` /
@@ -58,7 +62,7 @@ one Task whose description holds the full SKU matrix.
 
 | Jira field | Source |
 |---|---|
-| `summary` | Canonical title per `naming-rules.md` (Promo Name → strip `[PCE…]` → derive Category from row shape → prepend `<YYYY> <Period> - ` per vendor) |
+| `summary` | Canonical title per `naming-rules.md` (Promo Name → derive a **generalized** Category from row shape → prepend `<YYYY> <Period> - ` per vendor → append the deck `[<ID>]` at the end per **N8**; **no vendor prefix, no SKUs**) |
 | `customfield_<start-date>` | `Start Date` — convert `M/D/YYYY` to ISO `YYYY-MM-DD` |
 | `duedate` | `End Date` — same conversion |
 | `description` | Per `description-spec.md` (Date range header + SKU table + storefront links + NetSuite links + Promo Identifier + source CSV reference) |
@@ -152,9 +156,17 @@ Group rows by `(Promo Name, Promo Type, Start Date, End Date)` → 1 Task per
 group; all SKUs roll into the description table. **Manual review per group**
 before creation (SKILL.md Step 6) — these promo families are new, so confirm each.
 
+**Online-only gate (skip non-online groups):** before reviewing a group, resolve its Online
+Execution. If it's **not online-executable** — `No` with **no online window** (an in-store-only
+deal, or a spend-threshold / volume program with no online advertising window, e.g. DeWalt
+`PMAPP = IN-STORE ONLY`) — **auto-skip it: create no Task, log it in the audit summary.** These
+should already arrive in `Non-Included.csv` from the parser (reason `brick-and-mortar` /
+`spend-to-earn`); the gate here is the backstop. Only genuinely online BMSM / e-rebate /
+promo-code groups proceed to the Y/N review.
+
 | Jira field | Source |
 |---|---|
-| `summary` | Per `naming-rules.md`: `e-rebate` → N1 template, Category `E-Rebate`; `buy-more-save-more` → N1 template, Category `BMSM`; `promo-code` → the **N2** coupon format `<Vendor> <YYYY> Coupon Code - <CODE>` (`<CODE>` = `Promo Code`). Strip any `[PCE…]`. |
+| `summary` | Per `naming-rules.md`: `e-rebate` → N1 template, Category `E-Rebate`; `buy-more-save-more` → N1 template, Category `BMSM`; `promo-code` → the **N2** coupon format `<Vendor> <YYYY> Coupon Code - <CODE>` (`<CODE>` = `Promo Code`). Keep the deck `[<ID>]` at the end per **N8** (omit on consolidated / multi-ID groups). |
 | Start date custom field | `Start Date` → ISO `YYYY-MM-DD` |
 | `duedate` | `End Date` → ISO |
 | `description` | Per `description-spec.md` Other-Promotions block (type line + SKU table + Redemption URL / Promo Code / Tier+Discount as applicable + Promo Identifier + source CSV) |
@@ -184,21 +196,23 @@ field — the parser already keeps it out of `Promo Code`.
 
 ---
 
-## Promo Identifier (temp home until custom field exists)
+## Promo Identifier (in the title + a description line, until a custom field exists)
 
 The parser emits `Promo Name` ending in `[PCE NNNNNN]` or `[PCR NNNNNN]`.
-For v0.1.0:
+As of v0.4.0 (Rule N8):
 
-1. Strip the bracketed identifier from the Task **title**.
-2. Add a line to the description:
+1. **Keep** the identifier in the Task **title**, at the end, bracketed with a colon:
+   `… [PCR: P-00208522]` / `… [PCE: 262776]`. Omit on no-ID pages and on consolidated /
+   multi-ID Tasks.
+2. **Also** add a belt-and-suspenders line to the description:
    ```
    **Promo Identifier:** PCE NNNNNN
    ```
 
 When the PCS team adds a dedicated `Promo Identifier` custom field to
 the Task issue type (tracked in their internal admin checklist), bump
-this skill's version to populate that field directly and remove the
-description line.
+this skill's version to populate that field directly and drop the
+description line (the title bracket stays).
 
 ---
 
@@ -216,10 +230,22 @@ Sub-task summary: literal `MM/DD-MM/DD` (Rule N9). The parent Task gets the over
 
 ---
 
-## PAT vs PROM custom field IDs
+## PAT vs PROM — fields are NOT identical; discover at runtime
 
-Custom field keys differ between the two projects. After resolving the
-project target in Step 1 of SKILL.md, look up the right key:
+**PAT is a sandbox. Its custom-field set, option *labels*, and option *IDs* do NOT match
+PROM.** Never assume a field exists, and never assume an option is labeled `Yes`. At run
+start, call `getJiraIssueTypeMetaWithFields` for the **target** project, enumerate which of
+these fields actually exist, and cache the **option IDs by label**. If a field or option is
+missing, **skip it and log — do not fail, do not guess.**
+
+Known PAT quirks (observed this run):
+- **POS Redemption / Online Execution on PAT are single-option multi-checkbox fields whose one
+  option is literally labeled `"Option 1"`** (it *is* the affirmative — there is no `Yes`).
+  Select that option's **ID**; never send the string `Yes`.
+- **`Promo Deck URL` does not exist on the PAT Task type** → silently skip + flag (don't error).
+
+Field-key hints (PROM is the source of truth; **PAT keys/IDs below are hints, not guarantees —
+discover at runtime**):
 
 | Field name | PAT key | PROM key |
 |---|---|---|
@@ -231,11 +257,11 @@ project target in Step 1 of SKILL.md, look up the right key:
 | Promo Taken Down | `customfield_10777` | `customfield_10473` |
 | Site Graphics Assigned | `customfield_10779` | `customfield_10476` |
 | Start date | `customfield_10015` (same in both) | `customfield_10015` |
-| Promo Deck URL | discover by **name** at run start | discover by **name** at run start |
+| Promo Deck URL | discover by **name** (absent on PAT) | discover by **name** at run start |
 
-The allowed-value option IDs also differ between projects — when setting
-a select / multi-checkbox field, query the project's issue-type field
-metadata once at run start and cache the option IDs.
+The allowed-value **option IDs also differ between projects** — when setting a select /
+multi-checkbox field, query the project's issue-type field metadata once at run start and
+cache the option IDs **by label**.
 
 ---
 

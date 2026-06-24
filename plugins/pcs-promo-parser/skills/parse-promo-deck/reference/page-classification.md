@@ -30,6 +30,13 @@ direct-ship only, etc. These can't be sold online so we don't kit them.
 Emit one `non_included` row (with the page's primary SKU if extractable,
 blank otherwise).
 
+**Apply per-SKU on mixed pages.** The signal can be page-level (a deck footer like DeWalt's
+`ADVERTISING WINDOW: IN-STORE ONLY`) **or per-SKU** (e.g. the DeWalt tracker's
+`PMAPP = IN-STORE ONLY` on some rows of an otherwise-online page). When only some SKUs are
+in-store, exclude **just those** SKUs to `brick-and-mortar` and parse the rest of the page
+normally — like the per-SKU strikethrough handling (#10). See
+`vendors/dewalt.md` ("PMAPP column = the online / in-store oracle").
+
 ### 3. SPIFF / sales-rep incentive → `non_included` reason `spiff`
 
 Sales-rep-only incentives (e.g. "$20 SPIFF for moving 5 units"). Not
@@ -73,6 +80,12 @@ See `exclusion-markers.md#new_product_marker` for phrase list.
 Distinguish carefully from **NLP** (`New Lower Price` / case #7) —
 that's a shelf-price drop and routes to the NLP Sheet, not exclusions.
 Match NLP first.
+
+**Footer triage — ignore repeated confidentiality footers.** Score `new-product` (and
+`brick-mortar`) on **section headers**, not on stray words in a page footer. DeWalt repeats
+`Confidential Document Property of DEWALT…` on every page, which falsely tripped
+`NEW PRODUCT` / `BRICK-MORTAR` triage; ignore that boilerplate footer and anchor the
+classification on real section banners (`NEW PRODUCT LAUNCHES`, `TRANSITION TIMELINE`).
 
 ### 3c. E-rebate (online rebate portal) → `other_promotions` (Promo Type `e-rebate`)
 
@@ -119,9 +132,18 @@ table; it is never kitted.
 ### 5. Buy-More-Save-More / volume-tiered → `other_promotions` (Promo Type `buy-more-save-more`)
 
 Pages that say "Buy 5 save 10%" or "Buy More Save More" or "BMSM" or
-"Volume Discount". Tiered pricing, not a fixed kit — and not a Non-Included
-exclusion. Emit one `other_promotions` row per SKU (capture the tier text in
-`Tier` and the discount in `Discount`). Emit no kit / NLP / RSA rows.
+"Volume Discount". Tiered pricing, not a fixed kit. Emit one `other_promotions`
+row per SKU (capture the tier text in `Tier` and the discount in `Discount`). Emit no
+kit / NLP / RSA rows.
+
+**Online-window gate (only ONLINE BMSM goes to Other-Promotions).** A BMSM / volume /
+spend-tier deal belongs in `Other-Promotions.csv` **only if it has an online advertising
+window**. If it's in-store-only or has no online window (e.g. DeWalt `PMAPP = IN-STORE ONLY`,
+a spend-threshold with no online dates, pallet / contractor pricing), route it to
+`Non-Included.csv` instead — reason `brick-and-mortar` (in-store) or `spend-to-earn`
+(threshold) — so it **never becomes a Jira task**. Anchors-&-Fasteners-style volume programs
+(spend-tier discounts, push-in coupler pallet pricing, "buy 9 boxes get 1 free") are the
+typical case: Non-Included, not Other-Promotions.
 
 ### 6. Promo-code / coupon / checkout-code only → `other_promotions` (Promo Type `promo-code`)
 

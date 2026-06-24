@@ -118,7 +118,8 @@ Mechanical:
   match — list any SKU missing from the DECODE).
 - DECODE shape: each block ≤ 250 values, balanced parentheses, `vendorname`
   field.
-- NS export parses (tolerate CP1252) and has the Promo Kit Support columns
+- NS export parses (**read `utf-8-sig` first**, CP1252 only as a fallback — the export is
+  UTF-8; reading it as CP1252 produces `â€¢` mojibake) and has the Promo Kit Support columns
   (Internal ID, Vendor Name, etc.).
 - **Coverage diff:** SKUs we asked for vs SKUs the NS export returned → list the
   **missing** ones (not yet built in NetSuite) and any extras.

@@ -5,16 +5,19 @@ Canonical rules for every Task title the skill generates. Numbered N1–N11 for 
 ## N1 — Standard title template
 
 ```
-<YYYY> <Period> - <Category>[ — <Specifics>]
+<YYYY> <Period> - <Category>[ — <Specifics>][ [<ID>]]
 ```
 
 Components:
 - `<YYYY>` — 4-digit year (e.g. `2026`).
 - `<Period>` — vendor-dependent (Rule N4 below).
 - `<Category>` — controlled vocabulary token (Rule N5 below).
-- `<Specifics>` — optional SKU-callout descriptor (e.g. `DCB205-2C + 2 Bare Tools @ $299`). Em-dash separator (`—`), not hyphen.
+- `<Specifics>` — optional, **generalized title-cased phrase** describing the deal (e.g. `M18 Tool With a Free Battery`). Em-dash separator (`—`), not hyphen. **Never put raw SKUs, ALL-CAPS deck text, or `BUY (n)…GET (n)` phrasing here** (see N5/N6).
+- `<ID>` — the deck's native promo identifier in the **last** position, bracketed (Rule N8): `[PCR: P-00208522]` / `[PCE: 262776]`. Omit when the page has none or the Task consolidates multiple IDs.
 
-Example: `2026 P2 - Free Battery — M18 1852 + 2 Bare Tools @ $299`
+**No vendor-name prefix.** The title starts with `<YYYY> <Period>` — the vendor is carried by the parent Epic (and the platform token, e.g. `M18` / `20V` / `60V`, implies the brand). Never lead with `Milwaukee ` / `DeWalt ` / etc.
+
+Example: `2026 P3 - M18 Tool With a Free Battery [PCE: 262776]`
 
 ## N2 — Coupon-code title format (v0.2.0)
 
@@ -51,46 +54,58 @@ filename quarter to the right token per vendor:
 
 | Vendor | Period format | Q → Period mapping |
 |---|---|---|
-| Milwaukee | `P1` / `P2` | Q1/Q2 → P1; Q3/Q4 → P2 (half-year periods) |
-| DeWalt | `P1` / `P2` | Q1/Q2 → P1; Q3/Q4 → P2 |
-| Makita | `P1` / `P2` | Q1/Q2 → P1; Q3/Q4 → P2 |
-| Bosch | `P1` / `P2` | Q1/Q2 → P1; Q3/Q4 → P2 |
-| GearWrench | `P1` / `P2` | Q1/Q2 → P1; Q3/Q4 → P2 |
-| EGO | `H1` / `H2` | Q1/Q2 → H1; Q3/Q4 → H2 |
+| Milwaukee | `P<N>` | **P = the deck's quarter number** — Q1→P1, Q2→P2, Q3→P3, Q4→P4 |
+| DeWalt | `P<N>` | Q1→P1, Q2→P2, Q3→P3, Q4→P4 |
+| Makita | `P<N>` | Q1→P1, Q2→P2, Q3→P3, Q4→P4 |
+| Bosch | `P<N>` | Q1→P1, Q2→P2, Q3→P3, Q4→P4 |
+| GearWrench | `P<N>` | Q1→P1, Q2→P2, Q3→P3, Q4→P4 |
+| EGO | `H1` / `H2` | Q1/Q2 → H1; Q3/Q4 → H2 (half-year — the exception) |
 | Flex | `Q1` / `Q2` / `Q3` / `Q4` | Direct (no remap) |
 | Crescent | n/a — uses Rule N2 (coupon-code) | n/a |
 | SKIL (under OTHER BRANDS Epic) | Year-quarter-vendor compound | e.g. `2026 Q3 SKIL NLPs` |
 | Fluke, JPW, Fondue Discounts, Specials/Self-Funded | Hand-managed | Skill never generates |
 
+**`<Period>` = `P` + the deck's quarter digit for power-tool vendors (P1–P4); the deck
+quarter is authoritative — never remap to a half-year.** (Confirmed against PROM: DeWalt /
+Milwaukee Q3 promos read `2026 P3 - …`.) EGO/OPE is the only half-year exception (`H1`/`H2`);
+Flex uses the quarter directly.
+
 **Note on labels vs titles:** the labels field (Rule L1–L3 in
-`labels.md`) always uses universal Q-notation (`Q1`–`Q4`) regardless
+`labels.md`) always uses universal Q-notation (`Q<N>-<YYYY>`, e.g. `Q3-2026`) regardless
 of vendor. The title field uses the vendor-specific period token
 above. This is intentional — labels are queryable cross-vendor; titles
 preserve PROM display convention.
 
-**Open follow-up:** the P1/P2 half-year mapping is the team's
-inferred convention. Confirm with team before bulk-running on a Q3
-deck. If P1/P2 actually map differently (e.g. P1=Q1 alone), adjust the
-table above.
+## N5 — `<Category>` / `<Specifics>` — generalize to PROM style
 
-## N5 — Controlled `<Category>` vocabulary
+`<Category>` (and any `<Specifics>`) carry a **short, title-cased, generalized human
+phrase** — never deck-verbatim text and never SKUs. Map the deck's phrasing to a clean
+phrase:
 
-| Parser source → | `<Category>` token |
+| Parser source → | Generalized title text |
 |---|---|
-| NLP-Sheet rows, `Source Marker` = `nlp` OR `special-buy` | `NLPs` (Special Buys fold into NLPs — same title, same Promo Type, same fields) |
-| Promo-List rows with paid + free SKU shape | Derive from row content: `Free Battery`, `Free Bare Tool`, `Free Tool Kit`, `Free Starter Kit`, `BOGOs`, `Free Cooler/Warmer`, etc. |
-| Promo-List rows, multi-paid bundle (no free) | `Bundles` (or specific: `Lighting Bundles`, `Nailer Bundles`, `Concrete Tool Bundles`) |
-| RSA-Kits rows | `RSAs` |
-| RSA-NLP rows | `RSAs` |
+| NLP-Sheet rows, `Source Marker` = `nlp` OR `special-buy` | fold into the single `NLPs` parent (Special Buys included — same title, same Promo Type, same fields) |
+| Promo-List, `BUY (1) BARE TOOL, GET (1) <battery>` | `20V Bare Tool With a Free Battery` (use the platform — `20V`/`M18`/`60V` — not the SKU) |
+| Promo-List, `… GET (1) <starter kit>` | `Bare Tool With a Free Starter Kit` |
+| Promo-List, paid + free SKU shape (general) | `<Platform> Tool With a Free <short noun>` / `Buy <Kit> Get a Free <short noun>` |
+| Promo-List, multi-paid bundle (no free) | `Kit + Bare Tool Bundle` / `<Category> Bundle` (or specific: `Lighting Bundle`, `Nailer Bundle`) |
+| RSA-Kits rows | `RSA Kits` |
+| RSA-NLP rows | `RSA NLPs` |
 | Needs-Pricing rows (out of scope) | `Needs Pricing` |
 | Other-Promotions rows, Promo Type `e-rebate` | `E-Rebate` (N1 template) |
-| Other-Promotions rows, Promo Type `buy-more-save-more` | `BMSM` (N1 template) |
+| Other-Promotions rows, Promo Type `buy-more-save-more` | `<Category> BMSM` (N1 template) |
 | Other-Promotions rows, Promo Type `promo-code` | uses **Rule N2** title format, not a Category |
+
+Rules:
+- **No SKUs in the title.** SKUs live only in the description SKU table; the only code-like
+  token allowed is the trailing `[<ID>]` bracket (N8).
+- **No deck SHOUTING / `BUY (n)…GET (n)` boilerplate** — title-case and rephrase (N6).
+- Lead with the platform (`20V`, `M18`, `60V`) where it identifies the line; it implies the brand.
 
 **When in doubt:** prompt the user before guessing a Category. Wrong
 categories cost board-view clarity downstream.
 
-## N6 — Auto-normalize spacing/punctuation
+## N6 — Auto-normalize spacing/punctuation + de-SHOUT
 
 Every generated title must be normalized:
 
@@ -100,25 +115,40 @@ Every generated title must be normalized:
   hyphen in that slot.
 - No trailing whitespace.
 - No apostrophes — write `NLPs`, not `NLP's`.
+- **De-SHOUT:** title-case any ALL-CAPS deck text (e.g. `20V BARE TOOL BOGO` → `20V Bare Tool`);
+  keep genuine acronyms / platform tokens (`M18`, `20V`, `RSA`, `NLP`, `BMSM`, `BOGO`) as-is.
+- **Strip `BUY (n)` / `GET (n)` boilerplate** — rephrase as a generalized deal (N5), e.g.
+  `BUY (1) BARE TOOL, GET (1) DCB2104-2` → `Bare Tool With a Free Battery`.
+- **No SKUs** anywhere in the title except the trailing `[<ID>]` bracket (N8).
 
 ## N7 — (removed in v0.3.0)
 
 HERO auto-marking was **removed in v0.3.0** — the plugin never appends ` (HERO)` to a
 title and never sets Priority. (Rule number kept so later N-references don't shift.)
 
-## N8 — PCE/PCR identifier handling
+## N8 — PCE/PCR identifier handling — keep it in the title (v0.4.0)
 
-Parser emits `Promo Name` ending in `[PCE NNNNNN]` or `[PCR NNNNNN]`.
-PROM Task titles don't use these.
+Parser emits `Promo Name` ending in `[PCE NNNNNN]` or `[PCR NNNNNN]`
+(DeWalt prints `P-########` / `PCR ######`; Milwaukee prints `PCE ######`).
 
-**For v0.1.0:**
-- Strip the bracketed identifier from the Jira Task title.
-- Keep it in the Task description as a line: `Promo Identifier: PCE NNNNNN`.
+**Keep the identifier in the title, at the very end, bracketed with a colon:**
+```
+<YYYY> <Period> - <generalized deal> [<ID>]
+```
+- Milwaukee: `[PCE: 262776]`
+- DeWalt: `[PCR: P-00208522]`
+- If the page has **no** identifier → omit the bracket entirely (never invent one).
+- **Consolidated / multi-ID Tasks** (e.g. the single NLP parent that spans 8 different
+  P-numbers) → **omit the bracket** — never force one wrong ID onto a multi-promo parent.
 
-**Future:**
-- When the PCS team adds a dedicated `Promo Identifier` custom field to
-  the Task issue type, switch to populating that field directly.
-  (Tracked in the team's admin checklist.)
+**Also keep** the `Promo Identifier: <ID>` line in the Task description (belt-and-suspenders)
+until a dedicated `Promo Identifier` custom field exists on the Task issue type — then switch
+to populating that field directly (tracked in the team's admin checklist).
+
+Examples:
+- `2026 P3 - 20V Bare Tool With a Free Battery [PCR: P-00208522]`
+- `2026 P3 - Combo Kit + Miter Saw Bundle [PCR: P-00211134]`
+- `2026 P3 - NLPs` (consolidated parent — no bracket)
 
 ## N9 — Sub-task title format
 

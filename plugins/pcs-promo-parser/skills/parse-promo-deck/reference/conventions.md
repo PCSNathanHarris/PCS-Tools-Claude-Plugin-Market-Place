@@ -62,7 +62,9 @@ your output has the BOM, write it explicitly at the start of the file.
   IEEE-754 float artifacts.
 - Strip currency symbols, commas, and surrounding whitespace before
   parsing: `$ 1,395.00` → `1395.00`.
-- Free goods emit `0.00` in the Price column.
+- **Every filled slot emits an explicit Price — never blank.** Free goods **and** bundled
+  (included) members emit `0.00`; the Kit Builder **rejects a blank Price** on any populated
+  slot. The kit total sits on slot 1 (the anchor); the rest are `0.00`.
 
 ---
 
@@ -74,7 +76,7 @@ Every "filled" item in a row carries four values, in this fixed order:
 |--------|---------|---------|
 | `sku`  | Vendor SKU as printed on the deck (pre-NetSuite lookup) | "" |
 | `qty`  | Quantity required for the deal | 1 |
-| `price`| Customer-facing price (0.00 for free goods) | 0.00 |
+| `price`| Customer-facing price (`0.00` for free goods / bundled members; never blank on a filled slot) | 0.00 |
 | `credit`| Almost always blank/empty in Stage 1 output | empty |
 
 A `PromoRow` carries up to **6 slots**. Blank/unused slots emit 4 empty
@@ -106,7 +108,10 @@ All rows share the same `Promo Name`, `Start Date`, `End Date`.
 
 For multi-paid bundles with NO free goods (e.g. GearWrench socket sets
 sold as one bundled price), put all paid SKUs in slots of a SINGLE row
-— the entire bundle is one promo, not a Cartesian explosion.
+— the entire bundle is one promo, not a Cartesian explosion. The **anchor (slot 1)
+is the main / highest-value tool** and carries the bundle total; **every other member
+slot emits `0.00` Price (never blank), Credit blank** (see
+`edge-cases.md#multi-paid-bundle-no-free-goods`).
 
 ---
 

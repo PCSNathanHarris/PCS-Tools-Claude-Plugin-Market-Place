@@ -199,9 +199,18 @@ inline; any split still held then appears at the orchestrator's Gate 2.)
 GearWrench socket-set bundles, some Bosch / Makita combo kits, etc.
 Several SKUs sold together at one bundle price; no separate free good.
 
-**Resolution**: emit ONE row with all SKUs in slots 1..N. The
-Bundle Retail / total price goes in `Item Price 1`; the other slots'
-Price/Credit columns are blank.
+**Resolution**: emit ONE row with all SKUs in slots 1..N.
+
+- **Anchor = slot 1 = the main / highest-value tool of the bundle**, and the
+  Bundle Retail / total price goes on that slot (`Item Price 1`) — **regardless of
+  which source row (cheat sheet / price table) the price happened to sit on.** Don't let
+  a bundled battery become the anchor just because the price was printed on its row; pick
+  the principal tool so the title and NetSuite Display Name lead with it.
+- **Every other bundle-member slot emits `0.00` in its Price (never blank); Credit
+  blank.** The bundle total stays on slot 1. The Kit Builder **rejects a blank Price** on
+  any filled slot — `0.00` is the required value for an included / zero-priced member
+  (a bundled member is `0.00`, distinguished from a true free good only by the
+  title/description wording).
 
 Do NOT do Cartesian here — these aren't paired deals.
 

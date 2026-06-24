@@ -64,6 +64,13 @@ the **source file**, not the model's reading.
 - Price: strip `$`, commas, internal spaces (`$ 1,395.00` → `1395.00`); accept
   both 2-decimal and bare-integer forms (`199.00` ↔ `199`).
 - Regex: apply to `sku_raw` (the first `## SKU pattern` regex only).
+- **Page scope — search the whole promo page range, not just the lead page.** A SKU/price
+  is `text-grounded` if its compare key is found in the text of **any page in the promo's
+  page range**, not only its emitted lead `page`. Multi-page promos put member SKUs on
+  **continuation pages** (e.g. the Q3 DeWalt deck's pp. 40–42, 43–44, 46–49, 51–54, 56–59);
+  a lead-page-only grep falsely marked **29 SKUs** `image-only`. If the row's page span is
+  known, grep that span; otherwise grep the **whole document text** — Layer B only proves the
+  string is genuinely in the deck (anti-hallucination), and Layer C confirms the page.
 
 **Per-record tags**: `text-grounded` | `image-only`; `sku-pattern-ok` |
 `sku-pattern-mismatch`; `price-text-grounded` | `price-image-only`;

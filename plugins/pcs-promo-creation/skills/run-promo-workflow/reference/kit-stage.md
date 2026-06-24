@@ -34,7 +34,15 @@ which SKUs to return. So the order is:
   --out  "<NS imports dir>/decode_blocks.txt"
 ```
 - `decode-formula` accepts the Promo-List CSV directly and pulls the unique
-  vendor SKUs from it.
+  vendor SKUs from it (it reads `utf-8-sig`, so the BOM and the trailing `Page`
+  column are tolerated).
+- **If `decode-formula` ever emits whole CSV rows (the header line + full rows) as
+  DECODE values instead of SKUs, the Promo-List has a blank Price on some member
+  slot** — the SKU reader raises and the command silently falls back to splitting each
+  line. That's a parser data bug (every filled slot must carry an explicit Price —
+  `0.00` for free / bundled members; see `pcs-promo-parser` `conventions.md`). Fix the
+  source so prices are present; as a one-time stopgap only, feed a newline-delimited
+  unique-SKU list instead of the Promo-List CSV.
 - Long SKU lists are split into multiple blocks (250 values each). **Present
   every block as a copy-paste artifact** (see "Presenting the DECODE" below);
   the operator pastes each into the **Formula (Numeric)** filter as separate
@@ -218,29 +226,49 @@ one-line command the operator runs in **their own terminal**, from the
 in Step 4b are never touched, and composite filenames stay keyed to each kit's
 image source.
 
-If the operator wants images, give them the form for their OS, filled in with
-this run's actual file names + prefix (don't leave the placeholders). `cd` to the
-**session folder** so the relative subfolder paths resolve, and the ZIP is
-written into `Images/`:
+If the operator wants images, hand them the command for their OS **fully filled in** with
+this run's actual file names + prefix — never leave the `<…>` placeholders, and use the
+**absolute** session path (it contains a space: "Claude Project Files"). The command `cd`s to
+the **session folder** so the relative subfolder paths resolve, and writes the ZIP into
+`Images/`.
 
-**Windows (PowerShell)** — uses the prebuilt `kb.exe` in the session folder (no Python):
+### Windows — open PowerShell and run it (dead simple)
+
+1. Press **Start** (Windows key), type **PowerShell**, press **Enter**. A blue window opens.
+2. **Copy the command below**, click into the PowerShell window, **right-click to paste**, press **Enter**.
+3. Wait for it to finish — when `<prefix>_kit_images.zip` appears in the `Images` folder, you're done.
+
 ```
-cd "<session dir>"
-.\kb.exe build-imports --promo-list "Promo Parsed Output/<Vendor>-<QN>-<YYYY>-Promo-List.csv" --ns-export "NetSuite Import Files/<NS export file>" --out-dir "Images" --prefix "<vendor>_q<N>_<YYYY>" --images-only
+cd "<absolute session dir>"
+& ".\kb.exe" build-imports --promo-list "Promo Parsed Output/<Vendor>-<QN>-<YYYY>-Promo-List.csv" --ns-export "NetSuite Import Files/<NS export file>" --out-dir "Images" --prefix "<vendor>_q<N>_<YYYY>" --images-only
 ```
 
-**macOS (Terminal)** — use the prebuilt **`./kb-macos`** in the session folder (no
-Python; fetched per `reference/kb-binary.md`). Source `kb` is the fallback (Intel Macs /
-per `prerequisites.md` §1):
+> **Always prefix the executable with the call operator `&` and quote the path** (`& ".\kb.exe"`).
+> PowerShell will **not** run a quoted path without `&` — and once the absolute session path is
+> filled in it *is* quoted (because "Claude Project Files" has a space), which is exactly why the
+> bare command failed on the first run. With `&` it runs whether the path is relative (`.\kb.exe`)
+> or a full quoted path (`& "C:\Users\…\kb.exe"`). When you hand the operator their command, write
+> it this way already — don't make them figure out the `&`.
+
+### macOS — open Terminal and run it
+
+1. Press **Cmd+Space**, type **Terminal**, press **Enter**.
+2. **Copy the command below**, paste into Terminal (**Cmd+V**), press **Enter**.
+3. When `<prefix>_kit_images.zip` appears in the `Images` folder, you're done.
+
 ```
-cd "<session dir>"
+cd "<absolute session dir>"
 ./kb-macos build-imports --promo-list "Promo Parsed Output/<Vendor>-<QN>-<YYYY>-Promo-List.csv" --ns-export "NetSuite Import Files/<NS export file>" --out-dir "Images" --prefix "<vendor>_q<N>_<YYYY>" --images-only
 ```
 
-Requires `kb.exe >= 0.5.24` (Windows) or `./kb-macos` / source `kb >= 0.5.24` (macOS). Tell them to run it and come back; when
-`<prefix>_kit_images.zip` appears in the **images dir**, **give them a link to
-the ZIP** and report the composed/failed counts it printed. **Do not attempt to
-compose images yourself in Cowork** — the fetch will 403.
+(macOS Terminal is bash/zsh — `./kb-macos` runs directly; **no `&` needed**. `./kb-macos` is the
+prebuilt binary, fetched per `reference/kb-binary.md`; source `kb` is the Intel-Mac fallback per
+`prerequisites.md` §1.)
+
+Requires `kb.exe >= 0.5.24` (Windows) or `./kb-macos` / source `kb >= 0.5.24` (macOS). Tell them
+to run it and come back; when `<prefix>_kit_images.zip` appears in the **images dir**, **give them
+a link to the ZIP** and report the composed/failed counts it printed. **Do not attempt to compose
+images yourself in Cowork** — the fetch will 403.
 
 ## Step 4b — Write the Page Titles & Detailed Descriptions
 
@@ -249,6 +277,11 @@ and **Detailed Description** columns are empty. You now write them following
 `reference/title-description-rules.md`, using the kit groupings (the create CSV
 in the **NS imports dir**), the member source text (the NS export), and
 free-vs-paid (the Promo-List in the **parsed output dir**).
+
+**Read the NS export as `utf-8-sig` first** (CP1252 only as a fallback) and strip any
+residual mojibake (`â€¢` → `•`) when pulling feature bullets — the NS Promo Kit Support
+export is **UTF-8**, and reading it as CP1252 turns bullet `•` into `â€¢` in the kit
+descriptions.
 
 **Scale gate (always do this first).** Count the kits (lead rows) in the create
 CSV. Writing a title + description for every kit is real work, so:

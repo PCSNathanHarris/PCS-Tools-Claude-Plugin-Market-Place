@@ -273,11 +273,15 @@ Follow `reference/kit-stage.md`:
    `<NS imports dir>/<prefix>_kits_existing.csv` paths, and any unmapped-SKU
    warnings.
 3. **Images gate:** ask `Do you want the composite kit images? (Y/N)`. On **Y**,
-   give the operator the Windows `.\kb.exe … --images-only` one-liner (or the
-   macOS source-`kb` form) from
-   `reference/kit-stage.md` (filled with this run's file names + prefix; they
-   write the ZIP into the **images dir**) to run in **their own terminal** —
-   Cowork's sandbox can't reach NetSuite's image host. When
+   hand the operator the `--images-only` command for their OS from
+   `reference/kit-stage.md` ("Composing the kit images"), **fully filled in** with this
+   run's file names + prefix and the **absolute** session path — plus the dead-simple
+   "open PowerShell / open Terminal" steps. On **Windows the command MUST start with the
+   call operator and a quoted path** (`& ".\kb.exe" …`) — PowerShell won't run a quoted
+   path (and the absolute session path is quoted, since "Claude Project Files" has a space)
+   without `&`; that's what made it fail on the first run, so write it correctly for them.
+   macOS uses `./kb-macos …` (no `&`). They run it in **their own terminal** — Cowork's
+   sandbox can't reach NetSuite's image host. When
    `<images dir>/<prefix>_kit_images.zip` lands, link it for them. On **N**, skip.
 
 ---

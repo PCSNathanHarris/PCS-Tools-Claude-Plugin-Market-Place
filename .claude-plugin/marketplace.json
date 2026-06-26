@@ -35,6 +35,12 @@
       "version": "1.0.0",
       "source": "./plugins/pcs-facet-enrichment-pipeline/",
       "description": "Anglera Faceted Search Backfill -> coverage gap analysis -> HIGH-confidence PDP backfill (real source PDPs, strict v15 dropdown validation, frequency-gated dropdown-addition proposals) -> NetSuite-ready facet import. Operator drops the export, names the brand, and double-clicks a one-click runner; Claude automates gap analysis, scraper config, QA, and NetSuite formatting."
+    },
+    {
+      "name": "pcs-categorization",
+      "version": "1.1.0",
+      "source": "./plugins/pcs-categorization/",
+      "description": "Autonomous weekly product categorization for the Toolup multi-stores. Refreshes each store's category tree from live collections (detects newly-added categories), classifies New Item V2 non-kit products to their bottom-most category + ancestor tags, removes New Item V2 when complete, adds CL-categorized. Product-tag writes ONLY; low-confidence items -> Google Drive review queue (with local backup); a per-store lessons file grows over time. Bundles a read-only Python engine (owner-approved exception to the markdown-only rule)."
     }
   ]
 }

@@ -212,6 +212,7 @@ For a real change (new feature, bug fix, behavior change):
 
 ### What NOT to do
 - ❌ Don't put runtime code (`.py`, `.js`) inside skills. Plugins are markdown only. If your skill needs to run a script, the SKILL.md tells Claude to **generate and run** that script at execution time — don't ship a static script in the repo.
+  - **Documented exception (owner-approved): `pcs-categorization`.** It bundles a strictly read-only Python engine under `plugins/pcs-categorization/engine/` because its multi-source Shopify *read* pipeline (collection rules, menus, metafields, templates, vendors) cannot be expressed in markdown and shouldn't be regenerated each run. The engine never writes to Shopify — all writes go through the audited `shopify_*` MCP tag tools. This is the **only** code-bearing plugin; the markdown-only rule still holds for everything else.
 - ❌ Don't reference plugins in other GitHub repos via `source`. The `source` field only supports relative paths inside this repo.
 - ❌ Don't ship secrets, API keys, or customer data in any file under `plugins/`. Plugins are public-facing once installed.
 - ❌ Don't skip the version bump when changing behavior. Without it, auto-update can't detect the change.

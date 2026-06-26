@@ -1,0 +1,9 @@
+{
+  "name": "pcs-categorization",
+  "version": "1.1.0",
+  "description": "Autonomous weekly product categorization for the Toolup multi-stores. Refreshes each store's category tree from live collections (detecting newly-added categories), classifies New Item V2 non-kit products to their bottom-most category and applies that tag plus all ancestor category tags, removes New Item V2 when fully categorized, and adds CL-categorized. Product-tag writes are the ONLY writes; low-confidence items go to a Google Drive review queue (with local backup); a per-store lessons file grows over time. Bundles a strictly read-only Python engine (owner-approved exception to the markdown-only rule).",
+  "author": {
+    "name": "PCS Tools"
+  },
+  "keywords": ["categorization", "shopify", "tagging", "collections", "automation", "toolup", "scheduled"]
+}

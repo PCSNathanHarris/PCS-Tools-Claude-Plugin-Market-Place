@@ -76,7 +76,7 @@ Wait for the operator to confirm the runner finished, then read those outputs ba
 - **Blanks only** — never overwrite a value Anglera already produced.
 - **Tree-linked only** — only fill attributes linked to that SKU's L2 in the tree.
 - **HIGH-confidence / explicit only** — the value must be stated on the page. No inference.
-- **Single vs multi by `Type`** — only `Type = MULTI_SELECT` attributes (`safety_rating`, `drive_size`, `battery_compatibility`) may hold multiple comma-joined values in one cell; everything else is single-value.
+- **Single vs multi — fixed allowlist.** Only three attributes may hold multiple comma-joined values in one cell: **`safety_rating`, `drive_size`, `battery_compatibility`**. **Every other attribute is single-value** — even if `attributes (NN).csv` types it `MULTI_SELECT`, write only one value. This is enforced a second time at the NetSuite-format step (Step 7), which collapses any multi-value that Anglera already produced in a descriptive field (e.g. `For Use On`, `For Use With`, `For Joining`, `Material`) down to its first value.
 - **Strict dropdown validation** — for `ENUM`/`MULTI_SELECT` attributes the written value MUST match a `Dropdown Values` entry in `attributes (15).csv` after normalization. Apply the standing **normalization map** first (strip ANSI year/edition suffixes e.g. `ANSI Z359.11-2021`→`ANSI Z359.11`; `csa`→`CSA Certified`; `Telecoms`→`Telecom`; `Self-Retracting`→`Self-Retracting (SRL)`). If it still doesn't match, **never write it.**
 - **Frequency-gated dropdown discovery** — track each out-of-dropdown value that reasonably belongs to its attribute. If one appears on **> 5 products in the batch**, add it to `dropdown_additions_needed.csv` (with occurrence count + sample SKUs/source) as a proposed addition for operator approval — still NOT written to the output this run. Below the threshold, leave blank and don't propose.
 - **application must be specific** — map the stated use / Industries to the most specific valid dropdown value; never default to "Construction" when something more specific is stated.
@@ -106,20 +106,22 @@ Compare the filled file to the original export: overall coverage lift, per-attri
 
 ---
 
-## Step 7b — Deliver to Google Drive
+## Step 7b — Deliver the NS import to Google Drive
 
-Upload the finished deliverables to the shared Drive folder (anyone-with-link) via the Google Drive connector. **Do not change any sharing/permissions** — the folder already grants access; uploaded files inherit it.
+Upload **only the final NetSuite import file** to the shared Drive "NS import folder" (anyone-with-link) via the Google Drive connector. **Do not change any sharing/permissions** — the folder already grants access; uploaded files inherit it.
 
+- **Exactly one file goes to Drive:** `Facet Backfill NS Import - <Vendor>.csv`. Nothing else is uploaded.
 - Folder ID: `1IB4PzPFoUMWDQmYBzo6cV56tviXVXcgK`
-- Use `create_file` with `parentId` = that folder ID, `contentMimeType = text/csv`, `disableConversionToGoogleType = true` (keep real CSVs, not Google Sheets).
-- Upload, titled `Facet Backfill NS Import - <Vendor>` (+ matching names for the QA summary and `dropdown_additions_needed`).
-- Capture the returned Drive link(s) to report in Step 8.
+- Use `create_file` with `parentId` = that folder ID, `title = "Facet Backfill NS Import - <Vendor>"`, `contentMimeType = text/csv`, `disableConversionToGoogleType = true` (keep a real CSV, not a Google Sheet).
+- Capture the returned Drive link to report in Step 8.
+
+**Everything else stays local.** The gap report, `backfill_plan.csv`, the PDP-filled `*_GapFill_PDP.xlsx` + `*_GapFill_log.csv`, the QA/before-after summary, and `*_dropdown_additions_needed.csv` all remain in the operator's working folder and are **not** uploaded. Report their local paths in Step 8.
 
 ---
 
 ## Step 8 — Report
 
-Print: coverage before→after, # values recovered (HIGH), # rows in the NetSuite import, # dropdown additions flagged, the local output paths, and the **Google Drive link(s)** to the uploaded `Facet Backfill NS Import - <Vendor>` files. Offer to open the dropdown-additions list for review.
+Print: coverage before→after, # values recovered (HIGH), # rows in the NetSuite import, # dropdown additions flagged, the **local output paths** for every file (gap report, backfill plan, PDP-filled xlsx + log, QA summary, dropdown-additions list), and the single **Google Drive link** to the uploaded `Facet Backfill NS Import - <Vendor>.csv`. Offer to open the (local) dropdown-additions list for review.
 
 ---
 

@@ -9,7 +9,7 @@ strictly against `attributes (15).csv`, and proposes frequent out-of-dropdown va
 - Source per SKU = brand-token URL first, else first available (see `brand-config.md`); retailer URL only as fallback for PDP-quality attrs.
 - Fill **blanks only**, **tree-linked only**, **HIGH-confidence/explicit only**.
 - Target the **backfill_plan** attributes first (gap-analysis driven).
-- Single value unless `Type == MULTI_SELECT` (then comma-join).
+- **Single value unless the key is one of `safety_rating` / `drive_size` / `battery_compatibility`** (the only multi-value attributes — then comma-join after dedupe). Never emit multiple values for any other attribute, even if `attributes (NN).csv` types it `MULTI_SELECT`. The NetSuite-format step also collapses any multi-value Anglera left in other fields.
 - ENUM/MULTI_SELECT value written only if it matches a v15 dropdown after the normalization map; else not written.
 - Out-of-dropdown values reasonably belonging to the attribute and seen on **> 5 products** → `dropdown_additions_needed.csv` (not written).
 - Facet label = attribute `Name`. Read full HTML + `__NEXT_DATA__` for Compliance/Industries; clean visible text for description attrs.
@@ -36,6 +36,7 @@ CONCURRENCY = 5
 PAGE_TIMEOUT_MS = 25000
 BROWSER_CHANNELS = ["chrome", "msedge", None]
 DISCOVERY_MIN = 6          # "> 5 products"
+MULTI_KEYS = {"safety_rating", "drive_size", "battery_compatibility"}  # the ONLY attrs allowed multiple values
 HARNESS_L2 = {"Body Harnesses","1 D-Ring Harnesses","2 D-Ring Harnesses","3 D-Ring Harnesses",
               "4 D-Ring Harnesses","5 D-Ring Hanesses","6 D-Ring Hanesses"}
 BRAND_TOKEN = re.sub(r"[^a-z0-9]+","", BRAND.lower())
@@ -245,7 +246,7 @@ async def main():
                         disc[key][cv]+=1; 
                         if len(disc_samples[key][cv])<3: disc_samples[key][cv].append(r.get("Internal ID","").strip())
                 if not canon: continue
-                if ATTR[key]["type"]!="MULTI_SELECT": canon=canon[:1]
+                if key not in MULTI_KEYS: canon=canon[:1]   # only safety_rating/drive_size/battery_compatibility may be multi
                 else:
                     seen=set(); canon=[x for x in canon if not (x in seen or seen.add(x))]
                 val=", ".join(canon)

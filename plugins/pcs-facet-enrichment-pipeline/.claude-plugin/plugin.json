@@ -1,7 +1,7 @@
 {
   "name": "pcs-facet-enrichment-pipeline",
-  "version": "1.0.0",
-  "description": "End-to-end faceted-search enrichment: take an Anglera Faceted Search Backfill export, run a coverage gap analysis, back-fill blank attributes with HIGH-confidence values scanned from the products' real source PDPs, then output a NetSuite-ready facet import. Built for a non-technical operator — Claude automates ingest, gap analysis, scraper config, QA, and NetSuite formatting; the operator only drops the file and double-clicks a one-click runner.",
+  "version": "1.2.0",
+  "description": "End-to-end faceted-search enrichment: take an Anglera Faceted Search Backfill export, run a coverage gap analysis, back-fill blank attributes with HIGH-confidence values scanned from the products' real source PDPs, then output a NetSuite-ready facet import. Built for a non-technical operator — Claude automates ingest, gap analysis, scraper config, QA, and NetSuite formatting; the operator only drops the file and double-clicks a one-click runner. v1.1.0: only the final NetSuite import CSV is uploaded to the shared Google Drive NS-import folder; every other output (gap report, backfill plan, PDP-filled xlsx/log, QA summary, dropdown-additions list) stays in the operator's local working folder. v1.2.0: single-value enforcement — only safety_rating, drive_size, and battery_compatibility may hold multiple comma-joined values; the NetSuite-format step now collapses every other facet (incl. Anglera pass-through fields like For Use On / For Use With / Material) to its first value, protecting numeric thousands separators (10,000 cps stays whole), and the scraper's multi gate is an explicit allowlist so a MULTI_SELECT mislabel in attributes (NN).csv can't leak multi-values.",
   "author": {
     "name": "PCS Tools"
   },

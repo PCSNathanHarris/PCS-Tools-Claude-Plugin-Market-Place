@@ -17,6 +17,7 @@ Outputs (data_dir/runs/<week>/<slug>/writes/): add_batch_*.json, remove_niv2.jso
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 from config import data_dir
@@ -28,8 +29,14 @@ except Exception:
 
 PROJECT = data_dir()
 
-# operational/workflow tags that are never real category tags (kept in sync with weekly_run.py)
+# operational/workflow + promo tags that are never real category tags (kept in sync with weekly_run.py)
 OPERATIONAL_TAGS = {"new item v2", "cl-categorized", "va categorization review", "categorized"}
+PROMO_RE = re.compile(
+    r"(eligible|buy more save more|\bbmsm\b|reg-sku-swap|sku swap|below[- ]map|"
+    r"shopmil|shoptup|\bpromotions?\b|shop\w*\d{2}|\d{2}\s*off|%\s*off)", re.I)
+
+def is_excluded_tag(t):
+    return (t or "").lower() in OPERATIONAL_TAGS or bool(PROMO_RE.search(t or ""))
 
 
 def main():
@@ -53,7 +60,7 @@ def main():
         # this node's OWN closure (leaf + trusted ancestors); never a cross-node union.
         # category nodes: brand names stripped. brand nodes: brand tags kept (intended).
         def keep(lst):
-            return [c for c in lst if c.lower() not in OPERATIONAL_TAGS
+            return [c for c in lst if not is_excluded_tag(c)
                     and ((not strip_brand) or c.lower() not in brand_lc)]
         clos = keep(x.get("inherited_tag_closure") or [])
         if not clos:
@@ -80,10 +87,33 @@ def main():
             for t in x.get("category_tags", []):
                 tag_to_gids.setdefault(t, set()).add(x["gid"])
 
+    # no-zero-tags fallback: product_id -> vendor brand-root gid (from this run's candidates.json).
+    # When a decision can't resolve to any real node, the product still gets its top-level brand
+    # collection tag rather than zero tags. Truly unplaceable (no brand root) is the only review case.
+    fallback_by_pid = {}
+    cand_path = run_dir / "candidates.json"
+    if cand_path.exists():
+        cj = json.loads(cand_path.read_text(encoding="utf-8"))
+        for c in cj.get("candidates", []):
+            fb = c.get("fallback_brand_gid")
+            if fb:
+                fallback_by_pid[str(c["product_id"])] = fb
+
     raw = json.loads(Path(a.decisions).read_text(encoding="utf-8"))
     decisions = raw.get("decisions", raw) if isinstance(raw, dict) else raw
 
-    confident, review = [], []
+    confident, review, fellback = [], [], []
+
+    def place(pid, title, reason):
+        # last-resort: tag with the vendor brand-root so nothing is left untagged; else true review.
+        fb = fallback_by_pid.get(pid)
+        if fb and fb in gid_to:
+            confident.append({"product_id": pid, "title": title, "category": gid_to[fb][0],
+                              "tags_to_add": gid_to[fb][1], "fallback": True})
+            fellback.append({"product_id": pid, "title": title, "fallback_to": gid_to[fb][0], "reason": reason})
+        else:
+            review.append({"product_id": pid, "title": title, "reason": reason})
+
     for d in decisions:
         pid = str(d.get("product_id"))
         # a product may carry a category-tree pick AND (dual-tree stores) a brand-tree pick
@@ -91,28 +121,25 @@ def main():
         tag = d.get("category_tag")
         title = d.get("title")
         if d.get("review") or d.get("confidence") == "low" or (not picks and not tag):
-            review.append({"product_id": pid, "title": title,
-                           "reason": d.get("reason") or "low confidence / no category chosen"})
+            place(pid, title, d.get("reason") or "low confidence / no category chosen")
         elif picks:  # precise: union of each chosen node's own closure
             missing = [g for g in picks if g not in gid_to]
-            if missing:
-                review.append({"product_id": pid, "title": title,
-                               "reason": f"chosen node(s) not in the store's collections: {missing}"})
-            else:
-                add = sorted({t for g in picks for t in gid_to[g][1]})
+            valid = [g for g in picks if g in gid_to]
+            if valid:  # use whatever resolved (don't lose a good pick over a typo'd sibling)
+                add = sorted({t for g in valid for t in gid_to[g][1]})
                 confident.append({"product_id": pid, "title": title,
-                                  "category": tag or gid_to[picks[0]][0], "tags_to_add": add})
+                                  "category": tag or gid_to[valid[0]][0], "tags_to_add": add})
+            else:
+                place(pid, title, f"chosen node(s) not in the store's collections: {missing}")
         else:  # bare tag, no gid -> only safe when it maps to exactly one category node
             gids = tag_to_gids.get(tag)
-            if not gids:
-                review.append({"product_id": pid, "title": title,
-                               "reason": f"chosen category '{tag}' is not in the store's collections"})
-            elif len(gids) == 1:
+            if gids and len(gids) == 1:
                 confident.append({"product_id": pid, "title": title, "category": tag,
                                   "tags_to_add": gid_to[next(iter(gids))][1]})
+            elif gids:
+                place(pid, title, f"category '{tag}' is ambiguous ({len(gids)} nodes) — provide category_gid")
             else:
-                review.append({"product_id": pid, "title": title,
-                               "reason": f"category '{tag}' is ambiguous ({len(gids)} nodes) — provide category_gid"})
+                place(pid, title, f"chosen category '{tag}' is not in the store's collections")
 
     # add batches: one tag per product per call, <=30 pairs/call
     maxk = max((len(c["tags_to_add"]) for c in confident), default=0)
@@ -130,14 +157,19 @@ def main():
         [{"product_id": c["product_id"], "tag": "CL-categorized"} for c in confident], indent=2), encoding="utf-8")
     (run_dir / "review-queue.json").write_text(json.dumps(
         {"store": a.store, "slug": slug, "week": a.week, "count": len(review), "items": review}, indent=2), encoding="utf-8")
+    (run_dir / "fallback-tagged.json").write_text(json.dumps(
+        {"store": a.store, "slug": slug, "week": a.week, "count": len(fellback),
+         "note": "tagged with the vendor brand-root only (no specific category found) — refine later",
+         "items": fellback}, indent=2), encoding="utf-8")
     (run_dir / "apply-summary.json").write_text(json.dumps({
         "store": a.store, "slug": slug, "week": a.week,
-        "confident": len(confident), "review": len(review),
+        "confident": len(confident), "fallback": len(fellback), "review": len(review),
         "add_batches": batches, "remove_file": str(writes / "remove_niv2.json"),
         "cl_file": str(writes / "add_cl_categorized.json"), "review_file": str(run_dir / "review-queue.json"),
     }, indent=2), encoding="utf-8")
 
-    print(f"apply-prep {slug} {a.week}: confident={len(confident)} review={len(review)} add_batches={len(batches)}")
+    print(f"apply-prep {slug} {a.week}: confident={len(confident)} (incl. fallback={len(fellback)}) "
+          f"review={len(review)} add_batches={len(batches)}")
     for b in batches:
         print("  add:    ", b)
     print("  remove: ", writes / "remove_niv2.json")

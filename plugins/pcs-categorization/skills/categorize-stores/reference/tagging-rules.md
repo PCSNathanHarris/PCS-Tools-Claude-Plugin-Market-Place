@@ -53,8 +53,21 @@ excluded as targets.
   when one fits, then the general Accessories/Parts fallback.
 - **Drill/cutting bits:** real categories — Drill Bits / Drill Bit Sets / Masonry & Tile Drill Bits (category
   tree) and branded bit collections (brand tree). Never route bits to review for "no category."
-- **Review is the last resort.** With the full vocabulary plus the general Accessories/Replacement-Parts
-  fallbacks, very few items are genuinely unplaceable. Only `review: true` when you truly cannot place it.
+## No product gets zero tags — the fallback ladder
+There is **always** a place a product fits. Never leave an item untagged and avoid `review` for "couldn't
+find a category." Walk this ladder and stop at the first that fits:
+1. **Specific category** (deepest matching node) + brand node — the normal case.
+2. **General high-level category** — when no specific leaf fits, use the top-level category it belongs to
+   (`category_roots` in candidates.json), or a catch-all like **Fasteners**, **Accessories**, **Replacement
+   Parts**, or **Specialty Tools**. A rod hanger → `Fasteners`; an odd install/retrieving tool → `Specialty Tools`.
+3. **Trade collection** — if the store has one that fits the product's trade.
+4. **Top-level brand collection** — the absolute minimum. Every candidate carries `fallback_brand_gid`
+   (its vendor's Shop-by-Brand root); use it as `brand_gid` when nothing else fits. The engine also applies
+   this automatically as a safety net, but place it yourself when you can.
+
+`review: true` is **only** for genuine ambiguity a human must resolve (e.g. torn between two real, very
+different categories) — never for "no home found." The engine's last-resort net guarantees the brand-root
+tag, so zero-tag output is impossible.
 
 ## decisions.json (what you write, step 1c)
 ```json

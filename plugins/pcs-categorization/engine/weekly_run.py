@@ -54,6 +54,15 @@ DUAL_TREE_STORES = {"toolup-my-tool-store"}
 # our output marker; VA Categorization Review = the human review queue; Categorized = legacy marker.)
 OPERATIONAL_TAGS = {"new item v2", "cl-categorized", "va categorization review", "categorized"}
 
+# Promo / sale-eligibility collection tags that are NOT merchandising categories (many are mislabeled
+# kind=category in the map). Excluded from closures, vocabulary, and anchors — like operational tags.
+PROMO_RE = re.compile(
+    r"(eligible|buy more save more|\bbmsm\b|reg-sku-swap|sku swap|below[- ]map|"
+    r"shopmil|shoptup|\bpromotions?\b|shop\w*\d{2}|\d{2}\s*off|%\s*off)", re.I)
+
+def is_excluded_tag(t):
+    return (t or "").lower() in OPERATIONAL_TAGS or bool(PROMO_RE.search(t or ""))
+
 # "All product card info" = title + vendor + description + ALL metafields (structured AND unstructured),
 # with custom.facets / facets.product_type as a strong placement signal. The gather surfaces all of it.
 ELIGIBLE_Q = """
@@ -145,7 +154,7 @@ def main():
         # this node's OWN closure (leaf + trusted ancestors); never a cross-node union.
         # operational tags are always dropped; brand names dropped for category-tree nodes.
         def keep(lst):
-            return [c for c in lst if c.lower() not in OPERATIONAL_TAGS
+            return [c for c in lst if not is_excluded_tag(c)
                     and ((not strip_brand) or c.lower() not in brand_lc)]
         clos = keep(x.get("inherited_tag_closure") or [])
         if not clos:
@@ -168,12 +177,25 @@ def main():
     brands = build_entries(brand_nodes, "brand", strip_brand=False)
 
     def real_tags(node_list):
-        return {t for x in node_list for t in x.get("category_tags", []) if t.lower() not in OPERATIONAL_TAGS}
+        return {t for x in node_list for t in x.get("category_tags", []) if not is_excluded_tag(t)}
     tag_title = {t: x.get("title") for x in cat_nodes for t in x.get("category_tags", [])
-                 if t.lower() not in OPERATIONAL_TAGS}
+                 if not is_excluded_tag(t)}
     cat_tag_set = real_tags(cat_nodes)
     brand_tag_set = real_tags(brand_nodes)
     new_tags = set(cat_tag_set)
+
+    # Fallback targets so a product is NEVER left untagged (no-zero-tags rule). Per vendor: its
+    # top-level brand collection (the Shop-by-Brand root titled exactly the vendor). Plus the
+    # top-level category roots for a general high-level home when no specific category fits.
+    vend_lc = {b.lower() for b in brand_names}
+    brand_root = {}
+    for b in (brands or categories):  # brands on dual-tree; else brand-kind folded into categories
+        t = (b["title"] or "").lower()
+        if t in vend_lc and t not in brand_root:
+            brand_root[t] = b["gid"]
+    category_roots = [{"gid": c["gid"], "title": c["title"], "path": c["path"]}
+                      for c in categories
+                      if (c["path"] or "").startswith("Shop by Category >") and (c["path"] or "").count(">") == 1]
 
     # 4) diff — new categories since last run
     added = sorted(new_tags - prev_tags)
@@ -214,6 +236,7 @@ def main():
                 "current_brand_tags": brand_anchors,
                 "all_tags": sorted(tags), "description": strip_html(p["descriptionHtml"])[:600],
                 "facets_product_type": (p.get("facet") or {}).get("value"), "metafields": mfs,
+                "fallback_brand_gid": brand_root.get(vendor_l),
             })
             if a.max_items and len(rows) >= a.max_items:
                 break
@@ -226,6 +249,8 @@ def main():
         "map_md": str((PROJECT / "maps" / slug / f"{slug}-category-tree.md")),
         "categories": categories,
         "brands": brands,
+        "category_roots": category_roots,
+        "brand_roots": brand_root,
         "category_vocabulary": sorted(cat_tag_set),
         "brand_vocabulary": sorted(brand_tag_set),
         "brand_names": sorted(brand_names),

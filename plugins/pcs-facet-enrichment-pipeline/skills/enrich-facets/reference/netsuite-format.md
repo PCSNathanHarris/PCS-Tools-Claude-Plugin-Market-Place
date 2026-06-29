@@ -2,6 +2,13 @@
 
 Trims the post-backfill export down to the exact import NetSuite expects.
 
+## Input to this step (v1.3.0)
+Build from **AUTO values + reviewer-accepted values** only. Before formatting, inject each accepted item
+from `*_review_decisions.json` into the next empty `Facet` cell of its row (match on `Internal ID`) as
+`"<attribute_label>: <proposed_value>"`; rejected values stay blank. Accepted out-of-dropdown values are
+included here **and** appended to `*_dropdown_additions_needed.csv` as `operator-approved`. See
+`reference/manual-review.md` — submitting that review already approved the build, so there is no separate gate.
+
 ## Output columns
 `Input Product Name`, `Internal ID`, then `Facet 1 … Facet N`.
 - `N` = the max number of facets on any **included** row after backfill. Trim trailing empty Facet columns so the header has exactly N facet columns.

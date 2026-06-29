@@ -14,11 +14,30 @@ strictly against `attributes (15).csv`, and proposes frequent out-of-dropdown va
 - Out-of-dropdown values reasonably belonging to the attribute and seen on **> 5 products** → `dropdown_additions_needed.csv` (not written).
 - Facet label = attribute `Name`. Read full HTML + `__NEXT_DATA__` for Compliance/Industries; clean visible text for description attrs.
 
+## Provenance + AUTO / REVIEW split (v1.3.0)
+
+Every value the scraper would write is classified before it lands. Attach provenance to each —
+`source_url`, `source_kind` (`brand_pdp` | `retailer`), `attribute_key`/`attribute_label`,
+`proposed_value`, a one-line `why_pulled` — and compute `review_reasons[]` from:
+
+- **retailer-sourced** — the value came from the retailer-URL fallback, not the brand PDP;
+- **normalized** — `normalize_raw`/the canon map changed the raw string to hit a dropdown entry;
+- **inferred-from-prose** — the extractor is in `INFER_KEYS` (heuristic/keyword over visible text);
+- **out-of-dropdown** — `validate()` returned `in_dropdown = False`;
+- **multiple-candidate** — the extractor returned more than one value.
+
+Then split:
+- **AUTO** (`review_reasons` empty): write the xlsx cell + `*_GapFill_log.csv` exactly as before.
+- **REVIEW** (≥ 1 reason): **do not write the cell.** Append the item to `*_review_queue.json`
+  (+ human-readable `*_review_queue.csv`); it stays out of the import until the operator accepts it
+  in the in-chat review (see `manual-review.md`). Out-of-dropdown values still also feed the
+  `> 5 products` discovery list as before.
+
 ## Template
 
 ```python
 #!/usr/bin/env python3
-import asyncio, csv, re, sys
+import asyncio, csv, json, re, sys
 from pathlib import Path
 from collections import defaultdict, Counter
 
@@ -32,11 +51,14 @@ PLAN_CSV    = HERE / "backfill_plan.csv"        # from gap analysis (optional)
 OUT_XLSX    = HERE / f"{BRAND}_GapFill_PDP.xlsx"
 OUT_LOG     = HERE / f"{BRAND}_GapFill_log.csv"
 OUT_ADDS    = HERE / f"{BRAND}_dropdown_additions_needed.csv"
+OUT_RQ_JSON = HERE / f"{BRAND}_review_queue.json"      # uncertain values, HELD for in-chat review
+OUT_RQ_CSV  = HERE / f"{BRAND}_review_queue.csv"       # same, human-readable
 CONCURRENCY = 5
 PAGE_TIMEOUT_MS = 25000
 BROWSER_CHANNELS = ["chrome", "msedge", None]
 DISCOVERY_MIN = 6          # "> 5 products"
 MULTI_KEYS = {"safety_rating", "drive_size", "battery_compatibility"}  # the ONLY attrs allowed multiple values
+INFER_KEYS = {"application","material","lanyard_type","connection_type","connector_type"}  # heuristic/prose extractors -> always REVIEW
 HARNESS_L2 = {"Body Harnesses","1 D-Ring Harnesses","2 D-Ring Harnesses","3 D-Ring Harnesses",
               "4 D-Ring Harnesses","5 D-Ring Hanesses","6 D-Ring Hanesses"}
 BRAND_TOKEN = re.sub(r"[^a-z0-9]+","", BRAND.lower())
@@ -70,14 +92,18 @@ for r in csv.DictReader(open(ATTRS_CSV, encoding="utf-8-sig")):
 LABEL2KEY = {a["name"]: k for k,a in ATTR.items()}
 
 def validate(key, raw):
-    """Return (canonical_value or None, in_dropdown_bool). STRING/NUMBER pass through."""
+    """Return (value or None, in_dropdown, match_kind).
+    match_kind: 'exact' | 'normalized' | 'free_text' | 'out_of_dropdown'."""
     a = ATTR.get(key)
-    if not a: return None, False
+    if not a: return None, False, "out_of_dropdown"
+    raw_s = (raw or "").strip()
     v = normalize_raw(key, raw)
+    changed = (v != raw_s)
     if a["type"] in ("ENUM","MULTI_SELECT") and a["has_dropdown"]:
         c = a["canon"].get(norm(v))
-        return (c, True) if c else (v, False)   # not in dropdown -> candidate for discovery
-    return v, True   # STRING/NUMBER/CATEGORY: free text
+        if c: return c, True, ("normalized" if (changed or c != v) else "exact")
+        return v, False, "out_of_dropdown"   # not in dropdown -> held for review + discovery
+    return v, True, ("normalized" if changed else "free_text")   # STRING/NUMBER/CATEGORY: free text
 
 # ---- tree linkage + backfill plan ----
 tree = {}
@@ -216,7 +242,7 @@ async def main():
         prog["t"]=len(need); print(f"Scanning {len(need)} unique PDPs...")
         await asyncio.gather(*(getsig(u) for u in need))
 
-        log=[]; disc=defaultdict(Counter); disc_samples=defaultdict(lambda: defaultdict(list))
+        log=[]; review=[]; disc=defaultdict(Counter); disc_samples=defaultdict(lambda: defaultdict(list))
         for r in rows:
             l2=(r.get("Master Facet Category") or "").strip(); title=r.get("Page Title") or ""
             linked=tree.get(l2,set())
@@ -232,31 +258,54 @@ async def main():
             for key in targets:
                 if key in present or key not in EXTRACT: continue
                 if key=="connection_type" and l2 in HARNESS_L2: continue
-                sig = vsig if vsig else None
+                # source: brand PDP first; retailer only as a PDP-quality fallback
+                src_url, src_kind, sig = v, "brand_pdp", (vsig if vsig else None)
                 raw = EXTRACT[key](*sig, title) if sig else None
                 if not raw and rsig and key in PDP_QUALITY:
-                    raw = EXTRACT[key](*rsig, title)
+                    raw = EXTRACT[key](*rsig, title); src_url, src_kind, sig = ret, "retailer", rsig
                 if not raw: continue
                 rawlist = raw if isinstance(raw, list) else [raw]
-                canon=[]
+                multi_candidate = len(rawlist) > 1
+                canon=[]; mkinds=set(); had_ood=False
                 for rv in rawlist:
-                    cv, ok = validate(key, rv)
-                    if ok and cv: canon.append(cv)
-                    elif cv:  # reasonable but not in dropdown -> discovery
-                        disc[key][cv]+=1; 
+                    cv, ok, mk = validate(key, rv)
+                    if not cv: continue
+                    mkinds.add(mk); canon.append(cv)
+                    if not ok:   # reasonable value, not in the dropdown -> hold + propose
+                        had_ood=True
+                        disc[key][cv]+=1
                         if len(disc_samples[key][cv])<3: disc_samples[key][cv].append(r.get("Internal ID","").strip())
                 if not canon: continue
                 if key not in MULTI_KEYS: canon=canon[:1]   # only safety_rating/drive_size/battery_compatibility may be multi
                 else:
                     seen=set(); canon=[x for x in canon if not (x in seen or seen.add(x))]
-                val=", ".join(canon)
+                val=", ".join(canon); label=ATTR[key]["name"]
+                # classify: any reason -> HELD for review; none -> AUTO-written
+                reasons=[]
+                if src_kind=="retailer": reasons.append("retailer-sourced")
+                if "normalized" in mkinds: reasons.append("normalized")
+                if key in INFER_KEYS: reasons.append("inferred-from-prose")
+                if had_ood: reasons.append("out-of-dropdown")
+                if multi_candidate: reasons.append("multiple-candidate")
+                if reasons:
+                    review.append({
+                        "item_id": f"{r.get('Internal ID','').strip()}::{key}",
+                        "internal_id": r.get("Internal ID","").strip(),
+                        "product_title": r.get("Input Product Name") or title,
+                        "attribute_key": key, "attribute_label": label,
+                        "proposed_value": val, "source_url": src_url, "source_kind": src_kind,
+                        "why_pulled": f'{label}: read "{val}" from the {src_kind.replace("_"," ")} page',
+                        "review_reasons": reasons,
+                    })
+                    continue   # HELD — not written until the operator accepts it (manual-review.md)
+                # AUTO (high-confidence): write the cell + log it, as before
                 tgt=next((fc for fc in facet_cols if not (r.get(fc) or "").strip()), None)
                 if not tgt: break
-                r[tgt]=f"{ATTR[key]['name']}: {val}"; r["_added"].append(tgt); present.add(key)
+                r[tgt]=f"{label}: {val}"; r["_added"].append(tgt); present.add(key)
                 if key=="safety_rating":
                     st=next((s for s in sr_cols if not (r.get(s) or "").strip()),None)
                     if st: r[st]=canon[0]; r["_added"].append(st)
-                log.append((r.get("Internal ID","").strip(),l2,ATTR[key]["name"],val,v))
+                log.append((r.get("Internal ID","").strip(),l2,label,val,src_url))
         await browser.close()
 
     # write xlsx + log + discovery
@@ -281,8 +330,18 @@ async def main():
             for val,n in cnt.most_common():
                 if n>=DISCOVERY_MIN:
                     w.writerow([ATTR[key]["name"],val,n,"; ".join(disc_samples[key][val]),"ADD (review)"])
-    print(f"\nDONE. {len(log)} values across {len(set(x[0] for x in log))} SKUs. Empty pages: {prog['e']}.")
-    print(f"Wrote {OUT_XLSX.name}, {OUT_LOG.name}, {OUT_ADDS.name}")
+    # review queue — uncertain values HELD for the in-chat accept/reject step (see manual-review.md)
+    with open(OUT_RQ_JSON,"w",encoding="utf-8") as f:
+        json.dump(review, f, indent=2, ensure_ascii=False)
+    with open(OUT_RQ_CSV,"w",newline="",encoding="utf-8-sig") as f:
+        w=csv.writer(f)
+        w.writerow(["item_id","Internal ID","Product","Attribute","Proposed Value","Source URL","Source","Why pulled","Review reasons"])
+        for it in review:
+            w.writerow([it["item_id"],it["internal_id"],it["product_title"],it["attribute_label"],
+                        it["proposed_value"],it["source_url"],it["source_kind"],it["why_pulled"],
+                        "; ".join(it["review_reasons"])])
+    print(f"\nDONE. {len(log)} AUTO values across {len(set(x[0] for x in log))} SKUs; {len(review)} HELD for review. Empty pages: {prog['e']}.")
+    print(f"Wrote {OUT_XLSX.name}, {OUT_LOG.name}, {OUT_ADDS.name}, {OUT_RQ_JSON.name}, {OUT_RQ_CSV.name}")
 
 def keyify_label(cell): return re.sub(r"[^a-z0-9]+","_",cell.split(":",1)[0].strip().lower()).strip("_")
 
@@ -294,4 +353,5 @@ if __name__ == "__main__":
 - Fill `{{BRAND}}` and `{{EXPORT_FILENAME}}`; confirm the attributes/tree filenames are the newest present.
 - The `EXTRACT` map ships with fall-protection + general tool extractors. For a new vertical, add/adjust per-attribute extractors — but **never loosen** the `validate()` gate; new vocabulary should flow through discovery, not be force-written.
 - `validate()` is the universal guardrail: ENUM values must resolve to a dropdown entry (after normalization) or they go to discovery, never to output.
+- **`INFER_KEYS`** lists the heuristic/prose extractors (application, material, lanyard_type, connector). Their values are sound enough to *propose* but are **always routed to REVIEW**, never AUTO-written — the operator confirms them in the in-chat step. Add a new vertical's prose-guess extractors here too.
 - No-`pip` fallback: if Playwright can't be installed, swap `render()` for a `urllib.request` fetch of the page HTML (Next.js `__NEXT_DATA__` is in the static HTML); everything downstream is unchanged.

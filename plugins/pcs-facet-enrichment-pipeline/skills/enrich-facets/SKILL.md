@@ -3,8 +3,9 @@
 Take an Anglera **Faceted Search Backfill** export, find the coverage gaps, fill the
 recoverable blanks with HIGH-confidence values read from each product's real source
 PDP, and produce a **NetSuite-ready facet import**. Designed so a non-technical
-operator only has to: drop in the export, name the brand, and double-click a runner
-when prompted. Claude does everything else and pauses for a Yes/No at two gates.
+operator only has to: drop in the export, name the brand, double-click a runner when prompted, and
+accept/reject the handful of uncertain values in chat. Claude does everything else and pauses for a
+Yes/No at GATE 1, then for an in-chat review of the uncertain values before the import is built.
 
 ---
 
@@ -66,8 +67,9 @@ The runner renders each product's real PDP (JavaScript) and writes:
 - `*_GapFill_PDP.xlsx` — the export in its original schema, recovered cells highlighted green;
 - `*_GapFill_log.csv` — every value added + the source PDP URL;
 - `*_dropdown_additions_needed.csv` — proposed dropdown additions: out-of-dropdown values that reasonably belong to an attribute AND appear on **> 5 products in the batch** (columns: Attribute, Proposed Value, Occurrences, Sample SKUs, Sample Source URL, Suggested Action ADD/NORMALIZE). Values seen ≤ 5 times, or that don't reasonably map to the attribute, are left blank and NOT proposed.
+- `*_review_queue.json` (+ human-readable `*_review_queue.csv`) — the **uncertain** values the scraper held back instead of writing (retailer-sourced, normalized, inferred-from-prose, out-of-dropdown, or multiple-candidate). Each carries product title, proposed value, source URL, why it was pulled, and the review reason(s). These are NOT in the xlsx — they wait for the in-chat review in Step 6.5.
 
-Wait for the operator to confirm the runner finished, then read those outputs back in.
+Only the **HIGH-confidence (AUTO)** values land in `*_GapFill_PDP.xlsx` / `*_GapFill_log.csv`; the uncertain ones are held in the review queue. Wait for the operator to confirm the runner finished, then read those outputs back in.
 
 ---
 
@@ -83,6 +85,7 @@ Wait for the operator to confirm the runner finished, then read those outputs ba
 - **Do not add `connection_type` on harness L2s** (redundant with D-ring config).
 - **Facet label = the attribute `Name`** from `attributes (15).csv`.
 - **Sources:** read the full rendered HTML + embedded `__NEXT_DATA__` JSON for Compliance→`safety_rating` and Industries→`application`; read clean visible text for description-based attributes.
+- **Confidence split (held vs written).** Tag each value's provenance and **hold it for review** if ANY of these apply: read from a **retailer** URL (not the brand PDP); needed **normalization** to match the dropdown; came from an **inferred-from-prose** extractor (`INFER_KEYS`: application, material, lanyard_type, connector); is **out-of-dropdown**; or the extractor returned **multiple candidates**. Values with none of these are AUTO-written; the rest go to `*_review_queue.json` for Step 6.5. See `reference/pdp-backfill-script.md` and `reference/manual-review.md`.
 
 ---
 
@@ -92,9 +95,17 @@ Compare the filled file to the original export: overall coverage lift, per-attri
 
 ---
 
+## Step 6.5 — Manual review of uncertain values (in-chat)  *(operator)*
+
+Follow `reference/manual-review.md`. If `*_review_queue.json` is empty, skip to Step 7. Otherwise present the held values **in the chat window** as an interactive accept/reject artifact — one card per value showing the **product title, proposed `Label: value`, a clickable source-PDP link, why it was pulled, and why it needs review** — every toggle **defaulting to Accept**, with Accept-all / Reject-all and a Submit. The operator can also just type accept/reject. Capture the result to `*_review_decisions.json`.
+
+**This replaces the old GATE 2:** submitting the review is the go-ahead to build the import. Accepted values are merged in; rejected values are dropped; accepted out-of-dropdown values are included AND logged `operator-approved` in `*_dropdown_additions_needed.csv`.
+
+---
+
 ## Step 7 — NetSuite format  *(Claude)*
 
-**GATE 2 — confirm with the operator before generating the NetSuite file.** Then follow `reference/netsuite-format.md`:
+Build from **AUTO values + accepted review values** (Step 6.5); rejected values stay blank. No separate Yes/No gate here — the review submission already approved it. Follow `reference/netsuite-format.md`:
 
 - Output columns: `Input Product Name`, `Internal ID`, then `Facet 1 … Facet N`.
 - `N` = the max facet count of any included row after backfill (trim trailing empties).
@@ -127,7 +138,7 @@ Print: coverage before→after, # values recovered (HIGH), # rows in the NetSuit
 
 ## Key rules
 
-- **Two gates only** (after gap report; before NetSuite output) — otherwise run unattended.
+- **One Yes/No gate + an in-chat review:** GATE 1 after the gap report; then an in-chat accept/reject of the uncertain values (Step 6.5) that replaces the old pre-NetSuite gate. Otherwise run unattended.
 - **Markdown-only plugin:** generate `pdp_backfill.py` + `run_backfill.bat` at run time; never rely on committed code.
 - **`attributes (15).csv` is the single source of truth** for attribute Name, Type (single/multi), and valid dropdown values. When a newer `attributes (NN).csv` is present, use the newest.
 - **Never inject a value that fails dropdown validation** — flag it instead.

@@ -63,6 +63,37 @@ PROMO_RE = re.compile(
 def is_excluded_tag(t):
     return (t or "").lower() in OPERATIONAL_TAGS or bool(PROMO_RE.search(t or ""))
 
+# Battery-platform tree (Shop-by-Battery-Platform). A product on a platform gets that platform's collection
+# tags IN ADDITION to its category + brand tags (NON-EXCLUSIVE — category + brand + platform can all apply).
+# Canonical platform collection tags (lowercased):
+PLATFORM_TAGS = {"m12", "m18", "m18 tools", "m12 tools", "m18 fuel", "mx fuel",
+                 "20v max", "flexvolt", "12v max", "lxt", "xgt", "cxt"}
+# map a tag to its canonical platform name (so M18/M18 Tools/M18 Fuel all collapse to "M18", etc.)
+_PLAT_CANON = {"m18": "M18", "m18 tools": "M18", "m18 fuel": "M18", "m12": "M12", "m12 tools": "M12",
+               "mx fuel": "MX FUEL", "20v max": "20V MAX", "flexvolt": "FLEXVOLT", "12v max": "12V MAX",
+               "lxt": "LXT", "xgt": "XGT", "cxt": "CXT"}
+# substrings in facets.battery_platform -> canonical platform (checked longest-first)
+_PLAT_FROM_FACET = [("mx fuel", "MX FUEL"), ("flexvolt", "FLEXVOLT"), ("20v max", "20V MAX"),
+                    ("12v max", "12V MAX"), ("m18", "M18"), ("m12", "M12"), ("xgt", "XGT"),
+                    ("cxt", "CXT"), ("lxt", "LXT")]
+_PLAT_TITLE_RE = re.compile(r"\b(M12|M18|MX\s*FUEL|20V\s*MAX|FLEXVOLT|12V\s*MAX|LXT|XGT|CXT)\b", re.I)
+
+def detect_platforms(tags, facet_bp, title):
+    """canonical platform(s) a product is on, from facets.battery_platform + existing tags + title."""
+    found = set()
+    fb = (facet_bp or "").lower()
+    for sub, canon in _PLAT_FROM_FACET:
+        if sub in fb:
+            found.add(canon)
+            break
+    for t in tags:
+        c = _PLAT_CANON.get(t.lower())
+        if c:
+            found.add(c)
+    for m in _PLAT_TITLE_RE.findall(title or ""):
+        found.add(re.sub(r"\s+", " ", m).upper().replace("MXFUEL", "MX FUEL"))
+    return sorted(found)
+
 # "All product card info" = title + vendor + description + ALL metafields (structured AND unstructured),
 # with custom.facets / facets.product_type as a strong placement signal. The gather surfaces all of it.
 ELIGIBLE_Q = """
@@ -176,6 +207,25 @@ def main():
     categories = build_entries(cat_nodes, "category", strip_brand=True)
     brands = build_entries(brand_nodes, "brand", strip_brand=False)
 
+    # Battery-platform vocabulary: every non-promo node carrying a platform tag (M18/M12/MX FUEL/20V MAX/
+    # FLEXVOLT/12V MAX/LXT/XGT/CXT). These also live in the brand/category trees; surfaced separately so a
+    # platform pick is easy to find. Brand tags kept (e.g. Milwaukee M18 Drills -> [Milwaukee, M18, Drills]).
+    plat_nodes = [x for x in nodes.values() if x.get("kind") != "promo"
+                  and any(t.lower() in PLATFORM_TAGS for t in (x.get("category_tags") or []))]
+    platforms = build_entries(plat_nodes, "platform", strip_brand=False)
+    # per-platform CLEAN root = the node whose tags are only brand + platform (no product type), so the
+    # over-categorize fallback adds just e.g. [Milwaukee, M18] and never a wrong type. Shallowest wins.
+    platform_roots = {}
+    for e in sorted(platforms, key=lambda c: len(c["tags_to_apply"])):
+        typetags = [t for t in e["tags_to_apply"]
+                    if t.lower() not in PLATFORM_TAGS and t.lower() not in brand_lc]
+        if typetags:
+            continue  # has a product-type tag — not a clean platform root
+        for t in e["tags_to_apply"]:
+            c = _PLAT_CANON.get(t.lower())
+            if c and c not in platform_roots:
+                platform_roots[c] = e["gid"]
+
     def real_tags(node_list):
         return {t for x in node_list for t in x.get("category_tags", []) if not is_excluded_tag(t)}
     tag_title = {t: x.get("title") for x in cat_nodes for t in x.get("category_tags", [])
@@ -222,13 +272,16 @@ def main():
                 continue
             anchors = sorted(t for t in tags if t in cat_tag_set and t.lower() != vendor_l)
             brand_anchors = sorted(t for t in tags if t in brand_tag_set)
-            mfs = []
+            mfs, battery_platform = [], None
             for m in ((p.get("metafields") or {}).get("nodes") or []):
                 if m.get("namespace") == "custom" and m.get("key") == "is_kit_item":
                     continue
+                if m.get("namespace") == "facets" and m.get("key") == "battery_platform":
+                    battery_platform = m.get("value")
                 val = m.get("value") or ""
                 mfs.append({"key": f"{m.get('namespace')}.{m.get('key')}",
                             "value": (val[:300] + "…") if len(val) > 300 else val})
+            platform_tags = detect_platforms(tags, battery_platform, p["title"])
             rows.append({
                 "product_id": p["id"].rsplit("/", 1)[-1], "gid": p["id"], "title": p["title"],
                 "handle": p["handle"], "vendor": p["vendor"], "type": p["productType"],
@@ -237,6 +290,7 @@ def main():
                 "all_tags": sorted(tags), "description": strip_html(p["descriptionHtml"])[:600],
                 "facets_product_type": (p.get("facet") or {}).get("value"), "metafields": mfs,
                 "fallback_brand_gid": brand_root.get(vendor_l),
+                "battery_platform": battery_platform, "platform_tags": platform_tags,
             })
             if a.max_items and len(rows) >= a.max_items:
                 break
@@ -249,8 +303,10 @@ def main():
         "map_md": str((PROJECT / "maps" / slug / f"{slug}-category-tree.md")),
         "categories": categories,
         "brands": brands,
+        "platforms": platforms,
         "category_roots": category_roots,
         "brand_roots": brand_root,
+        "platform_roots": platform_roots,
         "category_vocabulary": sorted(cat_tag_set),
         "brand_vocabulary": sorted(brand_tag_set),
         "brand_names": sorted(brand_names),
@@ -258,9 +314,10 @@ def main():
         "count": len(rows), "candidates": rows,
     }, indent=2), encoding="utf-8")
 
-    print(f"[done] {slug} {week}: eligible={len(rows)} | new_categories={len(added)} | "
-          f"dual_tree={dual_tree} | category_nodes={len(categories)} | brand_nodes={len(brands)} | "
-          f"cat_vocab={len(cat_tag_set)} brand_vocab={len(brand_tag_set)}")
+    n_plat = sum(1 for r in rows if r["platform_tags"])
+    print(f"[done] {slug} {week}: eligible={len(rows)} | new_categories={len(added)} | dual_tree={dual_tree} | "
+          f"category_nodes={len(categories)} brand_nodes={len(brands)} platform_nodes={len(platforms)} | "
+          f"cat_vocab={len(cat_tag_set)} brand_vocab={len(brand_tag_set)} | products_on_platform={n_plat}")
     print(f"  tree-diff:   {run_dir / 'tree-diff.md'}")
     print(f"  candidates:  {run_dir / 'candidates.json'}")
     print(f"  category tree (reference for classification): {PROJECT / 'maps' / slug / (slug + '-category-tree.md')}")

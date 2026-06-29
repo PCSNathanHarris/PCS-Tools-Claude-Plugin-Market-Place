@@ -58,14 +58,15 @@ store's exceptions) in full; `reference/tagging-rules.md` has the decisions.json
 Write `<data_dir>/runs/<week>/<slug>/decisions.json`:
 ```json
 {"decisions": [
-  {"product_id": "123", "title": "...", "category_gid": "gid://shopify/Collection/456", "brand_gid": "gid://shopify/Collection/789", "category_tag": "Impact Wrenches", "confidence": "high"},
+  {"product_id": "123", "title": "...", "category_gid": "gid://shopify/Collection/456", "brand_gid": "gid://shopify/Collection/789", "platform_gid": "gid://shopify/Collection/321", "category_tag": "Impact Wrenches", "confidence": "high"},
   {"product_id": "124", "title": "...", "category_gid": "gid://shopify/Collection/456", "category_tag": "Pliers", "confidence": "high"},
   {"product_id": "789", "title": "...", "review": true, "reason": "no clear category"}
 ]}
 ```
-`category_gid` is the Shop-by-Category node; `brand_gid` is the Shop-by-Brand node (dual-tree stores only — omit
-otherwise). At least one is required for a confident decision; the engine unions their closures. `category_tag`
-is just a readable label. A bare `category_tag` with no gid is accepted only when it maps to exactly one node.
+`category_gid` = Shop-by-Category node; `brand_gid` = Shop-by-Brand node (dual-tree stores); `platform_gid` =
+battery-platform node (when the product is on a platform — see universal rule 8b). All three are non-exclusive;
+the engine unions their closures. At least one is required for a confident decision. `category_tag` is just a
+readable label. A bare `category_tag` with no gid is accepted only when it maps to exactly one node.
 The vocabulary now includes **every non-promo collection** (nav + floating) — review is a true last resort
 (`reference/tagging-rules.md` has the Accessories/Replacement-Parts fallbacks).
 

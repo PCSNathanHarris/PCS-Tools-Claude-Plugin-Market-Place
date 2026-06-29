@@ -51,6 +51,10 @@ def main():
     run_dir = PROJECT / "runs" / a.week / slug
     writes = run_dir / "writes"
     writes.mkdir(parents=True, exist_ok=True)
+    # clear stale batch files from a previous run so writes/ only ever holds the current run's output
+    for old in list(writes.glob("add_batch_*.json")) + list(writes.glob("remove_niv2.json")) \
+            + list(writes.glob("add_cl_categorized.json")):
+        old.unlink()
 
     mp = json.loads((PROJECT / "maps" / slug / f"{slug}-category-tree.json").read_text(encoding="utf-8"))
     nodes = mp["nodes"]
@@ -116,8 +120,9 @@ def main():
 
     for d in decisions:
         pid = str(d.get("product_id"))
-        # a product may carry a category-tree pick AND (dual-tree stores) a brand-tree pick
-        picks = [g for g in (d.get("category_gid"), d.get("brand_gid")) if g]
+        # a product may carry up to three NON-EXCLUSIVE picks: category-tree, brand-tree, and
+        # battery-platform-tree (M18/M12/MX FUEL, 20V MAX/FLEXVOLT, LXT/XGT, …). Closures are unioned.
+        picks = [g for g in (d.get("category_gid"), d.get("brand_gid"), d.get("platform_gid")) if g]
         tag = d.get("category_tag")
         title = d.get("title")
         if d.get("review") or d.get("confidence") == "low" or (not picks and not tag):

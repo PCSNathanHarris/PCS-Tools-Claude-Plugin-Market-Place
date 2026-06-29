@@ -6,6 +6,12 @@ Read alongside `universal-rules.md`. These are per-store exceptions. The growing
 ## toolup-my-tool-store (MTS)
 - **DUAL-TREE** — has both Shop-by-Category and Shop-by-Brand. Tag in BOTH: `category_gid` + `brand_gid`
   (brand tags are applied, not stripped). 266 vendors; 126 have a top-level brand-root for fallback.
+- **BATTERY-PLATFORM tree (third pick)** — Milwaukee **M12 / M18 / MX FUEL**, DeWalt **12V MAX / 20V MAX /
+  FLEXVOLT**, Makita **LXT / XGT / CXT**. Add `platform_gid` for any product on one of these (non-exclusive
+  with category + brand). Platform nodes live across the brand tree (e.g. "Milwaukee M18 Plumbing Tools") and
+  category tree (e.g. "LXT Drills"). Clean roots exist for M12/M18/MX FUEL/12V MAX/20V MAX/LXT/XGT/CXT;
+  **FLEXVOLT has NO clean root** (all DeWalt FLEXVOLT collections are typed — use "DeWalt FLEXVOLT Outdoor
+  Tools"/Drills/Saws etc. that fits, never a wrong type). **Ridgid 18V has no platform tree** — skip it.
 - **"Apparel" node (`80668098660`) is for POWERED apparel only** — its closure is `[Apparel, Cordless Tools]`.
   Heated gear (battery) and cooling gear (fan/battery) belong here. Plain shirts / evaporative cooling /
   hats do NOT — use **brand-only** (e.g. Milwaukee Shirts `421963235581`). (Universal rule 4.)

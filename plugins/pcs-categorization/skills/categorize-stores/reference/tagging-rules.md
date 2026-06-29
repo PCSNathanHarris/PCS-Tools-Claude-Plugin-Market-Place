@@ -50,20 +50,21 @@ classifying.
 ## decisions.json (what you write, step 1c)
 ```json
 {"decisions": [
-  {"product_id":"123","title":"…","category_gid":"gid://shopify/Collection/456","brand_gid":"gid://shopify/Collection/789","category_tag":"Impact Wrenches","confidence":"high"},
+  {"product_id":"123","title":"…","category_gid":"gid://shopify/Collection/456","brand_gid":"gid://shopify/Collection/789","platform_gid":"gid://shopify/Collection/321","category_tag":"Impact Wrenches","confidence":"high"},
   {"product_id":"124","title":"…","category_gid":"gid://shopify/Collection/456","category_tag":"Pliers","confidence":"high"},
   {"product_id":"125","title":"…","review":true,"reason":"…"}
 ]}
 ```
-- `category_gid` — a gid from `categories`. `brand_gid` — a gid from `brands` (dual-tree stores only; omit
-  otherwise). At least one of the two is required for a confident decision. `category_tag` is just a readable
-  label for summaries. A bare `category_tag` with no gid is accepted only when it maps to exactly one node.
+- `category_gid` — gid from `categories`. `brand_gid` — gid from `brands` (dual-tree stores). `platform_gid` —
+  gid from `platforms` (when the product is on a battery platform; rule 8b). All three are non-exclusive; at
+  least one is required for a confident decision. `category_tag` is a readable label. A bare `category_tag`
+  with no gid is accepted only when it maps to exactly one node.
 - **Never invent a gid.** The engine routes any gid not in the store's collections to review.
 
 ## What gets written (step 1e, via `apply_run.py` batches)
 For every confident decision:
 1. **Add** the union of the chosen node(s)' closures — category-tree tags (brand stripped) **plus** brand-tree
-   tags (brand kept) when a `brand_gid` was given.
+   tags (brand kept) when a `brand_gid` was given **plus** battery-platform tags when a `platform_gid` was given.
 2. **Remove** `New Item V2` (the chain is complete).
 3. **Add** `CL-categorized`.
 

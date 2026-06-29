@@ -60,6 +60,22 @@ When `dual_tree: true`, return a `category_gid` **and** a `brand_gid`; the produ
 Pick the brand node by vendor + battery platform/line + product type. On non-dual stores, brand = vendor and is
 stripped (single `category_gid`). See `store-quirks.md` for which stores are dual-tree.
 
+## 8b. Battery-platform tree (a THIRD, non-exclusive pick)
+Many brands run a Shop-by-Battery-Platform tree (Milwaukee M12 / M18 / MX FUEL; DeWalt 12V MAX / 20V MAX /
+FLEXVOLT; Makita LXT / XGT / CXT; …). A product on a platform gets that platform's collection tags **in
+addition to** its category and brand tags — category + brand + platform can **all** apply (non-exclusive).
+- candidates.json gives `platforms` (platform-tagged nodes), each candidate's detected `battery_platform` +
+  `platform_tags`, and `platform_roots` (the clean `[brand, platform]` root per platform). Return `platform_gid`.
+- **Pick a platform node whose TYPE matches the product's category** (e.g. an M18 plumbing tool → "Milwaukee
+  M18 Plumbing Tools"). If no typed platform node matches, use the clean **platform root** (adds only e.g.
+  `[Milwaukee, M18]` — never a wrong type). Apply rule 3 here too: never let the platform pick add a wrong
+  type (a trimmer must not get "Rotary Hammers" just to get FLEXVOLT — use the FLEXVOLT Outdoor/root instead).
+- A brand pick that is itself platform-specific (e.g. "Milwaukee M18 Plumbing Tools") already carries the
+  platform tag — a separate `platform_gid` is then redundant but harmless (closures are unioned/deduped).
+- **Err toward over-categorizing**: if a product is clearly on a platform, give it the platform pick. Only
+  skip when the brand has no platform tree (e.g. Ridgid 18V) or the product isn't actually on a platform
+  (a bare accessory bundled with a platform tool is not itself "on" the platform).
+
 ## 9. Never apply promo/operational tags
 Sale/eligibility collections (Buy More Save More, NN% off, `shopmil##`, `*-bmsm-*`, Promotions, below-map) and
 workflow tags (New Item V2, CL-categorized, VA Categorization Review, Categorized) are **never** category

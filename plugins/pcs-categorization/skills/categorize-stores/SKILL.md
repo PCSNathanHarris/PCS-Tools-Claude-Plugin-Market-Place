@@ -42,7 +42,8 @@ summary — **the local tree is already updated; never create or edit collection
 
 ### 1c — Classify  *(your judgment)*
 Read `<data_dir>/runs/<week>/<slug>/candidates.json` and (for structure) `<data_dir>/maps/<slug>/<slug>-category-tree.md`.
-**Read `reference/tagging-rules.md` in full — it carries the placement rules.** In short:
+**Read `reference/universal-rules.md` (the cross-store placement rules) and `reference/store-quirks.md` (this
+store's exceptions) in full; `reference/tagging-rules.md` has the decisions.json mechanics.** In short:
 - **First, read the tags the product already has** (`current_category_tags`, `current_brand_tags`, `all_tags`).
   Most `New Item V2` items are already partially/fully categorized — confirm/complete those tags rather than
   classifying from scratch. Verify against the product info; correct an anchor only if the product contradicts it.

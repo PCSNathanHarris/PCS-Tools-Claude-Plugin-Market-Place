@@ -39,35 +39,13 @@ Some stores run **two independent tagging trees** and a product gets tags from B
 think "there's no collection for this," check again — there almost always is. Only promo/sale collections are
 excluded as targets.
 
-## Placement rules for the hard cases
-- **Storage vs. tool (universal):** an organizer/case/rail/bag that **includes tools** (sockets, wrenches,
-  ratchets, bits) → the **tool** category (e.g. Sockets, Tool Sets). An organizer **with no tools included** →
-  the **storage** category (Jobsite Storage, Tool Belts & Bags, etc.).
-- **Replacement blades / parts:** if there's no specific blade/part collection for that exact tool, use the
-  general **Replacement Parts** or **Accessories** collection — don't send to review.
-- **Accessories with no exact-match collection:** if no collection matches that precise accessory style, use a
-  more general **Accessories** / **Replacement Parts** collection for the right subtree.
-- **Datacom / VDV crimpers & connectors:** these are voice-data-video tools — keep them in the **Telecom**
-  categories, **not** the main electrical Crimping Tools / Cable Termination categories.
-- **Obscure / specialty tools:** use a **Specialty Tools** (or Specialty Cutting/Knives/Instruments) collection
-  when one fits, then the general Accessories/Parts fallback.
-- **Drill/cutting bits:** real categories — Drill Bits / Drill Bit Sets / Masonry & Tile Drill Bits (category
-  tree) and branded bit collections (brand tree). Never route bits to review for "no category."
-## No product gets zero tags — the fallback ladder
-There is **always** a place a product fits. Never leave an item untagged and avoid `review` for "couldn't
-find a category." Walk this ladder and stop at the first that fits:
-1. **Specific category** (deepest matching node) + brand node — the normal case.
-2. **General high-level category** — when no specific leaf fits, use the top-level category it belongs to
-   (`category_roots` in candidates.json), or a catch-all like **Fasteners**, **Accessories**, **Replacement
-   Parts**, or **Specialty Tools**. A rod hanger → `Fasteners`; an odd install/retrieving tool → `Specialty Tools`.
-3. **Trade collection** — if the store has one that fits the product's trade.
-4. **Top-level brand collection** — the absolute minimum. Every candidate carries `fallback_brand_gid`
-   (its vendor's Shop-by-Brand root); use it as `brand_gid` when nothing else fits. The engine also applies
-   this automatically as a safety net, but place it yourself when you can.
-
-`review: true` is **only** for genuine ambiguity a human must resolve (e.g. torn between two real, very
-different categories) — never for "no home found." The engine's last-resort net guarantees the brand-root
-tag, so zero-tag output is impossible.
+## Placement rules, the fallback ladder, and hard cases
+These live in **`universal-rules.md`** (read it in full) — storage-vs-tool, datacom→Telecom, replacement
+blades/parts → Replacement Parts/Accessories, drill/cutting bits are real categories, the **ancestor-closure
+check** (verify a node's whole closure fits — a leaf can sit under the wrong department), **powered vs. plain
+apparel**, and the **no-zero-tags fallback ladder** (specific → general high-level → trade → vendor brand-root;
+`review` only for genuine ambiguity). Per-store exceptions are in **`store-quirks.md`**. Read both before
+classifying.
 
 ## decisions.json (what you write, step 1c)
 ```json

@@ -40,6 +40,20 @@ STORE_SKIP = {"knaack-store": {"remove"}}
 # categorizing and are skipped entirely (not even sent to review), like JTB's box-with-tools bundles.
 STORE_SKIP_VENDORS = {"weather-guard-store": {"weatherguard"}}
 
+# Stores with BOTH a "Shop by Category" AND a "Shop by Brand" tree. These are TWO SEPARATE tagging
+# structures: a product gets its Shop-by-Category tags AND its Shop-by-Brand tags. For these stores
+# the brand tree is emitted as its own selectable vocabulary and brand tags are NOT stripped (they are
+# intended). MTS is the only known full dual-tree store. NOTE: knaack-store (JTB) has branded *sections*
+# but not a full Shop-by-Brand tree — it is NOT dual-tree here; its brand-kind nodes are folded into the
+# ordinary category vocabulary as additional targets, not a separate brand pick.
+DUAL_TREE_STORES = {"toolup-my-tool-store"}
+
+# Operational / workflow tags that some collections are built on but are NOT merchandising categories.
+# They are stripped from every node closure + the vocabulary + a product's anchors, and any collection
+# whose tags are ONLY operational is dropped as a target. (New Item V2 = input marker; CL-categorized =
+# our output marker; VA Categorization Review = the human review queue; Categorized = legacy marker.)
+OPERATIONAL_TAGS = {"new item v2", "cl-categorized", "va categorization review", "categorized"}
+
 # "All product card info" = title + vendor + description + ALL metafields (structured AND unstructured),
 # with custom.facets / facets.product_type as a strong placement signal. The gather surfaces all of it.
 ELIGIBLE_Q = """
@@ -100,12 +114,25 @@ def main():
         sys.exit(1)
     subprocess.run([sys.executable, "refine_trees.py"], cwd=str(HERE), capture_output=True, text=True, timeout=900)
 
-    # 3) load refreshed tree + category vocabulary
+    # 3) load refreshed tree + build the selectable vocabularies
     d = json.loads(map_path.read_text(encoding="utf-8"))
     nodes = d["nodes"]
     brand_names = set(d.get("brand_names", []))
-    cat_nodes = [x for x in nodes.values() if x.get("in_category_tree") and x.get("kind") == "category"]
     brand_lc = {b.lower() for b in brand_names}
+    dual_tree = a.store in DUAL_TREE_STORES
+
+    # Category-tree vocabulary = ALL non-promo CATEGORY-kind nodes — the nav tree AND the "floating"
+    # collections off-nav (Drill Bits, Replacement Parts/Blades, Accessories, Specialty Tools, …) so
+    # every real collection is a valid target. Brand names are stripped from category closures.
+    cat_nodes = [x for x in nodes.values() if x.get("kind") == "category"]
+    # Brand-tree vocabulary (dual-tree stores only) = all BRAND-kind nodes; brand tags are KEPT
+    # (the Shop-by-Brand tree is a second, intended tagging structure). Empty for non-dual stores —
+    # there brand-kind nodes are added to the category vocabulary instead (partial-brand stores).
+    if dual_tree:
+        brand_nodes = [x for x in nodes.values() if x.get("kind") == "brand"]
+    else:
+        cat_nodes += [x for x in nodes.values() if x.get("kind") == "brand"]
+        brand_nodes = []
 
     def node_path(x):
         # readable, disambiguating path for the node (so Claude can tell M12 vs M18, brand A vs B)
@@ -114,26 +141,38 @@ def main():
         pts = [p.get("title") for p in x.get("parents", []) if p.get("title")]
         return (" / ".join(pts) + " > " if pts else "") + (x.get("title") or "")
 
-    def node_closure(x):
-        # this node's OWN brand-stripped closure (leaf + trusted ancestors); never a cross-node union
-        clos = [c for c in x.get("inherited_tag_closure", []) if c.lower() not in brand_lc]
+    def node_closure(x, strip_brand):
+        # this node's OWN closure (leaf + trusted ancestors); never a cross-node union.
+        # operational tags are always dropped; brand names dropped for category-tree nodes.
+        def keep(lst):
+            return [c for c in lst if c.lower() not in OPERATIONAL_TAGS
+                    and ((not strip_brand) or c.lower() not in brand_lc)]
+        clos = keep(x.get("inherited_tag_closure") or [])
         if not clos:
-            clos = [c for c in x.get("category_tags", []) if c.lower() not in brand_lc]
+            clos = keep(x.get("category_tags") or [])
         return sorted(set(clos))
 
-    # one entry per category NODE — Claude picks by gid (path disambiguates reused leaf names)
-    categories, tag_title = [], {}
-    for x in cat_nodes:
-        clos = node_closure(x)
-        if not clos:
-            continue
-        categories.append({"gid": x["gid"], "title": x.get("title"), "path": node_path(x),
-                           "parents": [p.get("title") for p in x.get("parents", [])],
-                           "tags_to_apply": clos})
-        for t in x.get("category_tags", []):
-            tag_title[t] = x.get("title")
-    categories.sort(key=lambda c: (c["path"] or "").lower())
-    cat_tag_set = {t for x in cat_nodes for t in x.get("category_tags", [])}
+    def build_entries(node_list, tree, strip_brand):
+        out = []
+        for x in node_list:
+            clos = node_closure(x, strip_brand)
+            if not clos:
+                continue
+            out.append({"gid": x["gid"], "title": x.get("title"), "tree": tree, "path": node_path(x),
+                        "parents": [p.get("title") for p in x.get("parents", [])],
+                        "tags_to_apply": clos})
+        out.sort(key=lambda c: (c["path"] or "").lower())
+        return out
+
+    categories = build_entries(cat_nodes, "category", strip_brand=True)
+    brands = build_entries(brand_nodes, "brand", strip_brand=False)
+
+    def real_tags(node_list):
+        return {t for x in node_list for t in x.get("category_tags", []) if t.lower() not in OPERATIONAL_TAGS}
+    tag_title = {t: x.get("title") for x in cat_nodes for t in x.get("category_tags", [])
+                 if t.lower() not in OPERATIONAL_TAGS}
+    cat_tag_set = real_tags(cat_nodes)
+    brand_tag_set = real_tags(brand_nodes)
     new_tags = set(cat_tag_set)
 
     # 4) diff — new categories since last run
@@ -160,6 +199,7 @@ def main():
             if (p.get("kit") or {}).get("value") == "true" or (tags & skip) or (vendor_l in skip_vendors):
                 continue
             anchors = sorted(t for t in tags if t in cat_tag_set and t.lower() != vendor_l)
+            brand_anchors = sorted(t for t in tags if t in brand_tag_set)
             mfs = []
             for m in ((p.get("metafields") or {}).get("nodes") or []):
                 if m.get("namespace") == "custom" and m.get("key") == "is_kit_item":
@@ -171,6 +211,7 @@ def main():
                 "product_id": p["id"].rsplit("/", 1)[-1], "gid": p["id"], "title": p["title"],
                 "handle": p["handle"], "vendor": p["vendor"], "type": p["productType"],
                 "created_at": p["createdAt"], "current_category_tags": anchors,
+                "current_brand_tags": brand_anchors,
                 "all_tags": sorted(tags), "description": strip_html(p["descriptionHtml"])[:600],
                 "facets_product_type": (p.get("facet") or {}).get("value"), "metafields": mfs,
             })
@@ -181,17 +222,20 @@ def main():
         after = data["pageInfo"]["endCursor"]
 
     (run_dir / "candidates.json").write_text(json.dumps({
-        "store": a.store, "slug": slug, "week": week,
+        "store": a.store, "slug": slug, "week": week, "dual_tree": dual_tree,
         "map_md": str((PROJECT / "maps" / slug / f"{slug}-category-tree.md")),
         "categories": categories,
+        "brands": brands,
         "category_vocabulary": sorted(cat_tag_set),
+        "brand_vocabulary": sorted(brand_tag_set),
         "brand_names": sorted(brand_names),
         "new_categories_since_last_run": added,
         "count": len(rows), "candidates": rows,
     }, indent=2), encoding="utf-8")
 
     print(f"[done] {slug} {week}: eligible={len(rows)} | new_categories={len(added)} | "
-          f"category_nodes={len(categories)} | vocab={len(cat_tag_set)}")
+          f"dual_tree={dual_tree} | category_nodes={len(categories)} | brand_nodes={len(brands)} | "
+          f"cat_vocab={len(cat_tag_set)} brand_vocab={len(brand_tag_set)}")
     print(f"  tree-diff:   {run_dir / 'tree-diff.md'}")
     print(f"  candidates:  {run_dir / 'candidates.json'}")
     print(f"  category tree (reference for classification): {PROJECT / 'maps' / slug / (slug + '-category-tree.md')}")

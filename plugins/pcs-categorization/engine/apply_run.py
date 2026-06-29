@@ -28,6 +28,9 @@ except Exception:
 
 PROJECT = data_dir()
 
+# operational/workflow tags that are never real category tags (kept in sync with weekly_run.py)
+OPERATIONAL_TAGS = {"new item v2", "cl-categorized", "va categorization review", "categorized"}
+
 
 def main():
     ap = argparse.ArgumentParser()
@@ -46,22 +49,34 @@ def main():
     nodes = mp["nodes"]
     brand_lc = {b.lower() for b in mp.get("brand_names", [])}
 
-    def closure_of(x):
-        # this node's OWN brand-stripped closure (leaf + trusted ancestors)
-        clos = [c for c in x.get("inherited_tag_closure", []) if c.lower() not in brand_lc]
+    def closure_of(x, strip_brand):
+        # this node's OWN closure (leaf + trusted ancestors); never a cross-node union.
+        # category nodes: brand names stripped. brand nodes: brand tags kept (intended).
+        def keep(lst):
+            return [c for c in lst if c.lower() not in OPERATIONAL_TAGS
+                    and ((not strip_brand) or c.lower() not in brand_lc)]
+        clos = keep(x.get("inherited_tag_closure") or [])
         if not clos:
-            clos = [c for c in x.get("category_tags", []) if c.lower() not in brand_lc]
+            clos = keep(x.get("category_tags") or [])
         return sorted(set(clos))
 
-    # resolve a chosen category BY NODE (gid) -> exact tag set; never a cross-node tag union.
+    # resolve a chosen node BY gid -> exact tag set. ALL non-promo nodes are resolvable: category-kind
+    # (nav + floating, brand-stripped) and brand-kind (Shop-by-Brand tree, brand tags kept). A product's
+    # add-set = the union of its chosen category_gid closure + optional brand_gid closure.
     gid_to = {}        # gid -> (title, closure)
-    tag_to_gids = {}   # bare leaf tag -> {gids}  (fallback only; used when unambiguous)
+    tag_to_gids = {}   # bare category leaf tag -> {gids}  (fallback only; used when unambiguous)
     for x in nodes.values():
-        if x.get("in_category_tree") and x.get("kind") == "category":
-            clos = closure_of(x)
-            if not clos:
-                continue
-            gid_to[x["gid"]] = (x.get("title"), clos)
+        kind = x.get("kind")
+        if kind == "category":
+            clos = closure_of(x, strip_brand=True)
+        elif kind == "brand":
+            clos = closure_of(x, strip_brand=False)
+        else:
+            continue  # promo (or unknown) — never a tag target
+        if not clos:
+            continue
+        gid_to[x["gid"]] = (x.get("title"), clos)
+        if kind == "category":
             for t in x.get("category_tags", []):
                 tag_to_gids.setdefault(t, set()).add(x["gid"])
 
@@ -71,24 +86,27 @@ def main():
     confident, review = [], []
     for d in decisions:
         pid = str(d.get("product_id"))
-        gid = d.get("category_gid")
+        # a product may carry a category-tree pick AND (dual-tree stores) a brand-tree pick
+        picks = [g for g in (d.get("category_gid"), d.get("brand_gid")) if g]
         tag = d.get("category_tag")
         title = d.get("title")
-        if d.get("review") or d.get("confidence") == "low" or (not gid and not tag):
+        if d.get("review") or d.get("confidence") == "low" or (not picks and not tag):
             review.append({"product_id": pid, "title": title,
                            "reason": d.get("reason") or "low confidence / no category chosen"})
-        elif gid:  # precise: use exactly this node's closure
-            if gid in gid_to:
-                confident.append({"product_id": pid, "title": title,
-                                  "category": tag or gid_to[gid][0], "tags_to_add": gid_to[gid][1]})
-            else:
+        elif picks:  # precise: union of each chosen node's own closure
+            missing = [g for g in picks if g not in gid_to]
+            if missing:
                 review.append({"product_id": pid, "title": title,
-                               "reason": f"chosen category node '{gid}' is not in the store's category tree"})
-        else:  # bare tag, no gid -> only safe when it maps to exactly one node
+                               "reason": f"chosen node(s) not in the store's collections: {missing}"})
+            else:
+                add = sorted({t for g in picks for t in gid_to[g][1]})
+                confident.append({"product_id": pid, "title": title,
+                                  "category": tag or gid_to[picks[0]][0], "tags_to_add": add})
+        else:  # bare tag, no gid -> only safe when it maps to exactly one category node
             gids = tag_to_gids.get(tag)
             if not gids:
                 review.append({"product_id": pid, "title": title,
-                               "reason": f"chosen category '{tag}' is not in the store's category tree"})
+                               "reason": f"chosen category '{tag}' is not in the store's collections"})
             elif len(gids) == 1:
                 confident.append({"product_id": pid, "title": title, "category": tag,
                                   "tags_to_add": gid_to[next(iter(gids))][1]})

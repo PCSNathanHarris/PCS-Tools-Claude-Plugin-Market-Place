@@ -41,30 +41,37 @@ Read `<data_dir>/runs/<week>/<slug>/tree-diff.md`. If new categories appeared, n
 summary — **the local tree is already updated; never create or edit collections** (`reference/write-scope.md`).
 
 ### 1c — Classify  *(your judgment)*
-Read `<data_dir>/runs/<week>/<slug>/candidates.json` and (for overall structure) the tree
-`<data_dir>/maps/<slug>/<slug>-category-tree.md`. The candidates file has a **`categories`** list — one entry
-per category **node**, each with a `gid`, a readable `path` (e.g. `Power Tools > M12 > Impact Wrenches`), its
-`parents`, and the exact `tags_to_apply`. For **each** candidate, weigh **all of its product-card info** —
-`title`, `vendor`, `description`, **`facets_product_type`** (a strong placement signal), and **every entry in
-`metafields`** (structured *and* unstructured) — plus the store lessons, to pick the **bottom-most node** it
-belongs to, and return that node's **`gid`**. The `path` disambiguates reused leaf names — e.g. pick the
-**M12** vs **M18** "Impact Wrenches" node by its path. Follow `reference/tagging-rules.md` and
-`reference/confidence-and-drive.md` (when to mark review).
+Read `<data_dir>/runs/<week>/<slug>/candidates.json` and (for structure) `<data_dir>/maps/<slug>/<slug>-category-tree.md`.
+**Read `reference/tagging-rules.md` in full — it carries the placement rules.** In short:
+- **First, read the tags the product already has** (`current_category_tags`, `current_brand_tags`, `all_tags`).
+  Most `New Item V2` items are already partially/fully categorized — confirm/complete those tags rather than
+  classifying from scratch. Verify against the product info; correct an anchor only if the product contradicts it.
+- When anchors are thin, weigh **every** data point: `title`, `vendor`, `type`, `description`,
+  `facets_product_type`, and **every** `metafields` entry (structured *and* unstructured) + store lessons.
+- The candidates file has a **`categories`** list (Shop-by-Category) and, on **dual-tree stores**
+  (`dual_tree: true`, e.g. MTS), a separate **`brands`** list (Shop-by-Brand). Each entry has a `gid`, readable
+  `path`, `parents`, and exact `tags_to_apply`. Pick the deepest fitting **category** node, and on dual-tree
+  stores **also** the matching **brand** node — the product gets BOTH closures. `path` disambiguates reused leaf
+  names (M12 vs M18, brand A vs B).
+
 Write `<data_dir>/runs/<week>/<slug>/decisions.json`:
 ```json
 {"decisions": [
-  {"product_id": "123", "title": "...", "category_gid": "gid://shopify/Collection/456", "category_tag": "Impact Wrenches", "confidence": "high"},
+  {"product_id": "123", "title": "...", "category_gid": "gid://shopify/Collection/456", "brand_gid": "gid://shopify/Collection/789", "category_tag": "Impact Wrenches", "confidence": "high"},
+  {"product_id": "124", "title": "...", "category_gid": "gid://shopify/Collection/456", "category_tag": "Pliers", "confidence": "high"},
   {"product_id": "789", "title": "...", "review": true, "reason": "no clear category"}
 ]}
 ```
-`category_gid` (the precise node) is required for a confident decision; `category_tag` is just the node title
-for readable summaries. A bare `category_tag` with no gid is accepted only when it maps to exactly one node —
-otherwise the item is auto-routed to review as ambiguous.
+`category_gid` is the Shop-by-Category node; `brand_gid` is the Shop-by-Brand node (dual-tree stores only — omit
+otherwise). At least one is required for a confident decision; the engine unions their closures. `category_tag`
+is just a readable label. A bare `category_tag` with no gid is accepted only when it maps to exactly one node.
+The vocabulary now includes **every non-promo collection** (nav + floating) — review is a true last resort
+(`reference/tagging-rules.md` has the Accessories/Replacement-Parts fallbacks).
 
 ### 1d — Resolve to tag batches  *(no Shopify writes)*
 Run: `python apply_run.py --store <store-key> --week <week> --decisions <abs path to decisions.json>`
-It expands each chosen leaf to its full category-only closure (leaf + ancestors) and writes the batch
-files + `review-queue.json` + `apply-summary.json`.
+It expands each chosen node to its closure (leaf + ancestors) and **unions** the `category_gid` and
+`brand_gid` closures per product, then writes the batch files + `review-queue.json` + `apply-summary.json`.
 
 ### 1e — Write tags  *(the ONLY Shopify writes)*
 Read `apply-summary.json`. For each file, call `mcp__shopify__shopify_bulk_apply_tags` (args under
@@ -101,11 +108,16 @@ counts + any failures). Print a short final report.
 - **Write scope = product tags only.** The only Shopify writes are `shopify_add_product_tag`,
   `shopify_remove_product_tag`, `shopify_bulk_apply_tags`. Never create/edit collections, metafields,
   menus, themes, or files on a store. (`reference/write-scope.md`)
-- **Bottom-most + ancestors.** Pick the deepest applicable **node** (by `gid`); the engine applies that one
-  node's leaf + ancestor tags (its own closure — never a union across same-named nodes). Brand is the product
-  Vendor, never a category tag.
+- **Existing tags first.** Most `New Item V2` items are already partially/fully categorized — read
+  `current_category_tags` / `current_brand_tags` / `all_tags`, confirm against the product, finalize.
+- **Bottom-most + ancestors, per tree.** Pick the deepest applicable **node** by `gid`; the engine applies that
+  node's own closure (never a cross-node union of same-named nodes). On **dual-tree stores** (`dual_tree:true`,
+  e.g. MTS) pick a Shop-by-Category node **and** a Shop-by-Brand node — the product gets both, and brand tags ARE
+  applied. On other stores brand = vendor and is stripped (one category pick).
 - **New categories** found in 1b → update the local tree + report only; never create collections.
-- **A product whose correct category has no collection/tag** → review queue; never invent a tag.
+- **Vocabulary = every non-promo collection.** With the full nav+floating category tree and (dual-tree) brand
+  tree, plus the general Accessories/Replacement-Parts fallbacks in `reference/tagging-rules.md`, review is a
+  true last resort. Never invent a tag.
 - **Autonomous.** Place confidently on your own; only genuinely-uncertain items go to review. Don't ask
   the user. A store with 0 eligible items is a valid no-op — record it and move on.
 - **Per-store lessons** are read at 1a and appended at 1g — they are how runs improve over time.

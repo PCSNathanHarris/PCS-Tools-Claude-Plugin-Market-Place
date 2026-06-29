@@ -108,21 +108,29 @@ the Drive folder as a **Google Doc** via `mcp__310c6af1-2764-468c-99d5-8035b9525
 The connector is fine for this *small* Doc; it is **not** used for the report workbook (see 1f). If Drive
 fails, keep the local backup and note it (`reference/confidence-and-drive.md`).
 
-### 1h — Append lessons
+### 1h — Append lessons  *(formed AFTER scanning — the store's last step)*
+Do this **at the end** of the store's work so issues surfaced during scanning/classification are captured.
 Append to `<data_dir>/lessons-learned/<store-key>.md` what this run taught: the date/week, counts
 (classified / removed NIV2 / review), and **new heuristics** (keyword→category mappings you used, store
-quirks, ambiguous calls + how you resolved them). Per `reference/lessons-protocol.md`. This file grows
-every run and is read first next time.
+quirks, ambiguous calls + how you resolved them). When a lesson is **cross-store** (generalizes beyond this
+store), ALSO append it to **`<data_dir>/lessons-learned/PROJECT-LESSONS.md`**. Per `reference/lessons-protocol.md`
++ `reference/lessons-sync.md`. These files grow every run, are read first next time, and are pushed to the
+plugin repo at step 2.
 
 ### 1i — Per-store run summary
 Write `<data_dir>/runs/<week>/<slug>/RUN-SUMMARY.md`: tree-diff highlights, # classified + tags written,
 # `New Item V2` removed, # to review, report-workbook path + delivery status, rollback files, notable decisions.
 
-## Step 2 — Finish
-After all stores: run **`python build_report.py --week <week>`** (no `--store`) to build the **combined weekly
-workbook** — `categorization-weekly-<YYYY-MM-DD>.xlsx`, **one tab per store** — into the Drive-synced report
-folder. Then write `<data_dir>/runs/<week>/CROSS-STORE-SUMMARY.md` (per-store totals + review counts + any
-failures + the weekly workbook path). Print a short final report.
+## Step 2 — Finish  *(gateless — no approval prompts; everything is reviewed after)*
+After all stores:
+1. **Combined weekly workbook** — `python build_report.py --week <week>` (no `--store`):
+   `categorization-weekly-<YYYY-MM-DD>.xlsx`, **one tab per store**, into the Drive-synced report folder.
+2. **Sync lessons to the repo** — `python sync_repo.py --week <week> --note "<one-line summary>"`: commits +
+   pushes the updated `lessons-learned/` (store mds + `PROJECT-LESSONS.md`) and a dated `change-reports/`
+   entry to the plugin repo. **Scoped to lessons + change-reports only, gateless, fail-safe** — see
+   `reference/lessons-sync.md` and `reference/write-scope.md`.
+3. Write `<data_dir>/runs/<week>/CROSS-STORE-SUMMARY.md` (per-store totals + review counts + any failures +
+   the weekly workbook path + the lessons-sync push/skip status). Print a short final report.
 
 ## Key rules
 - **Write scope = product tags only.** The only Shopify writes are `shopify_add_product_tag`,
@@ -138,9 +146,14 @@ failures + the weekly workbook path). Print a short final report.
 - **Vocabulary = every non-promo collection.** With the full nav+floating category tree and (dual-tree) brand
   tree, plus the general Accessories/Replacement-Parts fallbacks in `reference/tagging-rules.md`, review is a
   true last resort. Never invent a tag.
-- **Autonomous.** Place confidently on your own; only genuinely-uncertain items go to review. Don't ask
-  the user. A store with 0 eligible items is a valid no-op — record it and move on.
-- **Per-store lessons** are read at 1a and appended at 1h — they are how runs improve over time.
+- **Autonomous & gateless.** The whole pipeline runs unattended on a schedule with **no approval prompts
+  anywhere** — place confidently, only genuinely-uncertain items go to review, never ask the user. A store
+  with 0 eligible items is a valid no-op. Everything is reviewed *after*; that's safe only because the writes
+  are the **three** in `reference/write-scope.md` (Shopify product tags · `lessons-learned/`+`change-reports/`
+  git push · the Drive project folder) — nothing else, ever.
+- **Lessons** — per-store `<store>.md` **and** cross-store `PROJECT-LESSONS.md` — are read at 1a, **formed at
+  the end** (1h, after scanning), and **pushed to the plugin repo** at step 2 with a dated change report
+  (`reference/lessons-sync.md`). The push is scoped to lessons/change-reports only and is fail-safe.
 - **Report = colored `.xlsx` via the Drive-synced folder, never the connector.** Every run produces a report
   workbook (`build_report.py`) with a 0–100 color-coded Confidence column; targeted runs name the store in the
   filename, the weekly run makes one workbook with **one tab per store**. It is delivered by writing into the

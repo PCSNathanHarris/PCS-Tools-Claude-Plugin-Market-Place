@@ -32,6 +32,13 @@ _DEFAULT_REPORT_DIR = Path(
     r"G:\My Drive\Claude Shopify Categorization Reviews"
 )
 
+# Marketplace repo (the published plugin source). sync_repo.py commits + pushes lessons-learned/ and
+# change-reports/ here at the end of a weekly run. Override with PCS_PLUGIN_REPO. Not created — if it's
+# absent (e.g. a machine without the repo cloned), sync_repo.py skips the push and logs it.
+_DEFAULT_PLUGIN_REPO = Path(
+    r"C:\Users\NathanHarris\Claude Project Files\Kit Builder Tool\PCS-Tools-Claude-Plugin-Market-Place"
+)
+
 
 def mcp_dir() -> Path:
     return Path(os.environ.get("MCP_DIR", str(_DEFAULT_MCP_DIR)))
@@ -48,6 +55,12 @@ def report_dir() -> Path:
     if it doesn't exist (Drive not running / different machine), build_report.py falls back to the run
     dir and logs it. Override with PCS_REPORT_DIR."""
     return Path(os.environ.get("PCS_REPORT_DIR", str(_DEFAULT_REPORT_DIR)))
+
+
+def repo_dir() -> Path:
+    """Marketplace repo root for auto-committing lessons + change reports (sync_repo.py). NOT created —
+    if absent (machine without the repo), sync_repo.py skips the push and logs it. Override PCS_PLUGIN_REPO."""
+    return Path(os.environ.get("PCS_PLUGIN_REPO", str(_DEFAULT_PLUGIN_REPO)))
 
 
 def _parse_env_file(path: Path) -> dict:

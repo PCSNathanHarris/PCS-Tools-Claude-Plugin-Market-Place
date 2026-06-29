@@ -1,0 +1,23 @@
+PCS Categorization — weekly repo change report
+Run date: 2026-06-29    Week: 2026-W27    Branch: main
+
+Lessons updated (6):
+  - lessons-learned/fasteners-store.md
+  - lessons-learned/PROJECT-LESSONS.md
+  - lessons-learned/the-jet-store.md
+  - lessons-learned/toolup-my-tool-store.md
+  - lessons-learned/weather-guard-store.md
+  - lessons-learned/wood-shop-outlet.md
+
+Summary: Baseline lessons seeded: MTS supervised batch 1 (250) live; add-only, dual-tree + battery-platform, report=xlsx via Drive, confidence 0-100.
+
+Diffstat (staged lesson changes):
+.../lessons-learned/PROJECT-LESSONS.md             | 25 ++++++++++
+ .../lessons-learned/fasteners-store.md             | 13 ++++++
+ .../lessons-learned/the-jet-store.md               | 13 ++++++
+ .../lessons-learned/toolup-my-tool-store.md        | 21 +++++++++
+ .../lessons-learned/weather-guard-store.md         | 54 ++++++++++++++++++++++
+ .../lessons-learned/wood-shop-outlet.md            | 12 +++++
+ 6 files changed, 138 insertions(+)
+
+Scope: lessons-learned/ + change-reports/ only. No code, no other files.

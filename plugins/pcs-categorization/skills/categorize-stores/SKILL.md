@@ -58,9 +58,9 @@ store's exceptions) in full; `reference/tagging-rules.md` has the decisions.json
 Write `<data_dir>/runs/<week>/<slug>/decisions.json`:
 ```json
 {"decisions": [
-  {"product_id": "123", "title": "...", "category_gid": "gid://shopify/Collection/456", "brand_gid": "gid://shopify/Collection/789", "platform_gid": "gid://shopify/Collection/321", "category_tag": "Impact Wrenches", "confidence": "high"},
-  {"product_id": "124", "title": "...", "category_gid": "gid://shopify/Collection/456", "category_tag": "Pliers", "confidence": "high"},
-  {"product_id": "789", "title": "...", "review": true, "reason": "no clear category"}
+  {"product_id": "123", "title": "...", "category_gid": "gid://shopify/Collection/456", "brand_gid": "gid://shopify/Collection/789", "platform_gid": "gid://shopify/Collection/321", "category_tag": "Impact Wrenches", "confidence": 92},
+  {"product_id": "124", "title": "...", "category_gid": "gid://shopify/Collection/456", "category_tag": "Pliers", "confidence": 80},
+  {"product_id": "789", "title": "...", "review": true, "reason": "no clear category", "confidence": 15}
 ]}
 ```
 `category_gid` = Shop-by-Category node; `brand_gid` = Shop-by-Brand node (dual-tree stores); `platform_gid` =
@@ -69,6 +69,11 @@ the engine unions their closures. At least one is required for a confident decis
 readable label. A bare `category_tag` with no gid is accepted only when it maps to exactly one node.
 The vocabulary now includes **every non-promo collection** (nav + floating) — review is a true last resort
 (`reference/tagging-rules.md` has the Accessories/Replacement-Parts fallbacks).
+
+**`confidence` is a 0–100 integer** (it drives the report's red/yellow/green). Assign it on this scale:
+anchor-confirmed deep leaf (the product already self-tags it) **90–100**; strong single structured signal
+(facet / clear spec) **75–89**; inferred from title/description **50–74**; fallback placement (general bucket
+or vendor brand-root) **25–49**; review **<25**. If omitted, `build_report.py` computes a signal-based proxy.
 
 ### 1d — Resolve to tag batches  *(no Shopify writes)*
 Run: `python apply_run.py --store <store-key> --week <week> --decisions <abs path to decisions.json>`
@@ -83,28 +88,41 @@ Read `apply-summary.json`. For each file, call `mcp__shopify__shopify_bulk_apply
 - `add_cl_categorized.json` → `operation: "add"`  (the Claude-categorized marker)
 Record each returned `rollback_file`. **Never** call any other write tool (`reference/write-scope.md`).
 
-### 1f — Review queue → Drive (Google Doc) + local backup
-`review-queue.json` in the run dir is the local backup. Upload a copy to the Drive review folder as a
-**Google Doc** (not markdown) via `mcp__310c6af1-2764-468c-99d5-8035b95250e6__create_file`: `parentId`
-= `1xteTZd7A1GRIHOq5dABz4BECgOk6LHuW`, `contentMimeType: "text/plain"`, and **omit**
-`disableConversionToGoogleType` so Drive converts it to a Doc. `title` = **`<store-key>-<YYYY-MM-DD>-review`**
-(store + run date, e.g. `weather-guard-store-2026-06-26-review`). Put the review list in `textContent` as
-clean readable text (product · id · reason — no markdown tables). If the Drive MCP fails, keep the local
-backup and note it in the summary (`reference/confidence-and-drive.md`).
+### 1f — Build + deliver the report workbook  *(no Shopify writes)*
+Run: `python build_report.py --store <store-key> --week <week>`
+It writes the per-product **report `.xlsx`** — columns **Store · Shopify ID · Shopify Handle · Variant SKU ·
+Title · Vendor · Category Tree Logic · Proposed Tags Applied · Confidence (0–100)**, with the Confidence cell
+**color-filled** red (0–33) / yellow (34–66) / green (67–100) — into the **Google-Drive-for-Desktop synced
+folder** (`config.report_dir()`, default `G:\My Drive\Claude Shopify Categorization Reviews`), where Drive
+uploads it automatically; an audit copy also lands in the run dir. **Do NOT push the workbook through the MCP
+Drive connector** — a binary `.xlsx` and a full multi-row sheet both exceed the connector's inline per-message
+ceiling, and the connector cannot create tabs or cell colors (`reference/report-format.md`). If the synced
+folder is missing (Drive for Desktop not running), the script keeps the audit copy and prints how to deliver
+it — note that in the summary.
 
-### 1g — Append lessons
+### 1g — Review queue → local backup (+ optional small Drive Doc)
+`review-queue.json` in the run dir is the local backup. The review list is small text, so it MAY also go to
+the Drive folder as a **Google Doc** via `mcp__310c6af1-2764-468c-99d5-8035b95250e6__create_file`: `parentId`
+= `1xteTZd7A1GRIHOq5dABz4BECgOk6LHuW`, `contentMimeType: "text/plain"`, omit `disableConversionToGoogleType`,
+`title` = **`<store-key>-<YYYY-MM-DD>-review`**, `textContent` = clean readable text (product · id · reason).
+The connector is fine for this *small* Doc; it is **not** used for the report workbook (see 1f). If Drive
+fails, keep the local backup and note it (`reference/confidence-and-drive.md`).
+
+### 1h — Append lessons
 Append to `<data_dir>/lessons-learned/<store-key>.md` what this run taught: the date/week, counts
 (classified / removed NIV2 / review), and **new heuristics** (keyword→category mappings you used, store
 quirks, ambiguous calls + how you resolved them). Per `reference/lessons-protocol.md`. This file grows
 every run and is read first next time.
 
-### 1h — Per-store run summary
+### 1i — Per-store run summary
 Write `<data_dir>/runs/<week>/<slug>/RUN-SUMMARY.md`: tree-diff highlights, # classified + tags written,
-# `New Item V2` removed, # to review (+ Drive link/status), rollback files, notable decisions.
+# `New Item V2` removed, # to review, report-workbook path + delivery status, rollback files, notable decisions.
 
 ## Step 2 — Finish
-After all stores: write `<data_dir>/runs/<week>/CROSS-STORE-SUMMARY.md` (per-store totals + review
-counts + any failures). Print a short final report.
+After all stores: run **`python build_report.py --week <week>`** (no `--store`) to build the **combined weekly
+workbook** — `categorization-weekly-<YYYY-MM-DD>.xlsx`, **one tab per store** — into the Drive-synced report
+folder. Then write `<data_dir>/runs/<week>/CROSS-STORE-SUMMARY.md` (per-store totals + review counts + any
+failures + the weekly workbook path). Print a short final report.
 
 ## Key rules
 - **Write scope = product tags only.** The only Shopify writes are `shopify_add_product_tag`,
@@ -122,4 +140,9 @@ counts + any failures). Print a short final report.
   true last resort. Never invent a tag.
 - **Autonomous.** Place confidently on your own; only genuinely-uncertain items go to review. Don't ask
   the user. A store with 0 eligible items is a valid no-op — record it and move on.
-- **Per-store lessons** are read at 1a and appended at 1g — they are how runs improve over time.
+- **Per-store lessons** are read at 1a and appended at 1h — they are how runs improve over time.
+- **Report = colored `.xlsx` via the Drive-synced folder, never the connector.** Every run produces a report
+  workbook (`build_report.py`) with a 0–100 color-coded Confidence column; targeted runs name the store in the
+  filename, the weekly run makes one workbook with **one tab per store**. It is delivered by writing into the
+  Google-Drive-for-Desktop folder (Drive must be running for the cron). The MCP Drive connector can't carry it
+  (binary/size/no-tabs/no-colors) — only small text Docs (the review queue). See `reference/report-format.md`.

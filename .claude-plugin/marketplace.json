@@ -38,9 +38,9 @@
     },
     {
       "name": "pcs-categorization",
-      "version": "1.2.3",
+      "version": "1.3.0",
       "source": "./plugins/pcs-categorization/",
-      "description": "Autonomous weekly product categorization for the Toolup multi-stores. Refreshes each store's FULL collection vocabulary (nav + off-nav floating collections); dual-tree stores (Shop-by-Category + Shop-by-Brand, e.g. MTS) tag products in BOTH trees. Reads existing tags first, classifies New Item V2 non-kit products to their bottom-most collection(s) + ancestor tags, removes New Item V2 when complete, adds CL-categorized. No-zero-tags guarantee: a fallback ladder (specific category -> general high-level category -> trade -> vendor brand-root) ensures every product gets at least one tag; promo/operational collections are excluded as targets. Product-tag writes ONLY; genuinely ambiguous items -> Google Drive review queue (with local backup); a per-store lessons file grows over time. Bundles a read-only Python engine (owner-approved exception to the markdown-only rule)."
+      "description": "Autonomous weekly product categorization for the Toolup multi-stores. Refreshes each store's FULL collection vocabulary (nav + off-nav floating collections); dual-tree stores (Shop-by-Category + Shop-by-Brand, e.g. MTS) tag products in BOTH trees, plus a non-exclusive battery-platform tree. Reads existing tags first, classifies New Item V2 non-kit products to their bottom-most collection(s) + ancestor tags, removes New Item V2 when complete, adds CL-categorized. Add-only: the only tag ever removed is New Item V2. No-zero-tags guarantee via a fallback ladder; promo/operational collections excluded. Each run produces a color-coded Excel report (Store, Shopify ID, Handle, Variant SKU, Title, Vendor, category tree logic, proposed tags, 0-100 confidence red/yellow/green; weekly = one tab per store) delivered to a Google-Drive-for-Desktop synced folder. Product-tag writes ONLY; genuinely ambiguous items -> review queue (local + small Drive Doc); a per-store lessons file grows over time. Bundles a read-only Python engine (owner-approved exception to the markdown-only rule)."
     }
   ]
 }

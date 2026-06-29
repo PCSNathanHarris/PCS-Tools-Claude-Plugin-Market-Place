@@ -50,9 +50,9 @@ classifying.
 ## decisions.json (what you write, step 1c)
 ```json
 {"decisions": [
-  {"product_id":"123","title":"…","category_gid":"gid://shopify/Collection/456","brand_gid":"gid://shopify/Collection/789","platform_gid":"gid://shopify/Collection/321","category_tag":"Impact Wrenches","confidence":"high"},
-  {"product_id":"124","title":"…","category_gid":"gid://shopify/Collection/456","category_tag":"Pliers","confidence":"high"},
-  {"product_id":"125","title":"…","review":true,"reason":"…"}
+  {"product_id":"123","title":"…","category_gid":"gid://shopify/Collection/456","brand_gid":"gid://shopify/Collection/789","platform_gid":"gid://shopify/Collection/321","category_tag":"Impact Wrenches","confidence":92},
+  {"product_id":"124","title":"…","category_gid":"gid://shopify/Collection/456","category_tag":"Pliers","confidence":80},
+  {"product_id":"125","title":"…","review":true,"reason":"…","confidence":15}
 ]}
 ```
 - `category_gid` — gid from `categories`. `brand_gid` — gid from `brands` (dual-tree stores). `platform_gid` —
@@ -60,6 +60,9 @@ classifying.
   least one is required for a confident decision. `category_tag` is a readable label. A bare `category_tag`
   with no gid is accepted only when it maps to exactly one node.
 - **Never invent a gid.** The engine routes any gid not in the store's collections to review.
+- `confidence` is a **0–100 integer** that drives the report's red/yellow/green column (scale + colors in
+  `reference/report-format.md`). Anchor-confirmed 90–100 · strong signal 75–89 · inferred 50–74 · fallback
+  25–49 · review <25. Omitting it lets `build_report.py` compute a signal-based proxy.
 
 ## What gets written (step 1e, via `apply_run.py` batches)
 For every confident decision:

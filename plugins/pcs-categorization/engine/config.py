@@ -24,6 +24,14 @@ _DEFAULT_DATA_DIR = Path(
     r"C:\Users\NathanHarris\Claude Project Files\Automated Categorization"
 )
 
+# REPORT dir = where per-run report workbooks are written. Defaults to the Google-Drive-for-Desktop
+# synced folder so Drive auto-uploads them (the colored .xlsx cannot go through the MCP connector —
+# see reference/report-format.md). Override with PCS_REPORT_DIR. Drive for Desktop must be running
+# for the default path to exist during a cron run; build_report.py falls back to the run dir otherwise.
+_DEFAULT_REPORT_DIR = Path(
+    r"G:\My Drive\Claude Shopify Categorization Reviews"
+)
+
 
 def mcp_dir() -> Path:
     return Path(os.environ.get("MCP_DIR", str(_DEFAULT_MCP_DIR)))
@@ -33,6 +41,13 @@ def data_dir() -> Path:
     d = Path(os.environ.get("PCS_CATEGORIZATION_DATA", str(_DEFAULT_DATA_DIR)))
     d.mkdir(parents=True, exist_ok=True)
     return d
+
+
+def report_dir() -> Path:
+    """Where report workbooks land (Drive-for-Desktop synced folder by default). NOT created here —
+    if it doesn't exist (Drive not running / different machine), build_report.py falls back to the run
+    dir and logs it. Override with PCS_REPORT_DIR."""
+    return Path(os.environ.get("PCS_REPORT_DIR", str(_DEFAULT_REPORT_DIR)))
 
 
 def _parse_env_file(path: Path) -> dict:

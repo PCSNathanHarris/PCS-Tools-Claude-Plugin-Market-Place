@@ -103,6 +103,7 @@ query($q:String!, $n:Int!, $after:String){
     nodes{ id title handle vendor productType createdAt tags descriptionHtml
       kit: metafield(namespace:"custom", key:"is_kit_item"){ value }
       facet: metafield(namespace:"facets", key:"product_type"){ value }
+      variants(first:1){ nodes{ sku } }
       metafields(first:40){ nodes{ namespace key value type } } }
   }
 }
@@ -282,9 +283,11 @@ def main():
                 mfs.append({"key": f"{m.get('namespace')}.{m.get('key')}",
                             "value": (val[:300] + "…") if len(val) > 300 else val})
             platform_tags = detect_platforms(tags, battery_platform, p["title"])
+            vnodes = ((p.get("variants") or {}).get("nodes") or [])
+            sku = (vnodes[0].get("sku") if vnodes else "") or ""
             rows.append({
                 "product_id": p["id"].rsplit("/", 1)[-1], "gid": p["id"], "title": p["title"],
-                "handle": p["handle"], "vendor": p["vendor"], "type": p["productType"],
+                "handle": p["handle"], "vendor": p["vendor"], "type": p["productType"], "sku": sku,
                 "created_at": p["createdAt"], "current_category_tags": anchors,
                 "current_brand_tags": brand_anchors,
                 "all_tags": sorted(tags), "description": strip_html(p["descriptionHtml"])[:600],

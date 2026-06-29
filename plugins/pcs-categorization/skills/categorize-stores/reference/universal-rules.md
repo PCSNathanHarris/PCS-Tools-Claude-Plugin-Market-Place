@@ -80,3 +80,9 @@ addition to** its category and brand tags — category + brand + platform can **
 Sale/eligibility collections (Buy More Save More, NN% off, `shopmil##`, `*-bmsm-*`, Promotions, below-map) and
 workflow tags (New Item V2, CL-categorized, VA Categorization Review, Categorized) are **never** category
 targets. The engine strips them, but never choose one as a pick.
+
+## 10. Categorization is add-only — the only tag ever removed is `New Item V2`
+On every store, never change, rewrite, normalize, or delete a tag a product already carries. The pipeline
+only **adds** category/brand/platform tags (+ `CL-categorized`); the single sanctioned removal is `New Item V2`
+once the item is fully categorized. The engine's write surface (`add_batch_*` / `add_cl_categorized` /
+`remove_niv2`) enforces this — keep it that way.

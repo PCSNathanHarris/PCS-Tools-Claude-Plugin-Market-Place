@@ -1,15 +1,13 @@
 PCS Categorization — weekly repo change report
 Run date: 2026-06-30    Week: 2026-W27    Branch: main
 
-Lessons updated (2):
-  - lessons-learned/PROJECT-LESSONS.md
+Lessons updated (1):
   - lessons-learned/toolup-my-tool-store.md
 
-Summary: Dual-tree brand guarantee: always both Shop-by-Category + Shop-by-Brand where possible (vendor brand-root fallback).
+Summary: MTS batch 2 (500) written live: 0 errors, dual-tree guarantee applied, ~1,987 NIV2 remaining.
 
 Diffstat (staged lesson changes):
-plugins/pcs-categorization/lessons-learned/PROJECT-LESSONS.md      | 7 +++++++
- plugins/pcs-categorization/lessons-learned/toolup-my-tool-store.md | 5 +++++
- 2 files changed, 12 insertions(+)
+plugins/pcs-categorization/lessons-learned/toolup-my-tool-store.md | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 Scope: lessons-learned/ + change-reports/ only. No code, no other files.

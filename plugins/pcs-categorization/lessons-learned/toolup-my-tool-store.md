@@ -33,3 +33,8 @@ _Read at the start of each run; appended at the end. Established heuristics floa
 - 3 items (MasterLock safe, MarshallTown pry bar + barrel jointer) had a category but no brand node ->
   now auto-get their vendor top-level brand collection. All 500 have a Shop-by-Brand placement; only
   the Powers powder-actuated tool lacks a category (no possible category exists).
+
+## 2026-06-30 — batch 2 (500) WRITTEN to MTS (v1.4.2)
+- 500 tagged, 0 errors. All 500 in Shop-by-Brand (dual-tree guarantee); 499 in Shop-by-Category.
+- New Item V2 removed (496 + 4 already-absent); CL-categorized x500. Add-only held (promos/New Item/Undefined untouched).
+- Remaining MTS NIV2 backlog ~1,987 (was 2,487).

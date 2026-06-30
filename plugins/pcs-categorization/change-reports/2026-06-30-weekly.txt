@@ -1,0 +1,15 @@
+PCS Categorization — weekly repo change report
+Run date: 2026-06-30    Week: 2026-W27    Branch: main
+
+Lessons updated (2):
+  - lessons-learned/PROJECT-LESSONS.md
+  - lessons-learned/toolup-my-tool-store.md
+
+Summary: Batch 2 review: fallback ladder refined - safe generic (Hand Tools) + branded sub-categories beat brand-only; MTS Drywall Tools / Marshalltown Drywall Tools.
+
+Diffstat (staged lesson changes):
+.../pcs-categorization/lessons-learned/PROJECT-LESSONS.md    | 12 ++++++++++++
+ .../lessons-learned/toolup-my-tool-store.md                  |  9 +++++++++
+ 2 files changed, 21 insertions(+)
+
+Scope: lessons-learned/ + change-reports/ only. No code, no other files.

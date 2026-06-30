@@ -19,3 +19,12 @@ _Read at the start of each run; appended at the end. Established heuristics floa
 - Add-only confirmed live: only `New Item V2` removed; `New Item`, promos, NMFC, catalog tags all preserved. `CL-categorized` added x250.
 - Mechanics: 44 product-disjoint add-rounds + chunked CL/NIV2 (apply_run emits 250-pair remove/cl files; chunk to <=30 at call time).
 - Remaining MTS backlog ~2,487 — continue supervised.
+
+## 2026-06-30 — batch 2 (500) review (Nathan)
+- Bare **Hand Tools** node = `80675569764` (closure `['Hand Tools']`) — the safe generic for manual tools.
+- **Drywall Tools** = `80676487268` (`[Drywall Tools, Hand Tools]`); branded **Marshalltown Drywall Tools** =
+  `80620159076`. Drywall circle cutter -> these (not brand-only).
+- Proto inspection mirrors / magnetic retrievers -> Hand Tools generic (no specific mirror/retrieval leaf).
+- Powers powder-actuated fastening tool (P3500) -> genuinely no tool category -> brand-only (the rare true case).
+- Step Ladders = `80683204708`; Drain video systems (SeeSnake) -> Reels & Cameras `80690380900`; Anchors ->
+  Fasteners `80674783332`; socket/ratchet drive accessories -> Sockets and Adapters `464334389501`.

@@ -23,3 +23,15 @@ got there and what to watch.
 - **Backlog reality:** MTS is the genuine backlog (~2,737 NIV2). Single-OEM superstores (Pro Work Supply/3M,
   Total Fastening/Simpson) were mostly categorized at launch — finalize, don't re-classify. the-jet-store is
   ON HOLD (duplicate-creation error inflates its count).
+
+## 2026-06-30 — fallback ladder: safe generic category beats a bare brand page (batch 2, 500)
+- When no specific category leaf matches anchors/facet, **match the title to a leaf** ("Drywall Circle Cutter"
+  -> Drywall Tools; "...Ladder" -> Step Ladders; "drop-in anchor" -> Anchors). The leaf often exists even when
+  the product has no category tag yet.
+- If still none, place in a **safe generic** that's confidently correct (manual tool -> bare Hand Tools node;
+  fastener -> Fasteners; part/blade -> Replacement Parts/Accessories). A correct generic beats brand-only.
+- **Never use a generic that adds a wrong ancestor** (rule 3): MTS "Specialty Tools" carries Power Tools/Cordless,
+  so it's NOT safe for a hand tool -> use Hand Tools.
+- **Prefer branded sub-categories** (e.g. Marshalltown Drywall Tools) over the top-level brand page.
+- Brand-only (top-level brand collection) is the **absolute** last resort — genuinely rare (e.g. a powder-actuated
+  fastening tool with no tool category).

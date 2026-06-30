@@ -35,3 +35,10 @@ got there and what to watch.
 - **Prefer branded sub-categories** (e.g. Marshalltown Drywall Tools) over the top-level brand page.
 - Brand-only (top-level brand collection) is the **absolute** last resort — genuinely rare (e.g. a powder-actuated
   fastening tool with no tool category).
+
+## 2026-06-30 — dual-tree: always BOTH trees where possible (batch 2)
+- Multi-brand/dual-tree stores (e.g. MTS) must populate BOTH Shop-by-Category AND Shop-by-Brand for
+  every product where a node exists. If no specific brand node fits, use the vendor's top-level brand
+  collection (fallback_brand_gid) — never leave the brand side empty.
+- Enforced in the engine: apply_run auto-adds the vendor brand-root on dual-tree when a category pick
+  has no resolved brand node; build_report mirrors it. Only a no-possible-category item is brand-only.

@@ -5,11 +5,11 @@ Lessons updated (2):
   - lessons-learned/PROJECT-LESSONS.md
   - lessons-learned/toolup-my-tool-store.md
 
-Summary: Batch 2 review: fallback ladder refined - safe generic (Hand Tools) + branded sub-categories beat brand-only; MTS Drywall Tools / Marshalltown Drywall Tools.
+Summary: Dual-tree brand guarantee: always both Shop-by-Category + Shop-by-Brand where possible (vendor brand-root fallback).
 
 Diffstat (staged lesson changes):
-.../pcs-categorization/lessons-learned/PROJECT-LESSONS.md    | 12 ++++++++++++
- .../lessons-learned/toolup-my-tool-store.md                  |  9 +++++++++
- 2 files changed, 21 insertions(+)
+plugins/pcs-categorization/lessons-learned/PROJECT-LESSONS.md      | 7 +++++++
+ plugins/pcs-categorization/lessons-learned/toolup-my-tool-store.md | 5 +++++
+ 2 files changed, 12 insertions(+)
 
 Scope: lessons-learned/ + change-reports/ only. No code, no other files.

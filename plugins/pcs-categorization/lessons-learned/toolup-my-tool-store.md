@@ -28,3 +28,8 @@ _Read at the start of each run; appended at the end. Established heuristics floa
 - Powers powder-actuated fastening tool (P3500) -> genuinely no tool category -> brand-only (the rare true case).
 - Step Ladders = `80683204708`; Drain video systems (SeeSnake) -> Reels & Cameras `80690380900`; Anchors ->
   Fasteners `80674783332`; socket/ratchet drive accessories -> Sockets and Adapters `464334389501`.
+
+## 2026-06-30 — dual-tree brand guarantee (batch 2)
+- 3 items (MasterLock safe, MarshallTown pry bar + barrel jointer) had a category but no brand node ->
+  now auto-get their vendor top-level brand collection. All 500 have a Shop-by-Brand placement; only
+  the Powers powder-actuated tool lacks a category (no possible category exists).

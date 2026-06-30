@@ -88,6 +88,18 @@ addition to** its category and brand tags — category + brand + platform can **
   skip when the brand has no platform tree (e.g. Ridgid 18V) or the product isn't actually on a platform
   (a bare accessory bundled with a platform tool is not itself "on" the platform).
 
+## 8c. Parallel category structures (Power Tools + Shop By Trade) — place into EACH that applies
+Brand stores (RTS, ATO, JPT) run several parallel category trees at once, each with its own tag
+namespace: a **Power Tools** tree (`Power Tools > Cutting > Saws` → `Saws`) and a **Shop By Trade** tree
+(typed leaves with `SBTW …` / `SBTM …` / `SBTA …` tags, e.g. `SBTW Circular Saws`). A product belongs in
+**every** applicable structure. Two ways the tags arrive:
+- A Shop-By-Trade leaf now often **inherits** its Power-Tools-structure ancestors (the map closure carries
+  them via the trusted in-nav template edge), so one `category_gid` yields both — confirm in `tags_to_apply`.
+- When the structures are genuinely separate nodes, return **`category_gids`** (a list, one node per
+  structure); the engine unions all their closures. Still add the `platform_gid` (battery platform) too.
+Pick the deepest fitting node in each tree; rule 3 still governs every node's closure (never apply a
+structure tag the product doesn't belong to).
+
 ## 9. Never apply promo/operational tags
 Sale/eligibility collections (Buy More Save More, NN% off, `shopmil##`, `*-bmsm-*`, Promotions, below-map) and
 workflow tags (New Item V2, CL-categorized, VA Categorization Review, Categorized) are **never** category

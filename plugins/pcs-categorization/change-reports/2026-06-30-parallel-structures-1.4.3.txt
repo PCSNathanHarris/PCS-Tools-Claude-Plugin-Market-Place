@@ -1,0 +1,34 @@
+PCS Categorization — engine/skill change report (release 1.4.3)
+Date: 2026-06-30    Week: 2026-W27    Branch: main
+
+What changed
+  Parallel category structures are now fully tagged. Brand stores (RTS/ATO/JPT) run several parallel
+  category trees at once (Power Tools, Shop By Trade, Battery Platform) and a product must land in every
+  applicable one. A 2026-W27 dry-run tagged a Milwaukee M18 circular saw "SBTW Circular Saws" + "M18" but
+  missed the Power-Tools "Saws" closure. Two fixes:
+
+  A) build_category_map.py — a template `collection-list` edge is now TRUSTED when its parent is itself an
+     in-nav node (a real structure like Power-Tools "Milwaukee Saws"), so Shop-By-Trade leaves inherit their
+     Power-Tools ancestors. Template parents that are OFF-nav (e.g. "Milwaukee Carpentry Tools" -> handle tag
+     `carpentry-tools`) stay untrusted, so copy/paste noise is still excluded. The map markdown legend was
+     updated to describe the rule. After the fix the "Milwaukee Circular Saws" closure =
+     [Power Tool Cutting, Power Tools, Saws, SBTW Circular Saws]; 28 RTS leaves gained their structure tags.
+
+  B) Multi-category schema — decisions.json now accepts `category_gids` (a list, one node per parallel
+     structure); apply_run.py unions all category + brand + platform closures; build_report.py renders each
+     structure. Legacy single `category_gid` still works. This is how stores with NO template->in-nav edges
+     (ATO/DeWalt, JPT/Makita) place into every structure. Rule 8c added to universal-rules.md; tagging-rules.md
+     and SKILL.md updated.
+
+  E) Reports — a multi-store run now delivers ONE workbook with one tab per store
+     (categorization-weekly-<date>.xlsx); per-store files are no longer delivered separately. SKILL.md 1f +
+     Step 2 + Key rules updated.
+
+Verification
+  build_category_map / apply_run / build_report / weekly_run compile; selftest GUARD+AUTH PASS; all 17 store
+  maps regenerated + refined; RTS circular saw resolves to M18, Power Tool Cutting, Power Tools, Saws,
+  SBTW Circular Saws. No closure explosion (Power Tools in 103/503 RTS category nodes).
+
+Files: engine/{build_category_map,apply_run,build_report}.py; skills/categorize-stores/SKILL.md +
+  reference/{universal-rules,tagging-rules}.md; lessons-learned/{PROJECT-LESSONS,the-milwaukee-store}.md;
+  version bump 1.4.2 -> 1.4.3 (plugin.json + marketplace.json).

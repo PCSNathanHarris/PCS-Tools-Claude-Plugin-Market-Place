@@ -122,9 +122,13 @@ def main():
 
     for d in decisions:
         pid = str(d.get("product_id"))
-        # a product may carry up to three NON-EXCLUSIVE picks: category-tree, brand-tree, and
-        # battery-platform-tree (M18/M12/MX FUEL, 20V MAX/FLEXVOLT, LXT/XGT, …). Closures are unioned.
-        picks = [g for g in (d.get("category_gid"), d.get("brand_gid"), d.get("platform_gid")) if g]
+        # a product may carry MULTIPLE non-exclusive picks across parallel structures: one or more
+        # category-tree nodes (`category_gids` list, or the legacy single `category_gid`), a brand-tree
+        # node, and a battery-platform-tree node (M18/M12/MX FUEL, 20V MAX/FLEXVOLT, LXT/XGT, …). Stores
+        # like RTS/ATO/JPT run several parallel category structures (Power Tools / Shop By Trade) — pick a
+        # node in EACH that applies; all chosen nodes' closures are unioned. Closures are unioned.
+        cat_gids = d.get("category_gids") or ([d["category_gid"]] if d.get("category_gid") else [])
+        picks = [g for g in (*cat_gids, d.get("brand_gid"), d.get("platform_gid")) if g]
         tag = d.get("category_tag")
         title = d.get("title")
         if d.get("review") or d.get("confidence") == "low" or (not picks and not tag):

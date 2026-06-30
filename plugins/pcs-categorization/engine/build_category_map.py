@@ -370,13 +370,23 @@ def build_nodes(collections, nav_meta, nav_edges, metafield_edges, template_edge
     # `parents` = every source; `trusted_parents` = nav + metafield + linklist (the real
     # sub-collection structure). Template edges are noisy (copy/paste leftovers in
     # collection-list sections), so they are recorded for review but excluded from the
-    # primary closure.
+    # primary closure — EXCEPT when the template parent is itself an in-nav category node
+    # (see surgical-trust rule below).
     parents = {g: set() for g in collections}
     trusted_parents = {g: set() for g in collections}
     for (p, c), ss in edge_src.items():
         if p in collections and c in collections:
             parents[c].add(p)
             if ss & {"nav", "metafield", "linklist"}:
+                trusted_parents[c].add(p)
+            elif "template" in ss and p in nav_meta:
+                # Surgical trust: a template `collection-list` edge is trusted ONLY when the parent
+                # is itself an in-nav node — i.e. a real parallel merchandising structure (e.g.
+                # "Milwaukee Saws" in the Power Tools tree feeding a Shop-By-Trade leaf like
+                # "Milwaukee Circular Saws"). This lets a product inherit EVERY applicable
+                # structure's tags (Power Tools + Shop By Trade + Platform), not just one. Template
+                # parents that are OFF-nav (e.g. "Milwaukee Carpentry Tools" → handle tag
+                # `carpentry-tools`) stay untrusted, so genuine copy/paste noise is still excluded.
                 trusted_parents[c].add(p)
 
     title = {g: c.get("title") for g, c in collections.items()}
@@ -458,10 +468,14 @@ def render_markdown(store, slug, active, nodes, nav_tree, edge_src, generated_at
         "Hierarchy draws on three sources, each edge tagged with its origin: **nav** (active "
         "menu), the `custom.subcollections_list` **metafield**, and **template** `collection-list` "
         "sections. The authoritative **`inherited_tag_closure`** (own + ancestor tags a product "
-        "should receive) is built from **trusted** sources only (nav + metafield); **template "
-        "links are recorded for review, not trusted** — several are copy/paste noise. Nodes whose "
-        "template parents would add tags are flagged `template_adds_tags`. Category tags come only "
-        "from `TAG` rule-conditions (`VENDOR` ignored).",
+        "should receive) is built from **trusted** sources: nav + metafield + linklist, **plus "
+        "template edges whose parent is itself an in-nav node** (a real parallel merchandising "
+        "structure — e.g. Power Tools “Milwaukee Saws” feeding the Shop-By-Trade "
+        "“Milwaukee Circular Saws” leaf — so a product inherits EVERY applicable "
+        "structure's tags). **Template edges to OFF-nav parents stay untrusted** (copy/paste "
+        "noise such as the `carpentry-tools` handle tag). Nodes whose remaining untrusted template "
+        "parents would add tags are flagged `template_adds_tags`. Category tags come only from "
+        "`TAG` rule-conditions (`VENDOR` ignored).",
         "",
         "## Active navigation tree",
         "",

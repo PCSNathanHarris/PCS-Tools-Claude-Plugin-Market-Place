@@ -114,28 +114,33 @@ def load_store_rows(slug_dir):
     for d in dec:
         pid = str(d.get("product_id"))
         p = cb.get(pid, {})
-        cn = cat_l.get(d.get("category_gid"))
+        # a product may be placed into MULTIPLE parallel category structures (Power Tools, Shop By
+        # Trade, …): `category_gids` list, or the legacy single `category_gid`. Each node's closure is
+        # shown separately in the logic and unioned into the applied tags.
+        cat_gids = d.get("category_gids") or ([d["category_gid"]] if d.get("category_gid") else [])
+        cns = [cat_l[g] for g in cat_gids if g in cat_l]
         bn = br_l.get(d.get("brand_gid"))
         pn = pl_l.get(d.get("platform_gid"))
         # dual-tree brand guarantee (mirror apply_run): fall back to the vendor's top-level brand collection
         if bn is None and dual_tree:
             bn = br_l.get((p or {}).get("fallback_brand_gid"))
-        cc = order_closure(cn) if cn else []
+        cat_closures = [order_closure(cn) for cn in cns]
+        cc_union = sorted({t for cl in cat_closures for t in cl})
         bc = order_closure(bn) if bn else []
         pc = order_closure(pn) if pn else []
-        if d.get("review") and not (cc or bc or pc):
+        if d.get("review") and not (cat_closures or bc or pc):
             logic = "REVIEW: " + (d.get("reason") or "no confident placement")
             applied = ""
             c = d.get("confidence")
             score = int(c) if isinstance(c, str) and c.strip().isdigit() else (int(c) if isinstance(c, (int, float)) else 15)
         else:
             logic = "; ".join(filter(None, [
-                "Cat: " + " > ".join(cc) if cc else "",
+                "Cat: " + " | ".join(" > ".join(cl) for cl in cat_closures) if cat_closures else "",
                 "Brand: " + " > ".join(bc) if bc else "",
                 "Platform: " + " > ".join(pc) if pc else "",
             ]))
-            applied = " | ".join(sorted(set(cc) | set(bc) | set(pc)))
-            score = resolve_confidence(d, cn, p.get("current_category_tags") or [],
+            applied = " | ".join(sorted(set(cc_union) | set(bc) | set(pc)))
+            score = resolve_confidence(d, cns[0] if cns else None, p.get("current_category_tags") or [],
                                        bool(p.get("facets_product_type")), pid in fb_ids)
         rows.append({
             "Store": store, "Shopify ID": pid, "Shopify Handle": p.get("handle", ""),

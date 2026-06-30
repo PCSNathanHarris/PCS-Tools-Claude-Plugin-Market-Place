@@ -58,15 +58,17 @@ store's exceptions) in full; `reference/tagging-rules.md` has the decisions.json
 Write `<data_dir>/runs/<week>/<slug>/decisions.json`:
 ```json
 {"decisions": [
-  {"product_id": "123", "title": "...", "category_gid": "gid://shopify/Collection/456", "brand_gid": "gid://shopify/Collection/789", "platform_gid": "gid://shopify/Collection/321", "category_tag": "Impact Wrenches", "confidence": 92},
+  {"product_id": "123", "title": "...", "category_gids": ["gid://shopify/Collection/456", "gid://shopify/Collection/457"], "brand_gid": "gid://shopify/Collection/789", "platform_gid": "gid://shopify/Collection/321", "category_tag": "Circular Saws", "confidence": 92},
   {"product_id": "124", "title": "...", "category_gid": "gid://shopify/Collection/456", "category_tag": "Pliers", "confidence": 80},
   {"product_id": "789", "title": "...", "review": true, "reason": "no clear category", "confidence": 15}
 ]}
 ```
-`category_gid` = Shop-by-Category node; `brand_gid` = Shop-by-Brand node (dual-tree stores); `platform_gid` =
-battery-platform node (when the product is on a platform — see universal rule 8b). All three are non-exclusive;
-the engine unions their closures. At least one is required for a confident decision. `category_tag` is just a
-readable label. A bare `category_tag` with no gid is accepted only when it maps to exactly one node.
+`category_gids` = a **list** of Shop-by-Category nodes — one per **parallel category structure** the product
+belongs to (Power Tools / Shop By Trade — universal rule 8c). The legacy single `category_gid` still works for
+a one-structure pick. `brand_gid` = Shop-by-Brand node (dual-tree stores); `platform_gid` = battery-platform
+node (when the product is on a platform — see universal rule 8b). All are non-exclusive and the engine unions
+their closures. At least one is required for a confident decision. `category_tag` is just a readable label. A
+bare `category_tag` with no gid is accepted only when it maps to exactly one node.
 The vocabulary now includes **every non-promo collection** (nav + floating) — review is a true last resort
 (`reference/tagging-rules.md` has the Accessories/Replacement-Parts fallbacks).
 
@@ -88,8 +90,12 @@ Read `apply-summary.json`. For each file, call `mcp__shopify__shopify_bulk_apply
 - `add_cl_categorized.json` → `operation: "add"`  (the Claude-categorized marker)
 Record each returned `rollback_file`. **Never** call any other write tool (`reference/write-scope.md`).
 
-### 1f — Build + deliver the report workbook  *(no Shopify writes)*
-Run: `python build_report.py --store <store-key> --week <week>`
+### 1f — Build the report workbook  *(no Shopify writes)*
+**On a multi-store run (the weekly all-stores pipeline), SKIP per-store delivery here** — the single
+combined **one-tab-per-store** workbook built in Step 2 is the sole delivered report (see Step 2 + Key
+rules). Run the per-store `build_report.py --store …` below **only** for a single-store / on-demand run.
+
+Run (single-store run only): `python build_report.py --store <store-key> --week <week>`
 It writes the per-product **report `.xlsx`** — columns **Store · Shopify ID · Shopify Handle · Variant SKU ·
 Title · Vendor · Category Tree Logic · Proposed Tags Applied · Confidence (0–100)**, with the Confidence cell
 **color-filled** red (0–33) / yellow (34–66) / green (67–100) — into the **Google-Drive-for-Desktop synced
@@ -123,8 +129,10 @@ Write `<data_dir>/runs/<week>/<slug>/RUN-SUMMARY.md`: tree-diff highlights, # cl
 
 ## Step 2 — Finish  *(gateless — no approval prompts; everything is reviewed after)*
 After all stores:
-1. **Combined weekly workbook** — `python build_report.py --week <week>` (no `--store`):
-   `categorization-weekly-<YYYY-MM-DD>.xlsx`, **one tab per store**, into the Drive-synced report folder.
+1. **Combined weekly workbook (THE multi-store deliverable)** — `python build_report.py --week <week>`
+   (no `--store`): `categorization-weekly-<YYYY-MM-DD>.xlsx`, **one tab per store**, into the Drive-synced
+   report folder. When a run covers more than one store this is the **single** report delivered — per-store
+   workbooks are not delivered separately (step 1f).
 2. **Sync lessons to the repo** — `python sync_repo.py --week <week> --note "<one-line summary>"`: commits +
    pushes the updated `lessons-learned/` (store mds + `PROJECT-LESSONS.md`) and a dated `change-reports/`
    entry to the plugin repo. **Scoped to lessons + change-reports only, gateless, fail-safe** — see
@@ -155,7 +163,8 @@ After all stores:
   the end** (1h, after scanning), and **pushed to the plugin repo** at step 2 with a dated change report
   (`reference/lessons-sync.md`). The push is scoped to lessons/change-reports only and is fail-safe.
 - **Report = colored `.xlsx` via the Drive-synced folder, never the connector.** Every run produces a report
-  workbook (`build_report.py`) with a 0–100 color-coded Confidence column; targeted runs name the store in the
-  filename, the weekly run makes one workbook with **one tab per store**. It is delivered by writing into the
+  workbook (`build_report.py`) with a 0–100 color-coded Confidence column. A **single-store** run names the
+  store in the filename (one tab); a **multi-store** run produces **exactly one** workbook with **one tab per
+  store** (`categorization-weekly-<date>.xlsx`) — individual per-store files are NOT delivered. It is delivered by writing into the
   Google-Drive-for-Desktop folder (Drive must be running for the cron). The MCP Drive connector can't carry it
   (binary/size/no-tabs/no-colors) — only small text Docs (the review queue). See `reference/report-format.md`.

@@ -42,3 +42,22 @@ got there and what to watch.
   collection (fallback_brand_gid) — never leave the brand side empty.
 - Enforced in the engine: apply_run auto-adds the vendor brand-root on dual-tree when a category pick
   has no resolved brand node; build_report mirrors it. Only a no-possible-category item is brand-only.
+
+## 2026-06-30 — parallel category structures: tag in ALL of them (rule 8c + multi-category schema)
+- Brand stores run **several parallel category trees at once**, each with its own tag namespace, and a
+  product belongs in **every** applicable one: **Power Tools** (`Power Tools > Cutting > Saws` -> `Saws`),
+  **Shop By Trade** (`SBTW …`/`SBTM …`/`SBTA …`, e.g. `SBTW Circular Saws`), and **Battery Platform**
+  (M18/M12/MX FUEL; 20V MAX/FLEXVOLT; LXT/XGT/CXT). Tagging `SBTW Circular Saws` + `M18` was NOT enough —
+  the Power-Tools `Saws`/`Power Tools` closure was missed.
+- **Two mechanisms now deliver full coverage:**
+  1. **Build fix (RTS-style):** a template `collection-list` edge is now **trusted when its parent is an
+     in-nav node** (a real structure like Power Tools "Milwaukee Saws"), so a Shop-By-Trade leaf inherits
+     its Power-Tools ancestors. Template parents that are OFF-nav (e.g. "Milwaukee Carpentry Tools" ->
+     `carpentry-tools`) stay untrusted, so copy/paste noise is still excluded. After the fix, "Milwaukee
+     Circular Saws" closure = `Power Tool Cutting, Power Tools, Saws, SBTW Circular Saws`.
+  2. **Multi-category schema:** `decisions.json` now takes **`category_gids`** (a list) — pick one node per
+     structure; apply_run unions all closures (+ brand + platform). Use this on stores where the structures
+     are separate trusted nodes (e.g. **ATO/DeWalt, JPT/Makita** have NO template->in-nav edges, so the build
+     fix doesn't touch them — the schema is how you place into each structure there).
+- **Reports:** a multi-store run now produces **ONE workbook with one tab per store**
+  (`categorization-weekly-<date>.xlsx`); per-store files are not delivered separately.

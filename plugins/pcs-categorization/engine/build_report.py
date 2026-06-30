@@ -104,6 +104,7 @@ def load_store_rows(slug_dir):
         for it in (json.loads(fb_path.read_text(encoding="utf-8")).get("items") or []):
             fb_ids.add(str(it.get("product_id")))
     store = cand.get("store") or slug_dir.name
+    dual_tree = bool(cand.get("dual_tree"))
     cb = {str(x["product_id"]): x for x in cand.get("candidates", [])}
     cat_l = {n["gid"]: n for n in cand.get("categories", [])}
     br_l = {n["gid"]: n for n in cand.get("brands", [])}
@@ -116,6 +117,9 @@ def load_store_rows(slug_dir):
         cn = cat_l.get(d.get("category_gid"))
         bn = br_l.get(d.get("brand_gid"))
         pn = pl_l.get(d.get("platform_gid"))
+        # dual-tree brand guarantee (mirror apply_run): fall back to the vendor's top-level brand collection
+        if bn is None and dual_tree:
+            bn = br_l.get((p or {}).get("fallback_brand_gid"))
         cc = order_closure(cn) if cn else []
         bc = order_closure(bn) if bn else []
         pc = order_closure(pn) if pn else []

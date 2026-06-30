@@ -95,9 +95,11 @@ def main():
     # When a decision can't resolve to any real node, the product still gets its top-level brand
     # collection tag rather than zero tags. Truly unplaceable (no brand root) is the only review case.
     fallback_by_pid = {}
+    dual_tree = False
     cand_path = run_dir / "candidates.json"
     if cand_path.exists():
         cj = json.loads(cand_path.read_text(encoding="utf-8"))
+        dual_tree = bool(cj.get("dual_tree"))
         for c in cj.get("candidates", []):
             fb = c.get("fallback_brand_gid")
             if fb:
@@ -130,6 +132,15 @@ def main():
         elif picks:  # precise: union of each chosen node's own closure
             missing = [g for g in picks if g not in gid_to]
             valid = [g for g in picks if g in gid_to]
+            # Dual-tree brand guarantee: every product should also sit in the Shop-by-Brand tree. If no
+            # brand node resolved, add the vendor's top-level brand collection (fallback_brand_gid) so the
+            # Shop-by-Brand side is never empty where a brand collection exists. (Universal rule 8.)
+            if dual_tree:
+                bg = d.get("brand_gid")
+                if not (bg and bg in gid_to):
+                    fb = fallback_by_pid.get(pid)
+                    if fb and fb in gid_to and fb not in valid:
+                        valid.append(fb)
             if valid:  # use whatever resolved (don't lose a good pick over a typo'd sibling)
                 add = sorted({t for g in valid for t in gid_to[g][1]})
                 confident.append({"product_id": pid, "title": title,

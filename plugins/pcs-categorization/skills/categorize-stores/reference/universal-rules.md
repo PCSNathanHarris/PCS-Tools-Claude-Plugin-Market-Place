@@ -61,10 +61,16 @@ There is always a home. Walk this ladder, stop at the first that fits:
 
 `review: true` is **only** for genuine ambiguity a human must resolve — never for "no home found."
 
-## 8. Dual-tree stores (Shop by Category + Shop by Brand)
-When `dual_tree: true`, return a `category_gid` **and** a `brand_gid`; the product gets both closures.
-Pick the brand node by vendor + battery platform/line + product type. On non-dual stores, brand = vendor and is
-stripped (single `category_gid`). See `store-quirks.md` for which stores are dual-tree.
+## 8. Dual-tree stores (Shop by Category + Shop by Brand) — ALWAYS both where possible
+When `dual_tree: true`, every product should land in **both** trees. Return a `category_gid` **and** a
+`brand_gid`; the product gets both closures. Pick the brand node by vendor + battery platform/line + product type.
+**A brand placement is effectively always possible:** if no specific brand node fits, use the vendor's
+**top-level brand collection** (each candidate's `fallback_brand_gid`) so the Shop-by-Brand side is never empty.
+The engine enforces this — on a dual-tree store `apply_run` auto-adds `fallback_brand_gid` when a decision has a
+category pick but no resolved brand node — but set `brand_gid` yourself so the report's Brand column reflects it.
+For the category side, walk rule 7; only the rare item with no possible category (e.g. a powder-actuated
+fastening tool) may end up brand-only. On non-dual stores, brand = vendor and is stripped (single `category_gid`).
+See `store-quirks.md` for which stores are dual-tree.
 
 ## 8b. Battery-platform tree (a THIRD, non-exclusive pick)
 Many brands run a Shop-by-Battery-Platform tree (Milwaukee M12 / M18 / MX FUEL; DeWalt 12V MAX / 20V MAX /

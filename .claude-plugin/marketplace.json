@@ -38,7 +38,7 @@
     },
     {
       "name": "pcs-categorization",
-      "version": "1.4.0",
+      "version": "1.4.1",
       "source": "./plugins/pcs-categorization/",
       "description": "Autonomous weekly product categorization for the Toolup multi-stores. Refreshes each store's FULL collection vocabulary (nav + off-nav floating collections); dual-tree stores (Shop-by-Category + Shop-by-Brand, e.g. MTS) tag products in BOTH trees, plus a non-exclusive battery-platform tree. Reads existing tags first, classifies New Item V2 non-kit products to their bottom-most collection(s) + ancestor tags, removes New Item V2 when complete, adds CL-categorized. Add-only: the only tag ever removed is New Item V2. No-zero-tags guarantee via a fallback ladder; promo/operational collections excluded. Each run produces a color-coded Excel report (Store, Shopify ID, Handle, Variant SKU, Title, Vendor, category tree logic, proposed tags, 0-100 confidence red/yellow/green; weekly = one tab per store) delivered to a Google-Drive-for-Desktop synced folder. Runs gatelessly on a schedule. Write scope is exactly three: Shopify product tags, a scoped git push of lessons/change-reports to this repo, and the Drive project folder — everything else read-only. Per-store AND project lessons grow over time and auto-commit to the plugin repo each weekly run with a dated change report. Genuinely ambiguous items -> review queue (local + small Drive Doc). Bundles a read-only Python engine (owner-approved exception to the markdown-only rule)."
     }

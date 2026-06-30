@@ -44,16 +44,22 @@ wire-termination categories — **not** the main electrical Crimping Tools / Cab
 
 ## 7. No product gets zero tags — fallback ladder
 There is always a home. Walk this ladder, stop at the first that fits:
-1. **Specific category** (+ brand node on dual-tree stores).
-2. **General high-level category** — `category_roots` in candidates.json, or a catch-all like **Fasteners**,
-   **Accessories**, **Replacement Parts**, **Specialty Tools** (mind rule 3 — check its closure).
-3. **Trade collection** (if the store has one that fits).
-4. **Top-level brand collection** — each candidate's `fallback_brand_gid`; the engine applies this as a
-   last-resort safety net, but place it yourself when you can.
+1. **Specific category** (+ brand node on dual-tree stores). If anchors/facet are thin, match the **title** to a
+   category leaf — e.g. "Drywall Circle Cutter" → **Drywall Tools**, "…Stepladder/Twin Ladder" → **Step Ladders**,
+   "Dropin/drop-in anchor" → **Anchors**. The leaf often exists even when the product carries no category tag yet.
+2. **Safe generic category** — when no specific leaf fits, place it in the most specific generic that is
+   *confidently correct*: a manual tool → **Hand Tools** (the bare `['Hand Tools']` node), a fastener →
+   **Fasteners**, a consumable/part/blade → **Replacement Parts** / **Accessories**. A correct generic placement
+   **beats a bare brand page** — reach for this before falling to brand-only. **Mind rule 3:** never use a generic
+   that adds a wrong ancestor — e.g. the MTS "Specialty Tools" nodes carry **Power Tools**/**Cordless**, so they
+   are NOT a safe generic for a *manual* tool (use **Hand Tools** instead).
+3. **Branded sub-category** — if the brand has a matching branded node (e.g. **Marshalltown Drywall Tools**,
+   not just the top-level "Marshalltown" page), use it as the `brand_gid`.
+4. **Trade collection** (if the store has one that fits).
+5. **Top-level brand collection** — `fallback_brand_gid`; the **absolute** last resort, used only when no safe
+   generic category applies at all (genuinely rare — e.g. a powder-actuated fastening tool with no tool category).
 
-Consumables/parts/blades with no specific home → **Replacement Parts** / **Accessories** (category) and/or the
-matching brand accessories node. `review: true` is **only** for genuine ambiguity a human must resolve — never
-for "no home found."
+`review: true` is **only** for genuine ambiguity a human must resolve — never for "no home found."
 
 ## 8. Dual-tree stores (Shop by Category + Shop by Brand)
 When `dual_tree: true`, return a `category_gid` **and** a `brand_gid`; the product gets both closures.

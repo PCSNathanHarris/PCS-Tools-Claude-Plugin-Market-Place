@@ -16,8 +16,12 @@ Read alongside `universal-rules.md`. These are per-store exceptions. The growing
   Heated gear (battery) and cooling gear (fan/battery) belong here. Plain shirts / evaporative cooling /
   hats do NOT — use **brand-only** (e.g. Milwaukee Shirts `421963235581`). (Universal rule 4.)
 - **"Specialty Tools" (`80695591012`) sits under Power Tools** — closure `[Power Tools, Specialty Tools]`.
-  Do NOT use it for manual/hand tools (it would add Power Tools); odd hand tools → `Hand Tools` or a fitting
-  general category. (Universal rule 3.)
+  Do NOT use it for manual/hand tools (it would add Power Tools); odd hand tools → the **bare `Hand Tools` node
+  (`80675569764`, closure `['Hand Tools']`)** or a fitting general category. (Universal rule 3.)
+- **Generic fallback + branded sub-categories** (rule 7): a manual tool with no specific leaf → `Hand Tools`
+  (`80675569764`) — better than a bare brand page. Real **`Drywall Tools`** category exists (`80676487268`,
+  `[Drywall Tools, Hand Tools]`) for drywall hand tools. Brands have specific branded nodes — prefer them over
+  the top-level brand page, e.g. **`Marshalltown Drywall Tools` (`80620159076`)** over plain "Marshalltown".
 - **Fasteners** is a real category (`80674717796`, tag `Fasteners`) for rod hangers, anchors-as-fasteners, etc.
 - **VDV / datacom** (Klein VDV line) is filed under Telecom Instruments — keep it there, not main Crimping.
 - **Socket-storage** (rails, clips, organizers with no sockets included) → `Sockets and Adapters` (the store's

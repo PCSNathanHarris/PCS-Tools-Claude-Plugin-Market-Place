@@ -1,0 +1,6 @@
+# fall-protection-store — lessons
+
+## 2026-07-07 (2026-W28) — 2 brand-only / 3 review / 2 NIV2 removed
+- **SafeWaze anchor-install consumables/tools** (bulb rivets pack; hand rivet tool for installing 019-4006 roof anchors) → no category exists (store has anchors/harnesses/lanyards/lifelines/jobsite-safety but no fastener/tool/anchor-accessory bucket). Placed brand-only via `Shop By Brand > SafeWaze 93836214326` (fallback ladder last resort), NIV2 removed. Better than review since we know exactly what they are.
+- **3 out-of-place items → REVIEW** (no category AND no brand fallback node): WeatherGuard truck-rack ratchet strap (weatherguard vendor, `Truck and Van Equipment`), Wright Tool torque wrench (`Hand Tools/Ratchets/Sockets` — no hand-tool tree here), Ergodyne hammer holster (`Tool Belts and Pouches` — no pouch category here). These look cross-listed from other stores' catalogs; a human should confirm whether they belong in the fall-protection store at all. Review Doc uploaded to Drive.
+- **Store shape note:** fall-protection-store is a fall-protection specialty catalog (anchors, harnesses, lanyards, lifelines, retractables, jobsite safety, hard hats, PPE) with Shop-By-Brand nodes folded into categories (3M/DBI-Sala, Guardian, Werner, SafeWaze, etc.). It has NO hand-tool / fastener / tool-storage categories, so stray hand tools land in review.

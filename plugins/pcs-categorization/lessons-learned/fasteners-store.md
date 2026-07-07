@@ -11,3 +11,5 @@ _Read at the start of each run; appended at the end. Established heuristics floa
   2026-06-26) is mostly products that were **categorized at launch** and still carry the `New Item V2` tag.
   Confirm existing anchors, apply the node closure (largely no-ops), then remove `New Item V2` + add
   `CL-categorized` to finalize. **Low priority** vs. MTS. See [[project-automated-categorization]].
+
+## 2026-07-07 (2026-W28) — 0 eligible (no-op). Backlog stays drained (categorized at launch). No writes.

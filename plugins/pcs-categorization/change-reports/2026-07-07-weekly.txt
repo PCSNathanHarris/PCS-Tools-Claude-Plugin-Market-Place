@@ -1,0 +1,47 @@
+PCS Categorization — weekly repo change report
+Run date: 2026-07-07    Week: 2026-W28    Branch: main
+
+Lessons updated (18):
+  - lessons-learned/fall-protection-store.md
+  - lessons-learned/fasteners-store.md
+  - lessons-learned/gearwrench-shop.md
+  - lessons-learned/greenlee-store.md
+  - lessons-learned/knaack-store.md
+  - lessons-learned/occidentalleatheroutlet.md
+  - lessons-learned/PROJECT-LESSONS.md
+  - lessons-learned/the-dewalt-store.md
+  - lessons-learned/the-jet-store.md
+  - lessons-learned/the-klein-store.md
+  - lessons-learned/the-makita-store.md
+  - lessons-learned/the-milwaukee-store.md
+  - lessons-learned/the-pls-store.md
+  - lessons-learned/the-ridgid-store.md
+  - lessons-learned/the-sumner-store.md
+  - lessons-learned/toolup-my-tool-store.md
+  - lessons-learned/weather-guard-store.md
+  - lessons-learned/wood-shop-outlet.md
+
+Summary: W28 autonomous run: 274 items across 8 stores (MTS 250 backlog drain); 3 review (FP out-of-place items); 0 errors
+
+Diffstat (staged lesson changes):
+.../lessons-learned/PROJECT-LESSONS.md              | 21 +++++++++++++++++++++
+ .../lessons-learned/fall-protection-store.md        |  6 ++++++
+ .../lessons-learned/fasteners-store.md              |  2 ++
+ .../lessons-learned/gearwrench-shop.md              |  4 ++++
+ .../lessons-learned/greenlee-store.md               |  3 +++
+ .../lessons-learned/knaack-store.md                 |  8 ++++++++
+ .../lessons-learned/occidentalleatheroutlet.md      |  4 ++++
+ .../lessons-learned/the-dewalt-store.md             |  5 +++++
+ .../lessons-learned/the-jet-store.md                |  2 ++
+ .../lessons-learned/the-klein-store.md              |  4 ++++
+ .../lessons-learned/the-makita-store.md             |  8 ++++++++
+ .../lessons-learned/the-milwaukee-store.md          | 18 ++++++++++++++++++
+ .../lessons-learned/the-pls-store.md                |  3 +++
+ .../lessons-learned/the-ridgid-store.md             |  4 ++++
+ .../lessons-learned/the-sumner-store.md             |  4 ++++
+ .../lessons-learned/toolup-my-tool-store.md         | 12 ++++++++++++
+ .../lessons-learned/weather-guard-store.md          | 14 ++++++++++++++
+ .../lessons-learned/wood-shop-outlet.md             |  2 ++
+ 18 files changed, 124 insertions(+)
+
+Scope: lessons-learned/ + change-reports/ only. No code, no other files.

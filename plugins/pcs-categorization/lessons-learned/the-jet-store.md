@@ -11,3 +11,5 @@ _Read at the start of each run; appended at the end. Established heuristics floa
 
 ## Store shape
 - (To be filled on the first real run once the duplicate issue is fixed.)
+
+## 2026-07-07 (2026-W28) — ON HOLD, skipped (22 eligible, likely dup-inflated). No writes.

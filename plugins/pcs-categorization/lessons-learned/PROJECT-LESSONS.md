@@ -61,3 +61,24 @@ got there and what to watch.
      fix doesn't touch them — the schema is how you place into each structure there).
 - **Reports:** a multi-store run now produces **ONE workbook with one tab per store**
   (`categorization-weekly-<date>.xlsx`); per-store files are not delivered separately.
+
+## 2026-07-07 (2026-W28) — tree-diff "new categories" spike is a vocabulary-build artifact
+On the first W28 run several stores' `weekly_run` tree-diff reports a large "NEW since last run" count
+(Milwaukee: 202→356, +154). This is the full nav+floating collection vocabulary being surfaced (including
+promo-code collections like BF##/ACCY15/FLASH20 that are never valid targets), **not** that many new merchant
+collections. Treat large diffs as vocabulary expansion: log in the run summary, create nothing, and only call
+out genuinely novel *product-category* nodes. The engine strips promo/operational collections as targets.
+
+## 2026-07-07 (2026-W28) — two reusable classification techniques (proven on MTS 250-item batch)
+1. **Confirm-by-anchor via subset-match.** For already-partly-categorized NIV2 items, pick the deepest category
+   node whose FULL closure ⊆ the product's existing `current_category_tags`. This confirms the placement while
+   staying strictly add-only (never introduces a wrong department, satisfying universal rule 3 automatically).
+   On dual-tree stores, ALSO require the **vendor token to appear in the brand node's path** before accepting a
+   brand node — a pure subset match can cross brands (a Pacific Laser Systems part matched brand "Fluke Other").
+   When the vendor-gated brand match fails, leave brand_gid unset and let the engine's dual-tree guarantee add
+   the correct vendor brand root.
+2. **`review:true` is overridden on dual-tree stores.** apply_run's dual-tree guarantee converts a no-category /
+   review decision into a vendor brand-root fallback (tags the item with just its brand, removes NIV2, adds
+   CL-categorized). This is correct per universal rule 7 (review = genuine ambiguity, NOT "no category found").
+   So for a category-less item on a dual-tree store, expect a brand-only placement, not a review-queue entry.
+   Reserve `review:true` for items a human must actually disambiguate.

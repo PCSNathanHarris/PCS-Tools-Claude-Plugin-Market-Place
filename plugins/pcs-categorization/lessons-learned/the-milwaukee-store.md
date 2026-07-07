@@ -25,3 +25,21 @@ template `collection-list` edge, which the build had treated as untrusted.
 **Heuristic:** RTS tag prefixes — `SBTW`/`SBTM`/`SBTA` = Shop-By-Trade (Woodworking/Metal/Automotive),
 `SBT Automotive` = trade root. Plain product-type tags (`Saws`, `Grinders`, `Drills`) = Power Tools tree.
 M18/M12/MX FUEL = platform. Confirm the closure in `tags_to_apply` spans every applicable namespace.
+
+## 2026-07-07 (2026-W28) — 5 classified / 5 NIV2 removed / 0 review
+Small batch, all placed confidently. New heuristics/confirmations:
+- **Rechargeable/USB-C personal task lights** (facet `Task Lights`, built-in battery, NOT on M12/M18/MX) →
+  `Power Tools > System Enhancement > Lighting` (`189687686`, closure `Lighting, Power Tools, System Enhancement`).
+  Reserve `Milwaukee Site Lights` / `Tower Lights` for large jobsite/tower units, not handheld task lights.
+- **Torpedo/box levels** → dedicated floating `Milwaukee Levels` node (`271707832404`, tag `Levels`), even when
+  `facets_product_type` mislabels them (this one read `Plumbing Tools Test and Measurement`). Trust the title.
+- **M18 FORCE LOGIC utility/lineman crimpers** (utility/overhead cable crimping) → `Trades > Electrician Tools >
+  Crimpers` (`267413094484`, closure `Electrician's Tools, M12, M18, Power Tools, SBTE Crimpers, trades`) — the
+  powered electrician-trade home, not the manual `Hand Tools > Crimpers`.
+- **M12/M18 FORCE LOGIC press tools** (plumbing/HVAC press, facet `Cordless Press Tools`) → `Trades > Plumbing
+  Tools > Press Tools` (`267412635732`, closure `M12, Plumbing Tools, Power Tools, SBTP Press Tools, trades`).
+  These trade nodes already carry the platform tag; a separate `platform_gid` is redundant-but-harmless.
+- **Controller/cord extensions** (accessory extension cords, misleading facet `Extension Cords`) → `Milwaukee
+  Extensions` (`60320514132`, tag `Extensions`); confirmed existing `Accessories/Tool Accessories/Extensions`.
+- Tree diff flagged **154 "new" categories** — this is a vocabulary/tree rebuild artifact (full nav+floating
+  set now surfaced), NOT 154 genuinely new collections. Logged; no collections created (read-only).

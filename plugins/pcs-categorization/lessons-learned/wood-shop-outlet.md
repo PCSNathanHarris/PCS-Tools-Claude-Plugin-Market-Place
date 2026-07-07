@@ -10,3 +10,5 @@ _Read at the start of each run; appended at the end. Established heuristics floa
   tag. Expect most candidates to already hold correct category anchors. When draining: confirm the existing
   category tags, apply the node closure (largely no-ops), then remove `New Item V2` + add `CL-categorized` to
   finalize — don't treat these as un-categorized. **Low priority** vs. MTS. See [[project-automated-categorization]].
+
+## 2026-07-07 (2026-W28) — 0 eligible (no-op). Backlog stays drained (categorized at launch). Tree-diff +629 = 3M vocab-build, not new collections. No writes.

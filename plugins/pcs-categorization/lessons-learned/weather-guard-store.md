@@ -52,3 +52,17 @@ _Read at the start of each run; appended at the end. Established heuristics floa
   (only the 3 Spyder installer bits remain for review until an Installer Bits category exists).
 - "All product card info" now explicitly includes **`facets_product_type`** + **all product metafields**
   (structured + unstructured); the gather surfaces them in candidates.json for classification.
+
+### 2026-W28 (2026-07-07) — 3 classified / 3 NIV2 removed / 0 review
+- The 3 Spyder installer/bell-hanger bits (17001/17003/17004) that were REVIEWED in W26 resurfaced (as
+  expected — review items keep NIV2). Still **no `Installer Bits` / `Bell Hanger Bits` / `Specialty Bits`
+  leaf** in the tree (checked; Drilling and Driving has only Concrete&Masonry / Driving&Fastening / Wood
+  Drilling subtrees). Rather than review them a 3rd time, placed all 3 in the **safe generic
+  `Drilling and Driving 694719447410`** (`[Drilling & Driving]`); they already carry the `Electrical`
+  Shop-by-Trade tag (electrician wire-pulling bits), which is preserved. NIV2 removed, CL-categorized added.
+- **Rule applied:** fallback ladder — a confidently-correct generic (they ARE drill bits) beats a perpetual
+  review loop; review is for genuine ambiguity, not "no specific leaf yet."
+- **Still recommend** a human create an `Installer Bits` (a.k.a. Bell Hanger) leaf under Drilling and Driving
+  (Wood Drilling or a new Specialty Bits group) for a more precise future placement; facets seen:
+  `Specialty Bits`, `Bell Hanger Bits`.
+- weatherguard vendor skip working: only Spyder items surfaced (0 truck-box items in candidates).

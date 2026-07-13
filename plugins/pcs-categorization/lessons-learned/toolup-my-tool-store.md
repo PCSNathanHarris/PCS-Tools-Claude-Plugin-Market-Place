@@ -50,3 +50,36 @@ _Read at the start of each run; appended at the end. Established heuristics floa
   - Ridgid: EZ-change faucet tool → `Faucet and Sink Installer 80692805732`; KWIK-SPIN+ → `Hand Drain Cleaners 80690675812`; copper tubing cutters → `Pipe Cutters`; cable ratchet cutter → `Hand Cable Cutters 80669573220`; 12V charger → `Batteries & Chargers 80668164196`; RP 241 → `Press Tools 80693297252`.
   - Klein: large cable stripper → `Cable Strippers 80669671524`; CL900 → `Clamp Meters 80708304996`. Southwire Maxis XD1 → `Cable Pulling Machines 80672555108`. Jet drum sander → `Sanders (Power Tools) 80694476900`. SENCO O-ring repair kit → `Replacement Parts 80711876708`.
 - **2 brand-only fallback (no category exists):** Reed fiberglass soil probe rod (utility locating) and Southwire ShockShield floor cable protector. NOTE: marking these `review:true` is WRONG on a dual-tree store — the engine's dual-tree guarantee auto-converts a review/no-category decision into a vendor brand-root fallback (per universal rule 7: review is for genuine ambiguity, not "no home"). For category-less items, expect brand-only, not review.
+
+## 2026-07-13 (2026-W29) — batch (250) WRITTEN, LIVE — 0 errors
+- 250 tagged (217 anchor-confirmed via full-closure subset match + 33 manual-by-type; 0 review, 0 brand-only).
+  ~90 net-new category/brand tags applied (most items already partly categorized); CL-categorized x250;
+  New Item V2 removed x250 (all applied, none pre-absent). Add-only held; NO forbidden/promo tags in any of
+  the 44 add batches (verified pre-write). 2 platform picks (M18, LXT).
+- Remaining MTS NIV2 backlog **~1,487** (was ~1,737). Continue supervised.
+- **Southwire wire-pulling equipment (recurring vendor):** Maxis cable pullers (M6K, XD10) → `Cable Pulling
+  Machines 80672555108`; Maxis Cable Feeder (MCF-01) → `Cable Feeder 80672424036`; Maxis Grips pulling heads
+  (GPxxx) → `Grips 80672718948`; SLIDEit wire protector → `Cable Puller Accessories 80672522340`; Coilpak/wire
+  cart (CK-01) → `Wire Carts 80672194660`; Pro-Jax reel axle → `Reel Jack Stands 80672161892`; MSP stud punch
+  → `Stud Punches 80671965284`; MAX PUNCH draw stud → `Knockouts 80671113316` (generic; no Southwire-specific
+  draw-stud node); QWIKrope 12-strand UHMWPE pulling rope → `Single Braided Rope 80672915556`. All under
+  Electrician's Tools > Pulling closure.
+- **Rothenberger:** RoCut ratchet-type PVC/PE/PEX cutters → `Plastic Pipe Cutters 80691658852`; replacement
+  copper cutting wheels → `Replacement Parts 80711876708`.
+- **Reed:** cutter-wheel ball-detent/wheel pins → `Replacement Parts 80711876708`; DEB1 plastic-pipe deburring
+  tool → `Pipe/Tube Cutting & Preparation 80691429476`.
+- **Klein:** power driver bit sets & double-sided combo replacement bits → `Bit Tips 80709812324` (there is NO
+  "Driver Bits"/"Screwdriver Bits" category — driving bits live under Bit Tips).
+- **Bosch:** router plunge/palm-router base → `Router Bases 80711942244`.
+- **Jet:** parallel clamps (woodworking) → `Bar Clamps 80676061284` (a parallel clamp is a bar clamp; no
+  Woodworking-Clamps node exists — existing Woodworking/Clamps tags preserved by add-only).
+- **Werner:** ladder accessories (rope pulley kit, plastic top repel kit) → `Ladder Accessories 80683171940`;
+  D-Rung **extension** ladders AND **podium** ladders → `Ladders 80683106404` (no dedicated Extension/Podium
+  Ladder nodes; only Telescoping Extension Ladders which is a different product).
+- **Safewaze/Fall Safe:** galvanized steel cable for a horizontal lifeline system → `Lifeline Systems
+  80703881316`; Safelink "form link anchor" → `Anchor Points 80703586404` (trust title; the stale `Anchors`
+  fastener tag is misleading — confirms the W28 parapet-anchor lesson).
+- **Ridgid:** MegaPress kit (facet MegaPress Tools) → `Mega Press 80693166180`.
+- **Method confirmed:** deepest node whose FULL closure ⊆ product's current category tags = safe add-only
+  confirm; brand node additionally gated on vendor-token-in-path. 33 items had a brand anchor but no clean
+  category subset (empty/partial cur_cat) → placed manually by title+description.

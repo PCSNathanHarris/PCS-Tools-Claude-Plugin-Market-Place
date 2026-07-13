@@ -6,3 +6,6 @@
 - **XGT has no typed Heat Guns node** -> used generic `Power Tools > Surfacing & Finishing > Heat Guns 444988129597` + XGT root. When a platform lacks a typed node for a category, use the generic Power-Tools type node + platform root (gives `[Type, Platform]`).
 - Placements: grease gun->Grease Guns; magnetic work light->Lighting (XGT `445040918845` / LXT `445016146237`); flathead grinder->Grinders; angle impact wrench->Impact Wrenches; compact stick vacuum->Vacuums `445041377597`; heat gun->Heat Guns.
 - Avoid the mislabeled `Makita LXT Vacuums 478856970557` (its tag list reads `[Vacuums, XGT]`); use the clean `40V XGT > System Enhancement > Vacuums`.
+
+## 2026-07-13 (2026-W29) — 0 eligible (no-op)
+No NIV2 non-kit items (W28's batch drained). Tree-diff +43 = vocabulary rebuild artifact. No writes.

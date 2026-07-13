@@ -66,3 +66,8 @@ _Read at the start of each run; appended at the end. Established heuristics floa
   (Wood Drilling or a new Specialty Bits group) for a more precise future placement; facets seen:
   `Specialty Bits`, `Bell Hanger Bits`.
 - weatherguard vendor skip working: only Spyder items surfaced (0 truck-box items in candidates).
+
+### 2026-W29 (2026-07-13) — 0 eligible (no-op)
+No Spyder NIV2 non-kit items outstanding (W28's 3 installer bits finalized). weatherguard vendor skip still
+working (0 truck-box items surfaced). Tree-diff +41 = vocabulary rebuild artifact; still no Installer/Bell
+Hanger Bits leaf (recommendation stands). No writes.

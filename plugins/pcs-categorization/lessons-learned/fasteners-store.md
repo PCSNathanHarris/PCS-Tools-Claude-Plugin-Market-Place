@@ -13,3 +13,5 @@ _Read at the start of each run; appended at the end. Established heuristics floa
   `CL-categorized` to finalize. **Low priority** vs. MTS. See [[project-automated-categorization]].
 
 ## 2026-07-07 (2026-W28) — 0 eligible (no-op). Backlog stays drained (categorized at launch). No writes.
+
+## 2026-07-13 (2026-W29) — 0 eligible (no-op). Backlog stays drained. Tree-diff +34 rebuild artifact. No writes.

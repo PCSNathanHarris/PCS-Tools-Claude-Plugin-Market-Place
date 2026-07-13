@@ -43,3 +43,8 @@ Small batch, all placed confidently. New heuristics/confirmations:
   Extensions` (`60320514132`, tag `Extensions`); confirmed existing `Accessories/Tool Accessories/Extensions`.
 - Tree diff flagged **154 "new" categories** — this is a vocabulary/tree rebuild artifact (full nav+floating
   set now surfaced), NOT 154 genuinely new collections. Logged; no collections created (read-only).
+
+## 2026-07-13 (2026-W29) — 0 classified / 0 NIV2 removed / 0 review
+Clean no-op: `weekly_run` reported eligible=0 (no `New Item V2` non-kit items outstanding). RTS backlog is
+fully drained as of this run. Tree diff again flagged 153 "new" categories — same vocabulary-rebuild artifact
+as W28 (154); no genuine new collections, none created (read-only). No decisions/report/tag-writes this run.

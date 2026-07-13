@@ -2,3 +2,6 @@
 
 ## 2026-07-07 (2026-W28) — 0 eligible (no-op)
 No NIV2 non-kit items. No writes.
+
+## 2026-07-13 (2026-W29) — 0 eligible (no-op)
+No NIV2 non-kit items. Tree-diff +5 rebuild artifact. No writes.

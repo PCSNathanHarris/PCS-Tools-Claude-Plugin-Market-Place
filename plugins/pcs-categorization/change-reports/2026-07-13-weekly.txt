@@ -1,0 +1,45 @@
+PCS Categorization — weekly repo change report
+Run date: 2026-07-13    Week: 2026-W29    Branch: main
+
+Lessons updated (17):
+  - lessons-learned/fall-protection-store.md
+  - lessons-learned/fasteners-store.md
+  - lessons-learned/gearwrench-shop.md
+  - lessons-learned/greenlee-store.md
+  - lessons-learned/knaack-store.md
+  - lessons-learned/occidentalleatheroutlet.md
+  - lessons-learned/the-dewalt-store.md
+  - lessons-learned/the-jet-store.md
+  - lessons-learned/the-klein-store.md
+  - lessons-learned/the-makita-store.md
+  - lessons-learned/the-milwaukee-store.md
+  - lessons-learned/the-pls-store.md
+  - lessons-learned/the-ridgid-store.md
+  - lessons-learned/the-sumner-store.md
+  - lessons-learned/toolup-my-tool-store.md
+  - lessons-learned/weather-guard-store.md
+  - lessons-learned/wood-shop-outlet.md
+
+Summary: W29: MTS 250 (backlog ~1487 left), Ridgid 2 FlexShaft magnets, GearWrench 3 carts; fall-protection 3 recurring review; rest no-op
+
+Diffstat (staged lesson changes):
+.../lessons-learned/fall-protection-store.md       |  8 ++++++
+ .../lessons-learned/fasteners-store.md             |  2 ++
+ .../lessons-learned/gearwrench-shop.md             |  7 +++++
+ .../lessons-learned/greenlee-store.md              |  2 ++
+ .../lessons-learned/knaack-store.md                |  3 ++
+ .../lessons-learned/occidentalleatheroutlet.md     |  3 ++
+ .../lessons-learned/the-dewalt-store.md            |  4 +++
+ .../lessons-learned/the-jet-store.md               |  2 ++
+ .../lessons-learned/the-klein-store.md             |  4 +++
+ .../lessons-learned/the-makita-store.md            |  3 ++
+ .../lessons-learned/the-milwaukee-store.md         |  5 ++++
+ .../lessons-learned/the-pls-store.md               |  2 ++
+ .../lessons-learned/the-ridgid-store.md            |  7 +++++
+ .../lessons-learned/the-sumner-store.md            |  3 ++
+ .../lessons-learned/toolup-my-tool-store.md        | 33 ++++++++++++++++++++++
+ .../lessons-learned/weather-guard-store.md         |  5 ++++
+ .../lessons-learned/wood-shop-outlet.md            |  2 ++
+ 17 files changed, 95 insertions(+)
+
+Scope: lessons-learned/ + change-reports/ only. No code, no other files.

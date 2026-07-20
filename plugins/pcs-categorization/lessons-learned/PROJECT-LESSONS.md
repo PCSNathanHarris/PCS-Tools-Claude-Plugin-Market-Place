@@ -82,3 +82,20 @@ out genuinely novel *product-category* nodes. The engine strips promo/operationa
    CL-categorized). This is correct per universal rule 7 (review = genuine ambiguity, NOT "no category found").
    So for a category-less item on a dual-tree store, expect a brand-only placement, not a review-queue entry.
    Reserve `review:true` for items a human must actually disambiguate.
+
+## 2026-07-20 (2026-W30) — cross-store patterns from the DeWalt cordless wave
+- **A vendor Shop-by-Brand FALLBACK root can have a POLLUTED closure.** On MTS the DeWalt brand fallback
+  (`421689524477`) resolves to a "DeWalt" collection whose closure is `[Core Bits, DeWalt]` — letting the
+  dual-tree guarantee auto-apply it injects a wrong `Core Bits` tag on every DeWalt tool. **Before relying on
+  any auto brand fallback, check its closure; set an explicit typed brand_gid when the fallback is dirty.**
+- **"60V MAX" is not auto-detected as FLEXVOLT by the platform detector.** DeWalt 60V MAX tools are FLEXVOLT,
+  but the engine left `platform_tags` empty on 60V circular/worm-drive/miter saws (only "FLEXVOLT"/"20V/60V"
+  strings are caught). Add the FLEXVOLT platform/brand by hand for 60V tools. FLEXVOLT also has NO clean
+  platform root on MTS/ATO — use a typed FLEXVOLT node (e.g. FLEXVOLT Saws).
+- **Cut-off tools + die grinders + angle grinders all live under "Grinders"** on both ATO and MTS — there is no
+  dedicated Cut-Off-Tool node (the "Concrete Tools > Cut-Off Saws" node is for large concrete saws only).
+- **A store may group all saw types under one "Saws" leaf** (ATO, MTS) — miter/circular/reciprocating saws
+  share it; don't hunt for a per-type saw node that isn't there.
+- **Subset-match anchor-confirm scales the backlog drain:** the deepest node whose full closure ⊆ the
+  product's existing category tags is a safe pure-add confirm (mostly no-op) that lets NIV2 be removed; only
+  items with empty/partial anchors need manual classification. On MTS W30, 172/250 were anchor-confirmed.

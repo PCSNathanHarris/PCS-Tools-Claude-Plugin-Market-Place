@@ -12,3 +12,10 @@
   them from this store or a fitting category/brand node is added.** Recommend Nathan confirm they were
   cross-listed in error (belong in weather-guard-store / a hand-tool store / a tool-storage store).
 - Review Doc re-uploaded to Drive. No tag writes (add-only; review items untouched, keep NIV2).
+
+## 2026-07-20 (2026-W30) — 0 classified / 0 NIV2 removed / 3 review (recurring, 3rd week)
+- Same 3 cross-listed items resurfaced AGAIN (WeatherGuard truck-rack ratchet strap `8306471207132`, Wright Tool
+  torque wrench `8306470060252`, Ergodyne hammer holster `8306465865948`). Store shape unchanged → no category,
+  no brand fallback → review. **3rd consecutive run (W28/W29/W30).** Review Doc uploaded to Drive. No tag writes.
+  **ACTION FOR NATHAN:** almost certainly cross-listing errors — recommend removing them from fall-protection-store
+  (or moving to weather-guard-store / a hand-tool store / a tool-storage store) so they stop recurring.

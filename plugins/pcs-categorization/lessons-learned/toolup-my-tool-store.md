@@ -83,3 +83,47 @@ _Read at the start of each run; appended at the end. Established heuristics floa
 - **Method confirmed:** deepest node whose FULL closure ⊆ product's current category tags = safe add-only
   confirm; brand node additionally gated on vendor-token-in-path. 33 items had a brand anchor but no clean
   category subset (empty/partial cur_cat) → placed manually by title+description.
+
+## 2026-07-20 (2026-W30) — batch (250) WRITTEN, LIVE — 0 errors
+- 250 tagged: **172 anchor-confirmed** (full-closure subset match, mostly no-op adds) + **78 manual-by-type**.
+  CL-categorized x250; New Item V2 removed x250 (248 applied + 2 already-absent). Add-only held; verified
+  pre-write: 44 add batches, 0 forbidden/promo tags, 250 unique products, max batch 30 pairs. Remaining MTS
+  NIV2 backlog **~1,237** (was ~1,487). Continue supervised.
+- **DeWalt cordless wave (29 items, same q3-2026 wave as ATO).** ⚠ **The DeWalt Shop-by-Brand FALLBACK node
+  (`421689524477`) has a POLLUTED closure `[Core Bits, DeWalt]`** — never let the dual-tree guarantee auto-apply
+  it to a DeWalt tool (it injects a wrong `Core Bits` tag). ALWAYS set an explicit DeWalt `brand_gid`. Mapping:
+  - Category (Power Tools tree, closure incl. `Cordless Tools`): Drills `80668295268`, Impact Drivers `80668754020`,
+    Grinders `80668721252`, Saws `80669081700` (all saw types — miter/circular/recip — go here), Combo Kits
+    `80668229732`, Batteries & Chargers `80668164196`, Oscillating Multi `80668852324`, Ratchets `417795113213`.
+  - Brand (typed DeWalt nodes): 20V Drills `420487823613` / Hammer Drills `80577134692`; 20V Impact Drivers
+    `80577167460`; 20V Grinders `420482318589` (die grinders, cut-off tools, angle grinders ALL → Grinders);
+    20V Oscillating `420482842877`; 20V Combo `80577003620`; 20V Batteries `80576872548`; 12V Batteries
+    `420137566461`; 20V Fastening parent `420484743421` (for the cordless ratchet — no 20V Ratchets brand node);
+    clean 20V dept `80576774244` / 12V dept `80576741476` (also serve as the platform roots); FLEXVOLT Saws
+    `420490346749` (FLEXVOLT has NO clean platform root — use typed FLEXVOLT brand nodes, 60V miter/recip → this).
+  - GRABO vacuum lifter → `Material Handling > Vacuum Cup Lifts 80686940260`.
+- **New keyword→node placements this run:**
+  - Klein power **driver bits** (slotted/phillips insert bits) → `Bit Tips 80709812324`; Klein **power nut drivers**
+    (impact-rated hollow-shaft) → `Hand Tools > Nut Drivers 413586882813`.
+  - GearWrench: slide-hammer/gear puller set → `Gear Pullers 80676585572`; spindle/axle nut socket sets →
+    `Impact Sockets 80681140324`; oil-pressure check kit → `Pressure Gauges 80708698212`.
+  - Wright Tool: socket **Ret-Rings** & **hex bit holders** → `Sockets and Adapters 464334389501`; universal
+    **power socket** set → `Impact Sockets 80681140324`; combination wrench → `Wrenches 80681664612`. (Cougar Pro =
+    Wright Tool's line; vendor field is "Wright Tool".) Wright brand root `80665509988`.
+  - Ridgid: locating receiver kit → `Utility Locating 80690511972`; press-ring kit → `Press Rings 80693231716`.
+  - Reed: copper **re-rounding tool** → `Pipe/Tube Cutting & Preparation 80691429476`; cutter wheel →
+    `Replacement Parts 80711876708`.
+  - Milwaukee utility **replacement blades** → `Utility Knives 80677601380`. Marshalltown floor scraper →
+    `Drywall Tools 80676487268`. ITW Buildex **Tapcon** (concrete screw) → `Anchors 80674783332`. Wilton jaw cap
+    → `Vises 466237489405`.
+  - Jet: dust-collection accessories (sleeves, clamps, elbows, blastgates, reducers, air-filter cartridges,
+    AFS-1000B unit) → `Dust Collection 80711254116`; sandpaper **shop rolls** → `Sandpapers 80709681252`; JCP
+    ratchet/come-along **cable pullers** → `Come Alongs 80685924452`; electric chain hoist → `Chain Hoists
+    80685858916`. Milling T-slot **clamping kit** → no clean generic Metalworking category → **brand-only**
+    (JET Milling Accessories) — an acceptable dual-tree outcome.
+  - SafeWaze/Fall Safe: rope lifeline → `Lifeline Systems 80703881316`; cable SRL retractables → `Retractable
+    Lanyards 80703979620`; brand `SafeWaze Lifelines 80729505892`.
+  - Werner: fiberglass **twin stepladders** → `Step Ladders 80683204708`; scaffold **outrigger kit** →
+    `Ladder Accessories 80683171940` (no scaffold node; low confidence); Werner brand root `80663937124`.
+- **Mechanics reminder:** apply_run emits single 250-pair cl/remove files — must chunk to ≤30 pairs at call time
+  (9 chunks each). 44 add batches run sequentially (products span batches → clobber-bug avoidance).

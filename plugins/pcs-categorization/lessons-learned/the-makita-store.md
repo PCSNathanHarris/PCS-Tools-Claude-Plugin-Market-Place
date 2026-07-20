@@ -9,3 +9,10 @@
 
 ## 2026-07-13 (2026-W29) — 0 eligible (no-op)
 No NIV2 non-kit items (W28's batch drained). Tree-diff +43 = vocabulary rebuild artifact. No writes.
+
+## 2026-07-20 (2026-W30) — 1 classified / 1 NIV2 removed / 0 review
+- **Chainsaw guide bar** (E-18231 18" Guide Bar, a wear/replacement part for battery chainsaws, no platform) →
+  `Accessories > Other Accessories > Replacement Parts` (`445106848061`, `[Replacement Parts]`). Do NOT put a
+  guide bar in `Outdoor Tools > Chain Saws` (`445042393405`) — that's the chainsaw TOOL category, not the bar
+  accessory. No dedicated chainsaw-accessory node exists; Replacement Parts is the generic accessory home
+  (fallback ladder). Tree-diff +43 = vocabulary rebuild artifact.

@@ -9,3 +9,11 @@ No NIV2 non-kit items. No writes.
   Cleaning Accessories']`). No deeper leaf fits a retrieval magnet (leaves are Augers/Cutters, Drum Cables,
   Sectional Cables) — the generic Drain Cleaning Accessories node is the home for FlexShaft accessories.
 - Tree-diff +49 = vocabulary rebuild artifact.
+
+## 2026-07-20 (2026-W30) — 2 classified / 2 NIV2 removed / 0 review
+- **FlexShaft carbide circular chain / descaling chain** (80888 KM-1004 4" carbide chain for 5/16" cable; facet
+  `Drain Cleaning Cables`) → `Drain Cleaning > Drain Cleaning Accessories` (`453635375413`) — same FlexShaft-
+  accessory home as the W29 retrieval magnets. The deeper `Augers and Cutters` leaf (`493535101237`) is
+  **Sectional** augers/cutters; a FlexShaft chain is NOT sectional, so stay at the parent node.
+- **Replacement part for a pipe cutter** (43063 Side Handle for the 238-P Soil Pipe Cutter) → `Ridgid Pipe and
+  Tube Accessories` (`453654774069`, `[Pipe and Tube Accessories]`). Tree-diff +49 = vocabulary rebuild artifact.

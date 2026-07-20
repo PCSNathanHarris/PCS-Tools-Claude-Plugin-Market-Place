@@ -15,3 +15,6 @@ _Read at the start of each run; appended at the end. Established heuristics floa
 ## 2026-07-07 (2026-W28) — ON HOLD, skipped (22 eligible, likely dup-inflated). No writes.
 
 ## 2026-07-13 (2026-W29) — ON HOLD, skipped (22 eligible, unchanged from W28, likely dup-inflated). No writes.
+
+## 2026-07-20 (2026-W30) — ON HOLD, not drained
+weekly_run reported eligible=26 (inflated by the duplicate-creation error). Per store-quirks, NOT drained. Read-only tree refresh only; no classification/writes/report. Resume once the duplicate-creation bug is fixed.

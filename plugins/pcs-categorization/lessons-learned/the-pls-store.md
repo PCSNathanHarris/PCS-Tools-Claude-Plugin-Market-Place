@@ -3,3 +3,6 @@
 ## 2026-07-07 (2026-W28) — 0 eligible (no-op). No writes.
 
 ## 2026-07-13 (2026-W29) — 0 eligible (no-op). No writes. Tree-diff +3 rebuild artifact.
+
+## 2026-07-20 (2026-W30) — 0 eligible (no-op)
+Backlog drained; no New Item V2 non-kit items. Tree-diff +3 = vocabulary rebuild artifact, not new merchant collections. No decisions/report/writes.

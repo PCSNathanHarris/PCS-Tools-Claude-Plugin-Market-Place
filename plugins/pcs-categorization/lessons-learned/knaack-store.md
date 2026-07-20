@@ -9,3 +9,6 @@
 
 ## 2026-07-13 (2026-W29) — 0 eligible (no-op)
 No New Item V2 non-kit items. Tree-diff +108 = same vocabulary-build expansion as W28. No writes.
+
+## 2026-07-20 (2026-W30) — 0 eligible (no-op)
+Backlog drained; no New Item V2 non-kit items. Tree-diff +108 = vocabulary rebuild artifact, not new merchant collections. No decisions/report/writes.

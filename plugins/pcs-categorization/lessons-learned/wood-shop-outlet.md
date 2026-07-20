@@ -14,3 +14,6 @@ _Read at the start of each run; appended at the end. Established heuristics floa
 ## 2026-07-07 (2026-W28) — 0 eligible (no-op). Backlog stays drained (categorized at launch). Tree-diff +629 = 3M vocab-build, not new collections. No writes.
 
 ## 2026-07-13 (2026-W29) — 0 eligible (no-op). Backlog stays drained. Tree-diff +630 = 3M vocab-build, not new collections. No writes.
+
+## 2026-07-20 (2026-W30) — 0 eligible (no-op)
+Backlog drained; no New Item V2 non-kit items. Tree-diff +630 = vocabulary rebuild artifact, not new merchant collections. No decisions/report/writes.

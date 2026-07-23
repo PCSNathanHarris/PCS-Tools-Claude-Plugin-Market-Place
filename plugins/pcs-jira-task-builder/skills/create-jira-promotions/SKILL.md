@@ -359,3 +359,21 @@ The audit log file (written alongside the parser output) captures:
   prompt the user rather than emit a wrong Task.
 - For any failure on the project-target gate, default to abort. Wrong
   data in PROM costs real money downstream.
+
+---
+
+## Q3 2026 lessons learned  (see plugins/pcs-promo-creation/lessons-learned/Q3-2026.md)
+
+- **Per-vendor status column** on PROM: DeWalt→"DeWalt", Makita→"Makita" (id 10222),
+  Milwaukee→"Milwaukee". Epics: DeWalt PROM-357, Makita PROM-356.
+- **Fields:** `11070` NetSuite Search (URL) · `11071` Product Tag (plain text) · `11072` Collection
+  Links (ADF). Put promo info in these fields, not the description; clear rich text with empty ADF
+  `{"type":"doc","version":1,"content":[]}` (null rejected).
+- **Collection Links = front-end storefront URLs, not admin.** One store/line (hardBreak):
+  `TUP: <url>` / `<brand-store>: <url>` / `MTS: <url>`, each visible text + link mark. Domains
+  `https://toolup.com`, `https://www.mytoolstore.com` (note `www.`), Milwaukee
+  `https://redtoolstore.com`; URL = `<domain>/collections/<handle>`.
+- **Attachments can't upload from the hosted sandbox** (proxy 403 to Atlassian; scoped token lacks
+  email/site) and the connector can't attach files → upload in Jira manually (or browser w/ consent);
+  the connector can only add a comment cross-reference.
+- Promo **`duedate`** = authoritative takedown date (Milwaukee PROM-752 = 10/25; all others 11/1).

@@ -610,3 +610,23 @@ script, image-only values by the independent verifier subagent. See
 - For Crescent (variable layouts) or any unfamiliar vendor pattern,
   ask the user to confirm price column and free-good detection
   conventions before emitting rows.
+
+---
+
+## Q3 2026 lessons learned  (see plugins/pcs-promo-creation/lessons-learned/Q3-2026.md)
+
+- **Milwaukee price column** = last of the 5-col table (`50% OFF · HEAVY DUTY · PROMO PRICE · IMAP ·
+  PROMO IMAP`) = **Promo IMAP**; free goods show "**FREE**", not a price.
+- **HERO flat bundle price:** for "buy a battery 2-pack / kit get free good" hero pages the anchor
+  buy price lives in the page hero ("NOW $199" M12 XC5.0 / $149 XC4.0), NOT a line cell — capture it
+  as the anchor price so it isn't dropped.
+- **Buy-2-any-mix** pages are held (`buy2anymix`) — after a parse, scan For-Review for **every** such
+  page and build each combinatorially = C(n,2)+n (all pairs + same-tool doubles). Makita Q3: p34 LXT
+  30→465, p11 XGT 10→55, p39 nailers 5→15. Confirm sibling free goods are built in NetSuite first.
+- **e-Rebate "Kit" pages are NOT a kit build** — buy items are existing products, free good is a
+  mail-in rebate → Other-Promotions/Jira (Makita Q3 p23/p24).
+- Per-promo `Start/End` windows already emit — downstream must group by the **per-promo** dates (one
+  deck can carry two windows).
+- Verifying prices from extracted deck **text**: watch OCR **row offset** (a single grep line can
+  misattribute a price — 2855P-20 looked $299, is $249) and **letter-suffix SKUs** (`2855P-20`,
+  `2565P-20`) that break `\d{3,4}-\d{2}` regexes.

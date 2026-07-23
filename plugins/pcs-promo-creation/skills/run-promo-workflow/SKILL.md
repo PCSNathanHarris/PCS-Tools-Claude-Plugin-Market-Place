@@ -475,3 +475,31 @@ Full details: `reference/prerequisites.md`.
 - Never advance past a gate without an explicit human Yes.
 - If the parser, the cheat-sheet fill, or `kb` reports something unexpected,
   show it to the operator and stop at the next gate rather than pressing on.
+
+---
+
+## Q3 2026 lessons learned  (see plugins/pcs-promo-creation/lessons-learned/Q3-2026.md)
+
+From the DeWalt + Milwaukee + Makita Q3 2026 runs:
+- **Bulk Shopify tagging = one call.** `shopify_bulk_apply_tags` with an **inline `assignments`**
+  array `[{product_id,tag},…]` + `operation` + `store` — one API write + one rollback. Do NOT loop
+  `shopify_add_product_tag` per product (token burn) or use `assignments_file` (server-side path the
+  hosted sandbox can't read). Build IDs from `shopify_fetch_products` (file+preview), not by paging
+  search into context.
+- **Duplicate-SKU-per-product (RTS/MTS):** reused kits often have two Shopify products sharing one
+  SKU (older + newer). Tag only the **newest-created**; strip the tag from the older or the kit
+  double-lists in the smart collection. Re-search late-built SKUs before declaring "not found".
+- **Store set is vendor-dependent** — resolve via `list_stores`. TUP=`toolupstore`,
+  MTS=`toolup-my-tool-store`, DeWalt/ATO=`the-dewalt-store`; **Milwaukee uses `the-milwaukee-store`
+  (RTS)** in place of ATO.
+- **Existing/reused-kit repricing is its own branch:** decode changing internal IDs → NLP revert
+  search → NLP-format START/REVERT workbook keyed by **Internal ID** (kit revert exports have blank
+  Vendor Name → SKU match fails). Standing column layout `Internal ID, Name, Online Sales Price,
+  Promo MAP` (ZZ Name included). START = promo price in both; REVERT = true prior OSP + Promo MAP
+  (may differ; flag $0 before importing).
+- **Display-in-Web-Site schedule** is a first-class output: per execution window, Go-Live
+  (Display=Yes on start) + Takedown (Display=No on end), grouped by per-promo dates; header exactly
+  `Display in Web Site`.
+- **Promo windows: trust the Jira PROM `duedate`, not deck art or a reused kit's stale Display
+  Name.** One deck can carry two windows (Milwaukee P3: 8/3–11/1 for 9 promos; 9/7–10/25 for the
+  M12-battery HERO only).

@@ -139,6 +139,13 @@ After all stores:
    `reference/lessons-sync.md` and `reference/write-scope.md`.
 3. Write `<data_dir>/runs/<week>/CROSS-STORE-SUMMARY.md` (per-store totals + review counts + any failures +
    the weekly workbook path + the lessons-sync push/skip status). Print a short final report.
+4. **Always link the reports Drive folder at the end of the run.** Every run — single-store, multi-store, or
+   all-no-op — must finish by giving the user the Google Drive folder where the report workbooks and review
+   Docs live:
+   **Claude Shopify Categorization Reviews** — https://drive.google.com/drive/folders/1xteTZd7A1GRIHOq5dABz4BECgOk6LHuW
+   This is the online counterpart of the `config.report_dir()` Drive-for-Desktop synced folder and the same
+   folder id used as `parentId` for review Docs. Include the link verbatim in **both** `CROSS-STORE-SUMMARY.md`
+   and the printed final report.
 
 ## Key rules
 - **Write scope = product tags only.** The only Shopify writes are `shopify_add_product_tag`,

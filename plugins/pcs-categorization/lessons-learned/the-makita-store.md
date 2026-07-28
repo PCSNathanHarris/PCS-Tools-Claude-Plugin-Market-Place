@@ -16,3 +16,6 @@ No NIV2 non-kit items (W28's batch drained). Tree-diff +43 = vocabulary rebuild 
   guide bar in `Outdoor Tools > Chain Saws` (`445042393405`) — that's the chainsaw TOOL category, not the bar
   accessory. No dedicated chainsaw-accessory node exists; Replacement Parts is the generic accessory home
   (fallback ladder). Tree-diff +43 = vocabulary rebuild artifact.
+
+## 2026-W31 (2026-07-28) — 0 eligible (no-op)
+No `New Item V2` non-kit items outstanding. Backlog drained. Tree-diff +43 = vocabulary-rebuild artifact (full nav+floating vocab surfaced), NOT genuine new merchant collections; none created (read-only). No decisions/report/tag-writes.

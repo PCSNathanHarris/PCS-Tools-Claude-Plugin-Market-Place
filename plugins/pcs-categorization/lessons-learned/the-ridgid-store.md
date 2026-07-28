@@ -17,3 +17,14 @@ No NIV2 non-kit items. No writes.
   **Sectional** augers/cutters; a FlexShaft chain is NOT sectional, so stay at the parent node.
 - **Replacement part for a pipe cutter** (43063 Side Handle for the 238-P Soil Pipe Cutter) → `Ridgid Pipe and
   Tube Accessories` (`453654774069`, `[Pipe and Tube Accessories]`). Tree-diff +49 = vocabulary rebuild artifact.
+
+## 2026-07-28 (2026-W31) — 1 classified / 1 NIV2 removed / 1 review
+- **Hydraulic ram/cylinder replacement part for 258/258XL pipe cutters** (59517) → `Ridgid Pipe and Tube
+  Accessories` (`453654774069`) — same pattern as the W30 pipe-cutter side handle: a replacement part that
+  NAMES its parent pipe-cutter model goes to Pipe and Tube Accessories.
+- **REVIEW — generic replacement knob with no parent tool** (92802 Plunger Knob): title/description name no
+  parent tool, and Ridgid has NO generic "Replacement Parts" bucket. Its `*-Accessories` nodes are all
+  product-line-specific (Drain Cleaning, Pressing, Pipe & Tube, Hand Tool, Knockout, Threading, Vacuum,
+  SeeSnake, Water Jetting, Tubing Tool, Inspect & Locate). **Heuristic:** a replacement part is placeable only
+  when it names/implies its parent tool or line; a bare "knob/screw/spring/knob"-type part with no parent →
+  review (human looks up the MPN). Do not guess a line for a generic small part.

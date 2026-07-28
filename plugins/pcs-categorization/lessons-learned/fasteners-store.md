@@ -27,3 +27,6 @@ First non-zero run here — 3 net-new Simpson items, all placed confidently. Nod
 - **Acrylic-Tie mixing nozzle for AT-XP adhesives** → `Simpson Adhesive Anchors > Simpson Adhesive Anchoring
   Accessories` (`634939769199`). Adhesive dispensing/mixing accessories live under Adhesive Anchoring Accessories.
 - Tree-diff +34 = vocabulary rebuild artifact.
+
+## 2026-W31 (2026-07-28) — 0 eligible (no-op)
+No `New Item V2` non-kit items outstanding. Backlog drained. Tree-diff +65 = vocabulary-rebuild artifact (full nav+floating vocab surfaced), NOT genuine new merchant collections; none created (read-only). No decisions/report/tag-writes.

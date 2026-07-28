@@ -99,3 +99,24 @@ out genuinely novel *product-category* nodes. The engine strips promo/operationa
 - **Subset-match anchor-confirm scales the backlog drain:** the deepest node whose full closure ⊆ the
   product's existing category tags is a safe pure-add confirm (mostly no-op) that lets NIV2 be removed; only
   items with empty/partial anchors need manual classification. On MTS W30, 172/250 were anchor-confirmed.
+
+## 2026-07-28 (2026-W31) — cross-store patterns
+- **⚠ `classify_run.py` (engine helper) is UNSAFE in the current version — verify or discard its node picks.**
+  On MTS this run it matched on a PARTIAL anchor and proposed deeper leaves whose closure INJECTS tags the
+  product does not have: a deburring-tool replacement cutter → "Conduit Bending"; a nut driver → "Drywall
+  Screw Guns" (adds `Cordless Tools`); MaxiFlex gloves → "Left Handed Products"; a strap-wrench replacement
+  strap → "Lifting Straps"; a cutter extension chain → "Chain Hoists". Applying these would violate add-only
+  and universal rule 3. **Use the full-closure subset-match to author decisions instead** (deepest node whose
+  FULL closure ⊆ the product's existing tags) — it is both add-only-safe AND produces the correct node for
+  pre-tagged items. Always run a pre-write scan for forbidden/promo tags in every chosen closure.
+- **When a backlog wave is fully pre-tagged, apply_run's add-batches are provable no-ops.** If every chosen
+  closure ⊆ the product's existing tags, the only state change is `CL-categorized` + `New Item V2` removal.
+  Verify (tag ∉ product.all_tags for 0 pairs) and you may skip the vacuous add-batch calls, running just the
+  chunked CL/remove writes — a large MCP-call saving with no behavioral difference. (MTS W31: 41/41 add-batches
+  vacuous; only 9 CL + 9 remove chunks needed.)
+- **A replacement part is only placeable when it names/implies its parent tool or line.** A bare generic part
+  (e.g. Ridgid "Plunger Knob", no parent named) on a store with no generic "Replacement Parts" bucket → review;
+  do not guess a product line. Parts that name their parent (e.g. "ram for 258/258XL pipe cutters") place fine.
+- **Recurring cross-listed items keep resurfacing** (fall-protection-store: same 3 WeatherGuard/Wright/Ergodyne
+  items now 4 weeks running). They have no category and no brand fallback in that store → review every run until
+  a human removes them or adds a fitting node. Flag for human action rather than force-placing them.

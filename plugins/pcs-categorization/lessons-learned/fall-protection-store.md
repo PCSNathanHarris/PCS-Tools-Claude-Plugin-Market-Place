@@ -19,3 +19,10 @@
   no brand fallback → review. **3rd consecutive run (W28/W29/W30).** Review Doc uploaded to Drive. No tag writes.
   **ACTION FOR NATHAN:** almost certainly cross-listing errors — recommend removing them from fall-protection-store
   (or moving to weather-guard-store / a hand-tool store / a tool-storage store) so they stop recurring.
+
+## 2026-07-28 (2026-W31) — 0 classified / 0 NIV2 removed / 3 review (recurring, 4th week)
+- Same 3 cross-listed items resurfaced AGAIN (WeatherGuard truck-rack ratchet strap `8306471207132`, Wright Tool
+  torque wrench `8306470060252`, Ergodyne hammer holster `8306465865948`). Store shape unchanged → no category,
+  no brand fallback → review. **4th consecutive run (W28/W29/W30/W31).** Review Doc uploaded to Drive. No tag
+  writes. **ACTION FOR NATHAN (repeat):** these are cross-listing errors — remove from fall-protection-store so
+  they stop recurring every week.

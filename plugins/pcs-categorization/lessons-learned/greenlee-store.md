@@ -10,3 +10,6 @@
   (`472823988450`, `[Test and Measurement Accessories]`). The parent instrument lives under Test and Measurement
   > Circuit Testing & Tracing, so its accessory belongs in the T&M Accessories bucket. Tree-diff +57 = rebuild
   artifact.
+
+## 2026-W31 (2026-07-28) — 0 eligible (no-op)
+No `New Item V2` non-kit items outstanding. Backlog drained. Tree-diff +57 = vocabulary-rebuild artifact (full nav+floating vocab surfaced), NOT genuine new merchant collections; none created (read-only). No decisions/report/tag-writes.

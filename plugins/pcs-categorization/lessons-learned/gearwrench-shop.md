@@ -21,3 +21,9 @@
   `Wrenches > Ratcheting Wrenches` (`396306874613`) — confirmed existing anchors.
 - **Mini toolbox, no tools included** (GWBXMINIS, facet `Tool Boxes`) → `Equipment > Storage` (`394025402613`) —
   same storage home as the W29 carts (no dedicated Tool Boxes node). Tree-diff +14 rebuild artifact.
+
+## 2026-07-28 (2026-W31) — 1 classified / 1 NIV2 removed / 0 review
+- **Single soft-face / dead-blow hammer** (GWHST16 16oz soft-face w/ steel handle) → `Hand Tools > Striking
+  Tools` (`394025337077`, closure `[Hammers and Striking Tools, Hand Tools]`). Use the individual **Striking
+  Tools** node for a single hammer; reserve the floating **"Hammers and Striking Tool Sets"** node for SETS only.
+  Tree-diff +14 rebuild artifact.

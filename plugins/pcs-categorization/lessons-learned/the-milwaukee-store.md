@@ -77,3 +77,21 @@ new collections, none created. New heuristics/confirmations this run:
   NOT Base Layers (not truly a base layer). No **drinkware/hydration** node — PACKOUT insulated bottles (facet
   `Drinks/Hydration`) went to top-level `Accessories` (`89441042516`, `[Accessories]`). If a Shirts or Drinkware
   collection appears later, re-home these. Not review-worthy — a safe generic beats review here.
+
+## 2026-07-28 (2026-W31) — 4 classified / 4 NIV2 removed / 0 review
+4 fresh NIV2 items, all untagged from scratch except one socket (pre-tagged `Accessories`/`Sockets and
+Adapters`). None on a battery platform. All placed confidently. Tree diff flagged 153 "new" categories again —
+same vocabulary-rebuild artifact (W28=154, W29/W30=153); none created (read-only). New heuristics/confirmations:
+- **Pliers Wrench Set** (48-22-6930, 2-pc) → `Hand Tools > Fastening > Wrenches` (`189329350`) — confirms the
+  W30 48-22-6907 call; the whole pliers-wrench family routes to Wrenches, never the contaminated Pliers node.
+- **FORCE LOGIC press RINGS/jaws** (ZoomLock MAX / B MaxiPro press ring, e.g. 49-16-2657ZX — an *accessory*
+  compatible with M18/M12 press tools, not itself a tool and not on-platform) → `Accessories > Other
+  Accessories > Plumbing Tool Accessories` (`293499207764`, `[Accessories, Plumbing Tool Accessories]`). Keep
+  the press-ring accessory distinct from the press TOOL itself (W28: press tools → Trades > Plumbing > Press
+  Tools). No `platform_gid` — a bare press-ring accessory is not "on" the platform (universal rule 8b).
+- **Surface-grinding dust shroud** (49-40-6200, facet `Grinder Guards`, `for_use_with Angle Grinder`, connects
+  to Milwaukee dust extractors for OSHA silica control) → `Accessories > Other Accessories > Dust Collection`
+  (`189287878`, `[Accessories, Dust Collection]`). Trust the dust-extraction purpose over the "guard" label.
+- **SHOCKWAVE impact socket** (single, facet `Impact Sockets`, `socket_type Impact`) → `Accessories > Tool
+  Accessories > Impact Sockets` (`189288006`, `[Accessories, Impact Sockets, Tool Accessories]`) — the impact
+  accessory node, not the hand-tool `Sockets` node (which is for socket sets under Fastening).

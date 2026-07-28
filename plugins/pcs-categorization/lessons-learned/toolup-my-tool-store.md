@@ -127,3 +127,25 @@ _Read at the start of each run; appended at the end. Established heuristics floa
     `Ladder Accessories 80683171940` (no scaffold node; low confidence); Werner brand root `80663937124`.
 - **Mechanics reminder:** apply_run emits single 250-pair cl/remove files — must chunk to ≤30 pairs at call time
   (9 chunks each). 44 add batches run sequentially (products span batches → clobber-bug avoidance).
+
+## 2026-07-28 (2026-W31) — batch (250) WRITTEN, LIVE — 0 errors
+- 250 tagged, all via safe **full-closure subset-match** (deepest category node + vendor-gated brand node whose
+  FULL closure ⊆ the product's existing tags). 246 got a category node, 247 a brand node, 4 brand-only (no
+  category-node subset), 0 review. **Net-new category/brand tags = 0** — every candidate was already fully
+  categorized; the run purely CONFIRMED placement, added `CL-categorized` x250, and removed `New Item V2` x250
+  (all applied). Add-only strictly held. Remaining MTS NIV2 backlog **~987** (was ~1,237). Continue supervised.
+- **Wave composition:** Greenlee 212, Milwaukee 13, Tempo 9, Gardner Bender 9, PIP 3, Reed 2, Pyramex 2 — a
+  Greenlee electrician/knockout/bending replacement-parts & dies wave. All items pre-tagged from the catalog.
+- **⚠ classify_run.py (engine helper) is UNSAFE this version — do not trust its node picks.** It matched on a
+  PARTIAL anchor and proposed wrong deeper leaves that would INJECT tags the product lacks, e.g. a Greenlee
+  deburring-tool replacement cutter → "Conduit Bending" (closure adds `Conduit Bending`), a nut driver →
+  "Drywall Screw Guns" (adds `Cordless Tools`), MaxiFlex gloves → "Left Handed Products", a strap-wrench
+  replacement strap → "Lifting Straps", a cutter extension chain → "Chain Hoists". 36 keyword + 7 no-match were
+  all wrong/unsafe. **Method used instead:** author decisions from a subset-match resolver (closure ⊆ existing
+  tags) — this both guarantees add-only safety AND produced the correct nodes (nut driver → Nut Drivers, glove →
+  Gloves, cutter → Replacement Parts). Pre-write scan confirmed 0 forbidden/promo tags in any chosen closure.
+- **Efficiency note:** because every chosen closure ⊆ existing tags, all 41 apply_run add-batches were provable
+  no-ops (verified: 0 pairs where tag ∉ product.all_tags). Only the finalization writes changed state — 9 CL
+  chunks + 9 NIV2-remove chunks (≤30 pairs each). Skipped the 41 vacuous add calls (safe: nothing to add).
+- Battery-platform: 1 item (Greenlee LS50L11A knockout driver, "Greenlee Gator 18V") — Gator 18V is NOT in the
+  MTS platform tree (M12/M18/MX/DeWalt/Makita only; empty platform_tags), so NO platform pick — like Ridgid 18V.

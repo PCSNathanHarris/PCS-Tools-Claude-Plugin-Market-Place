@@ -41,3 +41,14 @@ vocabulary-build artifact, no genuine new collections.
   caught by platform detection; add FLEXVOLT by hand for 60V tools.
 - **Diamond core bit → Accessories > Tool Accessories > Drill Bits** (`251786887`). **Workshop hook set / metal
   rail storage (no tools) → Accessories > Storage and Equipment** (`440952062174`).
+
+## 2026-07-28 (2026-W31) — 1 classified / 1 NIV2 removed / 0 review
+Single fresh NIV2 item, no anchors, not on a platform. Tree-diff +73 again = same vocabulary-build artifact.
+- **Knockout punch & die kits** (DCE6004K — DCE600-series punches + dies in a ToughSystem box, explicitly "for
+  use with the DCE600 20V MAX Hydraulic Knockout Tool, sold separately") → `Accessories > Tool Accessories`
+  (`440952226014`, closure `[Accessories, accessories tool accessories]`). Reasoning: the punches/dies are an
+  **accessory** to a sold-separately powered tool, not a power tool. **Did NOT use `Power Tools > Trades >
+  Electrician's Tools`** (`Electrician's Tools`+`Power Tools`) — that would wrongly tag a non-powered die kit
+  `Power Tools` (universal rule 3). **Vocabulary gap:** ATO has no electrician-accessory or knockout node; if
+  one appears, re-home. Confidence 55 (deliberate safe-generic). The ToughSystem box is packaging, not the
+  product — storage-vs-tool rule → not TOUGHSYSTEM Storage.

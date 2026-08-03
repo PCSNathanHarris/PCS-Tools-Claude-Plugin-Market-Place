@@ -1,0 +1,9 @@
+{
+  "name": "pcs-meeting-notes-creator",
+  "version": "1.0.0",
+  "description": "Personalized automated meeting notes for anyone at PCS. A guided setup wizard (/setup-meeting-reports) interviews the user — how many connectors and how much access they want (Minimal: Claude work only; Standard: + Gmail sent-mail + Google Drive activity; Full: + Jira + Google Chat) — walks them through connecting each source with THEIR OWN accounts, lets them define their recurring meetings and exact reporting windows, then creates scheduled tasks that generate a comprehensive Detailed report and a one-page bullet Quickfire report (.docx) before each meeting, summarizing THE USER'S OWN work across every enabled source. Reports deliver to the user's Google Drive (Work Summaries/<year>/<week range>/) with a local-folder backup. Google Chat requires a one-time OAuth setup — the wizard warns it is more involved, explains the process, and asks before proceeding. Privacy built-ins: reports cover only the user's own work, personal chat spaces/threads are excluded via a user-defined exclusion list, all sources are read strictly read-only, no messages are ever sent, and old reports are never modified. Bundles a strictly read-only Google Chat puller script (owner-approved exception to the markdown-only rule). Includes /run-meeting-report for on-demand runs.",
+  "author": {
+    "name": "PCS Tools"
+  },
+  "keywords": ["meeting-notes", "standup", "reports", "summaries", "gmail", "jira", "google-chat", "google-drive", "scheduled"]
+}

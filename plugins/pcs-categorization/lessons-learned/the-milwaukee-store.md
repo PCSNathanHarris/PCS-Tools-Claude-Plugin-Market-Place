@@ -95,3 +95,47 @@ same vocabulary-rebuild artifact (W28=154, W29/W30=153); none created (read-only
 - **SHOCKWAVE impact socket** (single, facet `Impact Sockets`, `socket_type Impact`) → `Accessories > Tool
   Accessories > Impact Sockets` (`189288006`, `[Accessories, Impact Sockets, Tool Accessories]`) — the impact
   accessory node, not the hand-tool `Sockets` node (which is for socket sets under Fastening).
+
+## 2026-08-03 (2026-W32) — 13 classified / 13 NIV2 removed / 0 review
+13 fresh NIV2 items — a **reconditioned + OPE (outdoor power equipment) wave**. All classified from scratch
+(only the SHOCKWAVE socket carried anchors). All placed confidently; nothing to review. Tree diff flagged 153
+"new" categories again — the same vocabulary-rebuild artifact (W28=154, W29/W30/W31=153); none created (read-only).
+New heuristics/confirmations:
+- **`category_gids` (list) is NOT supported by the installed `apply_run.py`** — only `category_gid` / `brand_gid`
+  / `platform_gid`. On a **non-dual-tree** store (RTS) the `brand_gid` slot resolves any node **by gid**, so it
+  works as a **second category slot** for RTS's parallel structures (Power Tools / Shop-By-Trade / floating).
+  Used it this run to add `Recip Blades`, `SBTA Impact Wrenches`, `quik-lok`, `packout accessories`.
+- **⚠ `Power Tools > Drilling & Fastening > Impact Wrenches` (`189687558`) closure is CONTAMINATED** —
+  `[Drilling and Driving, Impact Wrenches, M12, Power Tools, SBT Automotive, trades]`. It injects **M12** into
+  every pick, so it is wrong for an **M18** tool (universal rule 3). Use the clean platform node
+  **`M18 > Drilling & Fastening > Impact Wrenches` (`189693318`, `[Impact Wrenches, M18, M18 Drilling and Driving]`)**
+  and add the trade structure via **`Milwaukee Impact Wrenches` (`267413323860`, `[SBTA Impact Wrenches]`)**.
+- **QUIK-LOK attachments** (articulating hedge trimmer `49-16-2719R`, bristle brush `49-16-2741R`, pole-saw kit
+  `3016-21PS`): tag the **attachment's own type** where a leaf exists (hedge trimmer →
+  `Power Tools > Outdoor Tools > Hedge Trimmers` `271717957716`), else the generic
+  `Power Tools > Outdoor Tools` (`263741472852`, `[Power Tools, ope]`), **plus** the floating
+  **`Milwaukee QUIK-LOK Outdoor System` (`268855378004`, `[quik-lok]`)**, **plus** platform
+  `M18 > Outdoor Tools` (`264203993172`, `[M18, ope]`). The bristle brush and pole saw have **no type leaf**
+  (no Brush/Sweeper node, no Pole Saws node) — generic Outdoor Tools, conf 60-62.
+- **Do NOT file a pole saw under `Chainsaws`** — RTS keeps chainsaws (`271709667412`) for chainsaws only; a
+  pole saw is a distinct type with no leaf. Generic Outdoor Tools instead. A real **M18 16" chainsaw** (`2727-80`)
+  does get `Chainsaws` + platform `M18 > Outdoor Tools > Chainsaws` (`272597450836`).
+- **Chain saw CHAIN** (facet `Chain Saw Chains`, 49-16-2819) → `Accessories > Tool Accessories > Saw Blades`
+  (`189288454`) — the chain is the saw's cutting element, same family as a blade. No Chain/Bar node exists.
+  No `platform_gid` (a bare accessory is not "on" the platform, rule 8b).
+- **OPE replacement blades that are not saw blades** (8" edger blade 50 PK, facet `Replacement Blades`) →
+  `Accessories > Other Accessories > Replacement Parts` (`189288262`). Reserve `Saw Blades` for saw-family
+  cutting media. **SAWZALL recip blade** → `Saw Blades` (`189288454`) **+ floating `Recip Blades`
+  (`173509836884`, `[Recip Blades, Saw Blades_Recip Blades]`)** — add the typed recip node, W30/W31 only used
+  the generic Saw Blades node.
+- **PACKOUT drinkware accessories** (sip lid for insulated bottles, facet `Drinks/Hydration`) → top-level
+  `Accessories` (`89441042516`) **+ floating `PACKOUT Accessories` (`271297151060`, `[packout accessories]`)`.
+  Still no drinkware/hydration node (W30 gap persists) — the PACKOUT Accessories node is the better half of the
+  pair; re-home if a Drinkware collection appears.
+- **Manual wire strippers have NO node on RTS** (MT702, facet `Wire Strippers & Cutters`) → safe generic
+  `Hand Tools > Cutting` (`271769501780`, `[Cutting Hand Tools, Hand Tools]`), conf 55. **Avoid
+  `Trades > Electrician Tools > Cable Strippers` (`267413127252`)** — closure carries `M12, M18, Power Tools`
+  and would wrongly power-tag a manual tool (rule 3). `Milwaukee Cable Cutters` (`292331651156`) is for hand
+  **cable** cutters, not an 8-20 AWG wire stripper. **Vocabulary gap: no Wire Strippers leaf.**
+- **Multi-function utility knife w/ prybar** (facet `Utility Knives`) → `Hand Tools > Cutting > Knives`
+  (`189327878`) — the prybar/nail-puller extras don't move it out of Knives.

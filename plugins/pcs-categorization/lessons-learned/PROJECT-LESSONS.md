@@ -120,3 +120,64 @@ out genuinely novel *product-category* nodes. The engine strips promo/operationa
 - **Recurring cross-listed items keep resurfacing** (fall-protection-store: same 3 WeatherGuard/Wright/Ergodyne
   items now 4 weeks running). They have no category and no brand fallback in that store → review every run until
   a human removes them or adds a fitting node. Flag for human action rather than force-placing them.
+
+## 2026-08-03 (2026-W32) — cross-store patterns
+
+### Engine / mechanics
+- **`category_gids` (plural) is NOT supported by the installed `apply_run.py`.** The schema is exactly three
+  slots: `category_gid`, `brand_gid`, `platform_gid`, unioned. Earlier lessons referencing a `category_gids`
+  list describe an intent the installed engine does not implement — do not rely on it.
+- **On a NON-dual-tree store the `brand_gid` slot is free, and `apply_run` resolves any node by gid** (the
+  `brands` list is empty there, so every node is category-kind). Use it as a **second category slot** to place
+  into a store's parallel structures. Used this run on RTS (`Recip Blades`, `SBTA Impact Wrenches`, `quik-lok`,
+  `PACKOUT Accessories`) and gearwrench-shop (`Specialty Tool Sets` alongside `Diagnostic Scan Tools`).
+- **⚠ `apply_run.py` does NOT chunk `add_cl_categorized.json` / `remove_niv2.json`.** On a 250-item run each
+  holds 250 pairs — far over `shopify_bulk_apply_tags`' 30-pair ceiling. **Chunk them to <=30 yourself.**
+  (MTS needed 9 + 9 chunks.) Recommend Adam add chunking to the engine.
+- **`weekly_run.py` records no uncapped eligible total** — with `--max-items 250` the log only ever shows 250,
+  so a capped store's true backlog can't be read from the run output. Affects MTS and the-jet-store.
+- **Vacuous-batch skipping generalizes.** Compare each resolved (product, tag) pair against the product's
+  `all_tags`: pairs already present add nothing. On MTS 1070/1121 pairs were vacuous, so 41 engine add-batches
+  collapsed into 4 real calls. Always verify against `all_tags` before skipping.
+
+### Classification
+- **A vacuous brand/category match can look wrong and still be harmless.** Klein 50400 *Cable Bender*
+  subset-matched the brand node `Klein Tools Bolt Cutters` because the product already carries a (merchant-set)
+  `Bolt Cutters` tag. Since the closure is a subset of existing tags, applying it changes nothing — add-only
+  makes the mismatch inert. Don't "fix" the merchant's tag (rule 10); just set the other tree correctly.
+- **Check a platform-typed nav node's closure for a WRONG platform, not just a wrong department.** RTS's
+  `Power Tools > Drilling & Fastening > Impact Wrenches` (`189687558`) carries **M12**, so it is wrong for an
+  M18 tool. The clean fix is the matching platform node (`M18 > Drilling & Fastening > Impact Wrenches`) plus a
+  Shop-By-Trade node for the trade structure. Rule 3 covers wrong *platforms* as much as wrong departments.
+- **Attachment-system products** (Milwaukee QUIK-LOK pole saw / hedge trimmer / bristle brush) get the
+  attachment's **own type leaf** where one exists, else the generic Outdoor-Tools parent, **plus** the
+  attachment-system collection (`quik-lok`) **plus** the platform's outdoor node. Don't file a pole saw under
+  Chainsaws — a pole saw is a distinct type, and the store keeps them separate.
+- **Cutting media follows its tool family.** A chainsaw *chain* files with Saw Blades (it is the saw's cutting
+  element); an *edger* blade files with Replacement Parts (not a saw). Match the medium to the tool, not to the
+  word "blade".
+- **"Holder" is ambiguous — read what it holds.** A belt-mounted tape-measure/hammer/knife/pliers holder →
+  Tool Holsters (belt gear). A screwdriver replacement **bit** holder → Bit Holders (a tool accessory). Same
+  word, different trees.
+- **A generic Replacement Parts bucket is the difference between placement and review.** MTS has one
+  (`80711876708`, `[Replacement Parts, Tool Accessories]`), so bare Greenlee pins / o-rings / screws placed
+  cleanly. the-ridgid-store has none — only type-specific accessory nodes — so its bare plunger knob went to
+  review for a 2nd week. **Recommend adding a generic Replacement Parts collection wherever it's missing;** it
+  retires a whole recurring review class.
+- **A store with no brand collection for a vendor has no bottom rung on the fallback ladder.** On
+  fall-protection-store all three recurring items have `fallback_brand_gid: None`, so `apply_run` routes them to
+  review by construction. That is the ladder working as designed, not a classification failure — escalate to a
+  human (delist or add a node) instead of stretching an unrelated node to fit.
+- **Recurring review entries are a signal, not a defect.** fall-protection-store's three cross-listed items are
+  now on week 5. Report the streak explicitly each run so it reads as an open human action item.
+
+### Tree-diff reading
+- The routine "+N new categories" line stays a vocabulary-rebuild artifact on the mature stores (RTS +153,
+  ATO +73 for the 5th week running). **But two diffs this week look genuine and deserve human eyes:**
+  - **wood-shop-outlet: 239 -> 869 (+630)**, all named 3M product families (tapes, adhesives, filters,
+    wound-care dressings). Looks like a real 3M catalog build-out; eligible was 0 so no impact yet, but these
+    become valid targets next run.
+  - **the-jet-store: 41 -> 188 (+147)**, overwhelmingly Guardian fall-protection collections. Independent
+    confirmation that the Jet -> Guardian conversion is live in the store's navigation.
+  Rule of thumb: a diff whose new names are **coherent product families for a different catalog** is a real
+  merchant change; a diff full of promo-code handles and re-surfaced floating collections is the artifact.

@@ -15,3 +15,7 @@ Backlog drained; no New Item V2 non-kit items. Tree-diff +108 = vocabulary rebui
 
 ## 2026-W31 (2026-07-28) — 0 eligible (no-op)
 No `New Item V2` non-kit items outstanding. Backlog drained. Tree-diff +108 = vocabulary-rebuild artifact (full nav+floating vocab surfaced), NOT genuine new merchant collections; none created (read-only). No decisions/report/tag-writes.
+
+## 2026-08-03 (2026-W32) — 0 eligible (no-op)
+No `New Item V2` non-kit items; JTB backlog remains drained (W31 was also a no-op). Tree diff +108 = the usual
+vocabulary-build expansion, not new merchant collections; nothing created. No writes.

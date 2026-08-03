@@ -52,3 +52,16 @@ Single fresh NIV2 item, no anchors, not on a platform. Tree-diff +73 again = sam
   `Power Tools` (universal rule 3). **Vocabulary gap:** ATO has no electrician-accessory or knockout node; if
   one appears, re-home. Confidence 55 (deliberate safe-generic). The ToughSystem box is packaging, not the
   product — storage-vs-tool rule → not TOUGHSYSTEM Storage.
+
+## 2026-08-03 (2026-W32) — 2 classified / 2 NIV2 removed / 0 review
+Two DEWALT **Workshop Storage System** items, both untagged, neither on a platform. Tree-diff +73 again = the
+same vocabulary-build artifact (W28-W31 all +73); nothing created.
+- **Confirms the W30 convention**: workshop storage-system hardware with **no tools included** (DWST82827 20"
+  compact metal rail, DWST82817 8-pc corded-power-tool peg hook set — both mount to DEWALT workbenches/welded
+  cabinets) → `Accessories > Storage and Equipment` (`440952062174`, `[Accessories, accessories storage and equipment]`).
+  Storage-vs-tool rule (universal 5): no tools included → storage.
+- **Did NOT use `DeWalt Jobsite Equipment > DeWalt Storage`** (`251798471`, `[Jobsite Equipment, Storage]`) —
+  these are shop/garage fixtures, not jobsite equipment, and the W30 precedent already routes workshop storage
+  to the Accessories storage node. Keep both rails and hooks on that one convention so the family stays together.
+- **Vocabulary gap (recurring):** ATO has no `Workshop Storage System` / wall-storage node and no TSTAK-style
+  node for rail-mount accessories. If one appears, re-home this family.

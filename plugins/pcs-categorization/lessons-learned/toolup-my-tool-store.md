@@ -149,3 +149,61 @@ _Read at the start of each run; appended at the end. Established heuristics floa
   chunks + 9 NIV2-remove chunks (≤30 pairs each). Skipped the 41 vacuous add calls (safe: nothing to add).
 - Battery-platform: 1 item (Greenlee LS50L11A knockout driver, "Greenlee Gator 18V") — Gator 18V is NOT in the
   MTS platform tree (M12/M18/MX/DeWalt/Makita only; empty platform_tags), so NO platform pick — like Ridgid 18V.
+
+## 2026-08-03 (2026-W32) — 250 classified / 250 NIV2 removed / 0 review  (backlog drain #4)
+250-item cap hit again — a **Klein Tools (87) + Ridgid (74) + Milwaukee (30) + Greenlee (21)** wave.
+238/250 carried category anchors, 248/250 brand anchors, only 2 had no anchors at all. Tree diff +524
+"new" categories = vocabulary-build artifact (cat_vocab now 1320, brand_vocab 1747); nothing created.
+`products_on_platform=0` this wave — no platform picks needed.
+
+**Method (repeat of the W30/W31 technique, now scripted):** full-closure subset-match anchor-confirm
+(deepest node whose FULL closure ⊆ the product's existing tags) with a **vendor gate** on the brand side →
+248/250 auto-matched (225 both trees, 18 brand-only, 5 category-only), leaving **25 items** (18+5+2) for manual
+placement. Of **1121** resolved (product, tag) pairs, **1070 were vacuous** (tag already present) and only
+**51 were genuinely new** — all 51 on the 25 manually-placed items. Wrote 4 compacted add calls instead of 41
+vacuous batches, plus 9 `CL-categorized` + 9 `remove New Item V2` chunks. 22 MCP calls total, 0 errors.
+
+- **⚠ `apply_run.py` does NOT chunk `add_cl_categorized.json` / `remove_niv2.json`** — on a 250-item run both
+  files hold 250 pairs, far over the bulk tool's 30-pair ceiling. **Chunk them to ≤30 yourself** before calling
+  `shopify_bulk_apply_tags` (9 chunks each here). Worth flagging to Adam as an engine fix.
+- **A vacuous brand match can look wrong and still be harmless.** Klein 50400 *Cable Bender* subset-matched the
+  brand node `Klein Tools Bolt Cutters` because the product already carries a (merchant-set) `Bolt Cutters` tag.
+  Since closure ⊆ existing tags, applying it adds **nothing** — add-only makes the mismatch inert. Don't "fix"
+  the existing tag (rule 10); just set the **category** side correctly (→ `Cable Benders` `80669474916`).
+- All vendor **brand-root fallbacks were clean single-tag roots** this run (Greenlee `80590176356`, Knaack
+  `80611803236`, Milwaukee `80621174884`, Masterlock `80620683364`, Marshalltown `80620028004`) — unlike the
+  polluted DeWalt root found in W30. Still check before relying on the dual-tree auto-fallback.
+
+**New category mappings established this run:**
+- **Belt-mounted holders/pouches** (Klein 5707/5706/5196/5195/5187T/5185/5163/5107-9 — tape measure, hammer,
+  knife, scissors, pliers holders) → `Shop by Category > Tool Belts & Bags > Tool Holsters` (`80714465380`,
+  `[Tool Belts and Bags, Tool Holsters]`). This is the home for any "holder/holster" that straps to a belt.
+- **Utility knife blades / carton blades** (Milwaukee 48-22-1934, 48-22-1950; facet `Replacement Blades`) →
+  `Replacement Blades` (`80677568612`, `[Hand Tools, Knives, Replacement Blades]`).
+- **Bolt cutters** → `Bolt Cutters` (`80679338084`, `[Bolt Cutters, Hand Tools, Nippers and Snips]`).
+- **Cable benders** (Klein 50400) → `Cable Benders` (`80669474916`, `[Cable Benders, Cable Termination,
+  Electrician's Tools]`) — accept the `Cable Termination` ancestor; that is the node's real home.
+- **Screwdriver replacement bit holders** (Klein 32556, facet `Bit Holders`) → `Bit Holders` (`80709845092`,
+  `[Bit Holders, Bit Tips, Tool Accessories]`) — NOT the belt-holster node despite the word "holder".
+- **Abrasive strips** (Ridgid 38003) → `Abrasives` (`80709091428`, `[Abrasives, Tool Accessories]`). Use this
+  one, **not** the same-named `80707944548` whose closure drags in `Solar Installation`.
+- **Generic machine parts — pins, o-rings, screws, roller pins** (Greenlee HE.8120, F010777, 54268, 51655,
+  23932, 52969) → `Replacement Parts` (`80711876708`, `[Replacement Parts, Tool Accessories]`). Use this clean
+  node, **not** `80682909796` (`Jobsite Equipment, Jobsite Storage, …`) or `80714956900` (`Truck and Van
+  Equipment`). W31's "a bare part needs its parent tool named" rule is relaxed here: MTS **has** a generic
+  Replacement Parts bucket, so these place fine rather than going to review.
+- **Adjustable locking cable** (MasterLock 8413DPF Python) → `Shop by Category > Jobsite Equipment >
+  Locks and Security` (`80683696228`) + brand `Masterlock > Masterlock Cable Locks` (`80620847204`).
+  Overrode the anchor-matched `Material Handling` node — a locking cable is security, not material handling.
+- **Tile grout sponge** (Marshalltown 16462) → `Masonry` (`80678420580`, `[Hand Tools, Masonry]`) + brand
+  `Marshalltown` root. No sponge/tile-finishing node exists; Masonry is the tile/masonry hand-tool home.
+- **Cable tie gun** (Tempo PA70076 DataShark) → bare `Shop by Category > Hand Tools` (`80675569764`), conf 50.
+  **Avoid `Cable Ties` (`80683761764`)** — its closure carries `Jobsite Equipment, Locks and Security`, wrong
+  for a hand tool (rule 3). **Vocabulary gap:** no cable-tie-tool node.
+- **Knaack Power Pass grommet** → brand `Knaack > Knaack Replacement Parts` (`80612098148`); category stayed
+  the anchor-matched Truck-and-Van `Replacement Parts` node.
+- **Milwaukee router collet** → brand `Milwaukee Accessories > Milwaukee Router Bits & Accessories`
+  (`421995315453`).
+
+**Backlog:** the 250 cap was hit again. W31 estimated ~987 outstanding; after this run roughly **~735 remain**.
+Continue draining ~250/week, or schedule a supervised bulk session.

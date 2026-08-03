@@ -19,3 +19,6 @@ No NIV2 non-kit items (W28's batch drained). Tree-diff +43 = vocabulary rebuild 
 
 ## 2026-W31 (2026-07-28) — 0 eligible (no-op)
 No `New Item V2` non-kit items outstanding. Backlog drained. Tree-diff +43 = vocabulary-rebuild artifact (full nav+floating vocab surfaced), NOT genuine new merchant collections; none created (read-only). No decisions/report/tag-writes.
+
+## 2026-08-03 (2026-W32) — 0 eligible (no-op)
+No `New Item V2` non-kit items; nothing to classify. Tree diff +43; local tree updated, no collections created. No writes.

@@ -26,3 +26,22 @@
   no brand fallback → review. **4th consecutive run (W28/W29/W30/W31).** Review Doc uploaded to Drive. No tag
   writes. **ACTION FOR NATHAN (repeat):** these are cross-listing errors — remove from fall-protection-store so
   they stop recurring every week.
+
+## 2026-08-03 (2026-W32) — 0 classified / 0 NIV2 removed / 3 review  (5th consecutive week)
+Same three cross-listed items as W28-W31: WeatherGuard 1057-52-01 ratchet straps (8306471207132), Wright Tool
+3478 torque wrench (8306470060252), Ergodyne 13662 Arsenal hammer holster (8306465865948).
+Tree diff +32 (vocabulary-build expansion); nothing created.
+- **Confirmed structural cause:** all three have `fallback_brand_gid: None` — weatherguard, Wright Tool and
+  Ergodyne have **no brand collection on this store**, so the no-zero-tags fallback ladder has no bottom rung
+  and `apply_run` routes them to review by construction. This is not a classification failure; it is a
+  catalog-scope mismatch that only a human can fix (delist, or add a node).
+- **Store vocabulary is strictly fall protection + jobsite safety**: Harnesses, Lanyards, Anchors,
+  Retractables, Lifeline Systems, Ladders, Guardrails, Netting, Rescue, Tool Tethers, Carabiners, plus PPE
+  (hard hats, gloves, glasses, hearing, respiratory) and per-brand mirrors (3M/DBI Sala, Guardian, Safewaze,
+  Werner, FallTech, Pyramex, Proto). There is **no hand-tool, truck-equipment, or tool-storage category at all.**
+- **`Jobsite Safety > Tool Tethers` (`425428123868`) is NOT a home for holsters/pouches.** A tether prevents a
+  drop; a holster carries a tool. Using it would apply a tag the product does not belong to (universal rule 3).
+  The Ergodyne Arsenal line *is* dropped-object-prevention gear, so the right fix is a new
+  **Tool Belts & Pouches** / **Dropped Object Prevention** collection, not a stretch into Tool Tethers.
+- **Escalate rather than force-place.** Five weeks of identical review entries is the signal that the
+  pipeline is working correctly and the backlog item is a human decision.

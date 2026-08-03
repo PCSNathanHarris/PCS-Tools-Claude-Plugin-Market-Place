@@ -1,0 +1,47 @@
+PCS Categorization — weekly repo change report
+Run date: 2026-08-03    Week: 2026-W32    Branch: main
+
+Lessons updated (18):
+  - lessons-learned/fall-protection-store.md
+  - lessons-learned/fasteners-store.md
+  - lessons-learned/gearwrench-shop.md
+  - lessons-learned/greenlee-store.md
+  - lessons-learned/knaack-store.md
+  - lessons-learned/occidentalleatheroutlet.md
+  - lessons-learned/PROJECT-LESSONS.md
+  - lessons-learned/the-dewalt-store.md
+  - lessons-learned/the-jet-store.md
+  - lessons-learned/the-klein-store.md
+  - lessons-learned/the-makita-store.md
+  - lessons-learned/the-milwaukee-store.md
+  - lessons-learned/the-pls-store.md
+  - lessons-learned/the-ridgid-store.md
+  - lessons-learned/the-sumner-store.md
+  - lessons-learned/toolup-my-tool-store.md
+  - lessons-learned/weather-guard-store.md
+  - lessons-learned/wood-shop-outlet.md
+
+Summary: W32: 267 finalized (RTS 13, ATO 2, MTS 250 cap, GearWrench 1, Greenlee 1); 4 to review; jet ON HOLD (Guardian conversion visible in tree diff)
+
+Diffstat (staged lesson changes):
+.../lessons-learned/PROJECT-LESSONS.md             | 61 ++++++++++++++++++++++
+ .../lessons-learned/fall-protection-store.md       | 19 +++++++
+ .../lessons-learned/fasteners-store.md             |  3 ++
+ .../lessons-learned/gearwrench-shop.md             | 15 ++++++
+ .../lessons-learned/greenlee-store.md              | 10 ++++
+ .../lessons-learned/knaack-store.md                |  4 ++
+ .../lessons-learned/occidentalleatheroutlet.md     |  3 ++
+ .../lessons-learned/the-dewalt-store.md            | 13 +++++
+ .../lessons-learned/the-jet-store.md               | 28 ++++++++--
+ .../lessons-learned/the-klein-store.md             |  3 ++
+ .../lessons-learned/the-makita-store.md            |  3 ++
+ .../lessons-learned/the-milwaukee-store.md         | 44 ++++++++++++++++
+ .../lessons-learned/the-pls-store.md               |  3 ++
+ .../lessons-learned/the-ridgid-store.md            | 14 +++++
+ .../lessons-learned/the-sumner-store.md            |  3 ++
+ .../lessons-learned/toolup-my-tool-store.md        | 58 ++++++++++++++++++++
+ .../lessons-learned/weather-guard-store.md         |  3 ++
+ .../lessons-learned/wood-shop-outlet.md            |  7 +++
+ 18 files changed, 289 insertions(+), 5 deletions(-)
+
+Scope: lessons-learned/ + change-reports/ only. No code, no other files.

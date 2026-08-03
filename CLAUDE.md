@@ -48,7 +48,9 @@ PCS-Tools-Claude-Plugin-Market-Place/
    They must always agree. Mismatched versions cause auto-update to misbehave.
 
 5. **Plugins are markdown only.** No `.py`, `.js`, `.ts`, `.exe`, no runtime code in the `plugins/` tree. If a skill needs to execute code, the `SKILL.md` instructs Claude to **generate and run** that code at execution time. Do not ship static scripts.
-   - **Documented exception (owner-approved): `pcs-categorization`** bundles a strictly read-only Python engine under `plugins/pcs-categorization/engine/` (its multi-source Shopify *read* pipeline can't be markdown). It never writes to Shopify — writes go only through the `shopify_*` MCP tag tools. This is the sole code-bearing plugin; the rule holds for all others.
+   - **Documented exception (owner-approved): `pcs-categorization`** bundles a strictly read-only Python engine under `plugins/pcs-categorization/engine/` (its multi-source Shopify *read* pipeline can't be markdown). It never writes to Shopify — writes go only through the `shopify_*` MCP tag tools.
+   - **Documented exception (owner-approved): `pcs-meeting-notes-creator`** bundles a strictly read-only Google Chat puller under `plugins/pcs-meeting-notes-creator/scripts/` (OAuth read-only scopes; physically cannot post/edit/delete). The setup wizard copies it to each user's local config dir; tokens never live in this repo.
+   - These two are the only code-bearing plugins; the markdown-only rule holds for all others.
 
 6. **No secrets in `plugins/`.** Plugins are distributed to all installers — anything checked in is public-to-the-team.
 
